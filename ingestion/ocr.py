@@ -128,7 +128,14 @@ def extract_full_text(pdf_path: Path, tmp_dir: Path | None = None) -> str:
         if not page_data["is_scanned"]:
             full_parts.append(page_data["text"])
         else:
-            text = ocr_page_with_fallback(pdf_path, page_data["page"], tmp_dir)
+            try:
+                text = ocr_page_with_fallback(pdf_path, page_data["page"], tmp_dir)
+            except Exception as exc:
+                logger.warning(
+                    "OCR skipped page %d of %s (poppler/tesseract unavailable?): %s",
+                    page_data["page"], pdf_path.name, exc,
+                )
+                text = ""
             full_parts.append(text)
 
     return "\n\n".join(full_parts)
