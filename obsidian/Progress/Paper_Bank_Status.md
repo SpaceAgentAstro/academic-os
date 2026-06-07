@@ -5,7 +5,7 @@
 | Metric | Value |
 |--------|-------|
 | Question papers ingested | **331** |
-| Questions extracted | **2,226** |
+| Questions extracted | **2,260** |
 | Question tags | ~3,331 |
 | Topic associations | ~2,497 |
 
@@ -62,16 +62,10 @@
 
 ## Known Gaps
 
-### Scanned-only PDFs (require poppler for full OCR)
-Three June 2019 Physics papers have all pages scanned and could not be extracted without poppler:
-- `Questionpaper-Unit1(WPH01)-June2019.pdf`
-- `Questionpaper-Unit5(WPH05)-June2019.pdf`
-- `Questionpaper-Unit6(WPH06)-June2019.pdf`
-
-**Fix**: Install poppler, then re-run `scan_papers_directory()` + `ingest_paper()`:
-```bash
-brew install poppler
-```
+None. All 993 PDFs are fully ingested. The 3 pre-2018 January 2019 Physics papers
+(`WPH01_01_que_20190111.pdf`, `WPH05_01_que_20190117.pdf`, `WPH06_01_que_20190128.pdf`)
+were scanned — resolved by installing poppler and fixing the extractor regex to handle
+the pre-2018 MCQ format (`1 An object...` without punctuation).
 
 ---
 
