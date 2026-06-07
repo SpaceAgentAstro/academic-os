@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 _QUESTION_START = re.compile(
     r"(?m)^(?:"
     r"Question\s+(\d{1,2})\s*[.):]?\s*$"  # "Question 1" (end of line) or "Question 1:"
-    r"|(?:Question\s+)?(\d{1,2})\s*[.)]"  # "1." or "Question 1."
+    r"|(?:Question\s+)?(\d{1,2})\s*[.)](?!\d)"  # "1." or "Question 1." (not decimal like 0.1)
     r"|Q(\d{1,2})\b"                        # "Q1"
     r")",
     re.IGNORECASE,
