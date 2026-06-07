@@ -19,6 +19,7 @@ created: 2026-06-06
 | **Phase 4** — Retrieval & Revision | ✅ Complete |
 | **Phase 5** — Curriculum Agent | ✅ Complete |
 | **Phase 6** — Briefing & Telegram | ✅ Complete |
+| **Paper Bank** — Physics 2019–2026, Maths 2021–2026 | ✅ 331 papers · 2,226 questions |
 
 ---
 
@@ -62,6 +63,7 @@ created: 2026-06-06
 - [[Progress/Governing Principles]] — Hard rules, priority order
 - [[Progress/Test Coverage]] — 83 tests, all green
 - [[Progress/Roadmap]] — Long-term vision
+- [[Progress/Paper_Bank_Status]] — 331 papers, 2,226 questions ingested (Physics 2019–2026 · Maths 2021–2026)
 
 ---
 
