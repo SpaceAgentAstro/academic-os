@@ -6,12 +6,14 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-# Matches Edexcel IAL question paper numbering: "1.", "2)", "Q1", "Question 1."
+# Matches Edexcel IAL question paper numbering: "1.", "2)", "Q1", "Question 1.",
+# and the no-punctuation MCQ format "1 An object..." used in pre-2018 IAL papers.
 _QUESTION_START = re.compile(
     r"(?m)^(?:"
-    r"Question\s+(\d{1,2})\s*[.):]?\s*$"  # "Question 1" (end of line) or "Question 1:"
-    r"|(?:Question\s+)?(\d{1,2})\s*[.)](?!\d)"  # "1." or "Question 1." (not decimal like 0.1)
-    r"|Q(\d{1,2})\b"                        # "Q1"
+    r"Question\s+(\d{1,2})\s*[.):]?\s*$"        # group 1: "Question 1" on its own line
+    r"|(?:Question\s+)?(\d{1,2})\s*[.)](?!\d)"  # group 2: "1." or "Question 1." (not 0.1)
+    r"|Q(\d{1,2})\b"                             # group 3: "Q1"
+    r"|(\d{1,2})\s+(?=[A-Z*])"                  # group 4: "1 An object..." MCQ format
     r")",
     re.IGNORECASE,
 )
@@ -59,7 +61,7 @@ def extract_question_blocks(raw_text: str) -> list[dict[str, Any]]:
         m = _QUESTION_START.match(line)
         if m:
             _flush()
-            q_num = m.group(1) or m.group(2) or m.group(3)
+            q_num = m.group(1) or m.group(2) or m.group(3) or m.group(4)
             current_block = {"question_number": q_num}
             current_lines = [line]
         elif current_block is not None:
