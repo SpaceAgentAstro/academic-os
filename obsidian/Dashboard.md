@@ -19,7 +19,7 @@ created: 2026-06-06
 | **Phase 4** — Retrieval & Revision | ✅ Complete |
 | **Phase 5** — Curriculum Agent | ✅ Complete |
 | **Phase 6** — Briefing & Telegram | ✅ Complete |
-| **Paper Bank** — Physics 2019–2026, Maths 2021–2026 | ✅ 331 papers · 2,226 questions |
+| **Paper Bank** — Physics 2019–2026, Maths 2021–2026 | ✅ 331 papers · 2,260 questions |
 
 ---
 
