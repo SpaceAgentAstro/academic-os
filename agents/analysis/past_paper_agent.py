@@ -220,7 +220,7 @@ def _write_paper_to_db(
     questions: list[ExtractedQuestion],
 ) -> int:
     """Insert paper + questions into question_bank.db. Returns paper_id."""
-    cur = conn.execute(
+    conn.execute(
         """
         INSERT INTO papers
             (qualification, subject, module_code, paper_code, session, year,
@@ -236,9 +236,19 @@ def _write_paper_to_db(
             metadata.paper_type, metadata.source_file, _now_iso(),
         ),
     )
-    paper_id: int = cur.lastrowid  # type: ignore[assignment]
+    # Always re-query: lastrowid=0 on the UPDATE path of ON CONFLICT DO UPDATE
+    paper_row = conn.execute(
+        "SELECT id FROM papers WHERE paper_code=? AND session=? AND paper_type=?",
+        (metadata.paper_code, metadata.session, metadata.paper_type),
+    ).fetchone()
+    paper_id: int = paper_row["id"]  # type: ignore[index]
 
+    seen_q_nums: set[str] = set()
     for q in questions:
+        if q.question_number in seen_q_nums:
+            continue  # extractor occasionally emits the same number twice; skip duplicates
+        seen_q_nums.add(q.question_number)
+
         q_cur = conn.execute(
             """
             INSERT INTO questions
@@ -252,7 +262,12 @@ def _write_paper_to_db(
                 q.difficulty, q.raw_text, q.latex_text, int(q.has_diagram),
             ),
         )
-        q_id = q_cur.lastrowid
+        # Re-query id: ON CONFLICT DO NOTHING leaves lastrowid unchanged
+        q_row = conn.execute(
+            "SELECT id FROM questions WHERE paper_id=? AND question_number=?",
+            (paper_id, q.question_number),
+        ).fetchone()
+        q_id = q_row["id"] if q_row else None
         if q_id:
             if q.tags:
                 for tag in q.tags:
