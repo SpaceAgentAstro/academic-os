@@ -53,27 +53,56 @@ _SESSION_PATTERN = re.compile(
     re.I,
 )
 _MODULE_PATTERNS: list[tuple[re.Pattern, str, str, str]] = [
-    (re.compile(r"\bWME01\b", re.I), "Edexcel IAL", "Mathematics", "P1"),
-    (re.compile(r"\bWME02\b", re.I), "Edexcel IAL", "Mathematics", "P2"),
+    # Mathematics — 2018 spec (pure)
+    (re.compile(r"\bWMA11\b", re.I), "Edexcel IAL", "Mathematics", "P1"),
+    (re.compile(r"\bWMA12\b", re.I), "Edexcel IAL", "Mathematics", "P2"),
+    (re.compile(r"\bWMA13\b", re.I), "Edexcel IAL", "Mathematics", "P3"),
+    (re.compile(r"\bWMA14\b", re.I), "Edexcel IAL", "Mathematics", "P4"),
+    # Mathematics — pre-2018 spec (pure)
+    (re.compile(r"\bWMA01\b", re.I), "Edexcel IAL", "Mathematics", "P1"),
+    (re.compile(r"\bWMA02\b", re.I), "Edexcel IAL", "Mathematics", "P2"),
     (re.compile(r"\bWME03\b", re.I), "Edexcel IAL", "Mathematics", "P3"),
     (re.compile(r"\bWME04\b", re.I), "Edexcel IAL", "Mathematics", "P4"),
+    # Mathematics — mechanics
+    (re.compile(r"\bWME01\b", re.I), "Edexcel IAL", "Mathematics", "M1"),
+    (re.compile(r"\bWME02\b", re.I), "Edexcel IAL", "Mathematics", "M2"),
+    # Mathematics — statistics
     (re.compile(r"\bWST01\b", re.I), "Edexcel IAL", "Mathematics", "S1"),
     (re.compile(r"\bWST02\b", re.I), "Edexcel IAL", "Mathematics", "S2"),
+    (re.compile(r"\bWST03\b", re.I), "Edexcel IAL", "Mathematics", "S3"),
+    # Further Mathematics — 2018 spec
+    (re.compile(r"\bWFM01\b", re.I), "Edexcel IAL", "Further Mathematics", "FP1"),
+    (re.compile(r"\bWFM02\b", re.I), "Edexcel IAL", "Further Mathematics", "FP2"),
+    (re.compile(r"\bWFM03\b", re.I), "Edexcel IAL", "Further Mathematics", "FP3"),
+    (re.compile(r"\bWDM11\b", re.I), "Edexcel IAL", "Further Mathematics", "D1"),
+    # Further Mathematics — pre-2018 spec
     (re.compile(r"\bWME11\b", re.I), "Edexcel IAL", "Further Mathematics", "FP1"),
     (re.compile(r"\bWME12\b", re.I), "Edexcel IAL", "Further Mathematics", "FP2"),
     (re.compile(r"\bWME13\b", re.I), "Edexcel IAL", "Further Mathematics", "FP3"),
+    (re.compile(r"\bWDM01\b", re.I), "Edexcel IAL", "Further Mathematics", "D1"),
+    # Physics — 2018 spec
+    (re.compile(r"\bWPH11\b", re.I), "Edexcel IAL", "Physics", "Unit 1"),
+    (re.compile(r"\bWPH12\b", re.I), "Edexcel IAL", "Physics", "Unit 2"),
+    (re.compile(r"\bWPH13\b", re.I), "Edexcel IAL", "Physics", "Unit 3"),
+    (re.compile(r"\bWPH14\b", re.I), "Edexcel IAL", "Physics", "Unit 4"),
+    (re.compile(r"\bWPH15\b", re.I), "Edexcel IAL", "Physics", "Unit 5"),
+    (re.compile(r"\bWPH16\b", re.I), "Edexcel IAL", "Physics", "Unit 6"),
+    # Physics — pre-2018 spec
     (re.compile(r"\bWPH01\b", re.I), "Edexcel IAL", "Physics", "Unit 1"),
     (re.compile(r"\bWPH02\b", re.I), "Edexcel IAL", "Physics", "Unit 2"),
     (re.compile(r"\bWPH03\b", re.I), "Edexcel IAL", "Physics", "Unit 3"),
     (re.compile(r"\bWPH04\b", re.I), "Edexcel IAL", "Physics", "Unit 4"),
     (re.compile(r"\bWPH05\b", re.I), "Edexcel IAL", "Physics", "Unit 5"),
     (re.compile(r"\bWPH06\b", re.I), "Edexcel IAL", "Physics", "Unit 6"),
+    (re.compile(r"\bWPH07\b", re.I), "Edexcel IAL", "Physics", "Unit 7"),
+    # Chemistry
     (re.compile(r"\bWCH01\b", re.I), "Edexcel IAL", "Chemistry", "Unit 1"),
     (re.compile(r"\bWCH02\b", re.I), "Edexcel IAL", "Chemistry", "Unit 2"),
     (re.compile(r"\bWCH03\b", re.I), "Edexcel IAL", "Chemistry", "Unit 3"),
     (re.compile(r"\bWCH04\b", re.I), "Edexcel IAL", "Chemistry", "Unit 4"),
     (re.compile(r"\bWCH05\b", re.I), "Edexcel IAL", "Chemistry", "Unit 5"),
     (re.compile(r"\bWCH06\b", re.I), "Edexcel IAL", "Chemistry", "Unit 6"),
+    # Computer Science
     (re.compile(r"\b9608\b", re.I), "Cambridge AS & A Level", "Computer Science", "CS"),
 ]
 
@@ -81,10 +110,13 @@ _MODULE_PATTERNS: list[tuple[re.Pattern, str, str, str]] = [
 def detect_paper_type(pdf_path: Path) -> str:
     """Identify whether a PDF is a question_paper, mark_scheme, or examiner_report."""
     name_lower = pdf_path.stem.lower()
-    if any(k in name_lower for k in ("mark_scheme", "markscheme", "_ms", "-ms")):
+    # Edexcel IAL filename conventions: _msc_ = mark scheme, _pef_ = examiner report, _que_ = question paper
+    if "_msc_" in name_lower or any(k in name_lower for k in ("mark_scheme", "markscheme", "_ms", "-ms")):
         return "mark_scheme"
-    if any(k in name_lower for k in ("examiner_report", "examiners_report", "_er", "-er")):
+    if "_pef_" in name_lower or any(k in name_lower for k in ("examiner_report", "examiners_report", "_er", "-er")):
         return "examiner_report"
+    if "_que_" in name_lower:
+        return "question_paper"
 
     try:
         pages = extract_text_pdfplumber(pdf_path)

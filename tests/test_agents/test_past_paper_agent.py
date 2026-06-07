@@ -41,7 +41,7 @@ def test_detect_paper_type_examiner_report():
 def test_extract_metadata_module_code():
     from agents.analysis.past_paper_agent import extract_metadata
     meta = extract_metadata(QP_PDF)
-    assert meta.module_code == "P1"
+    assert meta.module_code == "M1"
     assert meta.subject == "Mathematics"
     assert meta.year == 2023
 
