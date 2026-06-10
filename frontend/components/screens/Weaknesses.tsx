@@ -2,26 +2,27 @@
 
 import { useState } from "react";
 import { Badge, Button, Card, Icon, SectionTitle } from "@/components/ui";
-import { bandColor, confidenceTraps, examinerTraps, masteryBand, subjectById, weaknesses } from "@/lib/data";
-import type { Route } from "@/lib/types";
+import { bandColor, masteryBand, subjectById } from "@/lib/data";
+import { useWeaknesses, useDashboard } from "@/lib/hooks";
+import type { Route, SessionParams } from "@/lib/types";
 
-export function Weaknesses({ go }: { go: (r: Route) => void }) {
+function Skeleton({ h }: { h?: number }) {
+  return <div className="aos-skeleton" style={{ height: h ?? 18, borderRadius: 4 }} />;
+}
+
+export function Weaknesses({ go }: { go: (r: Route, p?: SessionParams) => void }) {
   const [subj, setSubj] = useState("all");
   const [sortKey, setSortKey] = useState<"lost" | "avg" | "attempts">("lost");
-  const primary = weaknesses[0];
-  const maxOcc = Math.max(...primary.breakdown.map((b) => b.n));
+  const { data: weaknesses, loading } = useWeaknesses();
+  const { data: dash } = useDashboard();
+  const traps = dash.examiner_traps;
 
   let rows = weaknesses.filter((w) => subj === "all" || w.subject === subj);
   rows = [...rows].sort((a, b) =>
     sortKey === "lost" ? b.lost - a.lost : sortKey === "avg" ? a.avg - b.avg : b.attempts - a.attempts
   );
 
-  const trendIcon = (t: string): [string, string] =>
-    t === "up"
-      ? ["trending-up", "var(--accent)"]
-      : t === "down"
-      ? ["trending-down", "var(--danger)"]
-      : ["minus", "var(--text-3)"];
+  const primary = weaknesses[0];
 
   return (
     <div className="aos-page">
@@ -32,18 +33,28 @@ export function Weaknesses({ go }: { go: (r: Route) => void }) {
         </p>
       </div>
 
-      {/* primary weakness */}
-      <Card className="aos-primary-weak">
-        <div className="aos-pw-flag">
-          <Icon name="alert-triangle" size={15} /> Most critical weakness
-        </div>
-        <div className="aos-pw-grid">
+      {loading ? (
+        <Card><Skeleton h={160} /></Card>
+      ) : !primary ? (
+        <Card>
+          <div className="aos-empty-state" style={{ padding: 24 }}>
+            <Icon name="circle-check" size={22} style={{ color: "var(--accent)" }} />
+            <span>
+              No weaknesses recorded yet. Complete and mark a paper — modules where you lose
+              marks will surface here automatically.
+            </span>
+          </div>
+        </Card>
+      ) : (
+        <Card className="aos-primary-weak">
+          <div className="aos-pw-flag">
+            <Icon name="alert-triangle" size={15} /> Most critical weakness
+          </div>
           <div>
             <div className="aos-pw-path">
-              {subjectById(primary.subject).name} → {primary.unit} →{" "}
-              <strong>{primary.topic}</strong>
+              {subjectById(primary.subject)?.name ?? primary.subject} →{" "}
+              <strong>{primary.unit}</strong>
             </div>
-            <div className="aos-pw-sub">{primary.subtopic}</div>
             <div className="aos-pw-stats">
               <div>
                 <span className="aos-pw-num" style={{ color: "var(--danger)" }}>
@@ -53,7 +64,7 @@ export function Weaknesses({ go }: { go: (r: Route) => void }) {
               </div>
               <div>
                 <span className="aos-pw-num">{primary.attempts}</span>
-                <span>attempts</span>
+                <span>questions marked</span>
               </div>
               <div>
                 <span className="aos-pw-num">{primary.avg}%</span>
@@ -61,68 +72,21 @@ export function Weaknesses({ go }: { go: (r: Route) => void }) {
               </div>
             </div>
             <div className="aos-pw-fail">
-              <span className="aos-pw-flabel">Primary failure</span> {primary.primary}
+              <span className="aos-pw-flabel">Top examiner note</span> {primary.primary}
             </div>
-            <div className="aos-pw-fail">
-              <span className="aos-pw-flabel">Secondary</span> {primary.secondary}
-            </div>
-            <div className="aos-pw-fail">
-              <span className="aos-pw-flabel">Examiner trap</span>{" "}
-              <Badge tone="amber">Yes · 3 reports</Badge>
-            </div>
-            <div className="aos-pw-actions">
-              <Button variant="primary" icon="target" onClick={() => go("tutor")}>
-                Start targeted revision
-              </Button>
-              <Button variant="ghost" icon="notebook" onClick={() => go("booklets")}>
-                Generate booklet
-              </Button>
-            </div>
-          </div>
-          <div className="aos-misgraph">
-            <div className="aos-mg-title">Misconception graph</div>
-            <div className="aos-mg-root">
-              {subjectById(primary.subject).name} → {primary.unit} → {primary.topic} →
-              Discharging
-            </div>
-            {primary.breakdown.map((b, i) => (
-              <div key={b.tag} className="aos-mg-branch">
-                <span className="aos-mg-elbow">
-                  {i === primary.breakdown.length - 1 ? "└──" : "├──"}
-                </span>
-                <span
-                  className="aos-mg-tag"
-                  style={{
-                    background: `color-mix(in oklab, var(--danger) ${Math.round(
-                      (b.n / maxOcc) * 60
-                    )}%, transparent)`,
-                  }}
-                >
-                  {b.tag}
-                </span>
-                <span className="aos-mg-count">{b.n} occurrences</span>
+            {primary.secondary && (
+              <div className="aos-pw-fail">
+                <span className="aos-pw-flabel">Also</span> {primary.secondary}
               </div>
-            ))}
-          </div>
-        </div>
-      </Card>
-
-      {/* confidence traps */}
-      <SectionTitle>Confidence traps · wrong + high confidence</SectionTitle>
-      <div className="aos-conftrap-grid">
-        {confidenceTraps.map((t, i) => (
-          <div key={i} className="aos-conftrap">
-            <div className="aos-ct-top">
-              <Icon name="alert-octagon" size={16} style={{ color: "var(--danger)" }} />
-              <Badge tone="red">
-                Conf {t.conf} · {t.score}%
-              </Badge>
+            )}
+            <div className="aos-pw-actions">
+              <Button variant="primary" icon="player-play" onClick={() => go("analytics")}>
+                Practise this module
+              </Button>
             </div>
-            <div className="aos-ct-text">{t.text}</div>
-            <div className="aos-ct-topic">{t.topic}</div>
           </div>
-        ))}
-      </div>
+        </Card>
+      )}
 
       {/* weakness table */}
       <div className="aos-head-flex" style={{ marginTop: 26, marginBottom: 12 }}>
@@ -135,41 +99,34 @@ export function Weaknesses({ go }: { go: (r: Route) => void }) {
                 className={subj === s ? "active" : ""}
                 onClick={() => setSubj(s)}
               >
-                {s === "all" ? "All" : subjectById(s).short}
+                {s === "all" ? "All" : subjectById(s)?.short ?? s}
               </button>
             ))}
           </div>
         </div>
       </div>
       <Card pad={false}>
-        <table className="aos-table">
-          <thead>
-            <tr>
-              <th>Topic</th>
-              <th>Subtopic</th>
-              <th
-                className="aos-th-sort"
-                onClick={() => setSortKey("attempts")}
-              >
-                Attempts
-              </th>
-              <th className="aos-th-sort" onClick={() => setSortKey("avg")}>
-                Avg score
-              </th>
-              <th className="aos-th-sort" onClick={() => setSortKey("lost")}>
-                Marks lost
-              </th>
-              <th>Primary mistake</th>
-              <th>Trend</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((w, i) => {
-              const [ti, tc] = trendIcon(w.trend);
-              return (
-                <tr key={i} onClick={() => go("questions")}>
+        {rows.length === 0 ? (
+          <div className="aos-empty-state" style={{ padding: 24 }}>
+            <Icon name="file-x" size={18} style={{ color: "var(--text-3)" }} />
+            <span>No marked questions for this filter yet.</span>
+          </div>
+        ) : (
+          <table className="aos-table">
+            <thead>
+              <tr>
+                <th>Module</th>
+                <th className="aos-th-sort" onClick={() => setSortKey("attempts")}>Questions</th>
+                <th className="aos-th-sort" onClick={() => setSortKey("avg")}>Avg score</th>
+                <th className="aos-th-sort" onClick={() => setSortKey("lost")}>Marks lost</th>
+                <th>Top examiner note</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((w, i) => (
+                <tr key={i}>
                   <td className="aos-td-strong">
-                    {w.topic}
+                    {w.unit}
                     {w.trap && (
                       <Icon
                         name="alert-triangle"
@@ -178,7 +135,6 @@ export function Weaknesses({ go }: { go: (r: Route) => void }) {
                       />
                     )}
                   </td>
-                  <td className="aos-muted">{w.subtopic}</td>
                   <td>{w.attempts}</td>
                   <td>
                     <span style={{ color: bandColor(masteryBand(w.avg)) }}>{w.avg}%</span>
@@ -186,37 +142,36 @@ export function Weaknesses({ go }: { go: (r: Route) => void }) {
                   <td>
                     <strong style={{ color: "var(--danger)" }}>{w.lost}</strong>
                   </td>
-                  <td>{w.primary}</td>
-                  <td>
-                    <Icon name={ti} size={16} style={{ color: tc }} />
-                  </td>
+                  <td className="aos-muted" style={{ maxWidth: 360 }}>{w.primary}</td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        )}
       </Card>
 
-      {/* examiner trap library */}
+      {/* examiner trap library — real misconceptions */}
       <SectionTitle>Examiner trap library</SectionTitle>
-      <div className="aos-traplib">
-        {examinerTraps.map((t, i) => (
-          <Card key={i} className="aos-traplib-card">
-            <div className="aos-tl-head">
-              <Badge tone="primary">{t.topic}</Badge>
-              <span className="aos-tl-freq">{t.freq}× across reports</span>
-            </div>
-            <div className="aos-tl-text">{t.text}</div>
-            <div className="aos-tl-years">
-              {t.years.map((y) => (
-                <span key={y} className="aos-year">
-                  {y}
-                </span>
-              ))}
-            </div>
-          </Card>
-        ))}
-      </div>
+      {traps.length === 0 ? (
+        <Card>
+          <div className="aos-empty-state" style={{ padding: 24 }}>
+            <Icon name="file-description" size={18} style={{ color: "var(--text-3)" }} />
+            <span>Examiner reports not yet extracted. Run the extraction pipeline to unlock this.</span>
+          </div>
+        </Card>
+      ) : (
+        <div className="aos-traplib">
+          {traps.map((t, i) => (
+            <Card key={i} className="aos-traplib-card">
+              <div className="aos-tl-head">
+                <Badge tone="primary">{t.topic || "General"}</Badge>
+                <span className="aos-tl-freq">{t.freq}× across reports</span>
+              </div>
+              <div className="aos-tl-text">{t.text}</div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

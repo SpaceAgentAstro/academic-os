@@ -35,7 +35,7 @@ const FALLBACK_DBS: [string, string, boolean][] = [
 
 export function Settings({ dark, toggleDark }: { dark?: boolean; toggleDark?: () => void }) {
   const [time, setTime] = useState("07:00");
-  const status = useStatus();
+  const { data: status } = useStatus();
 
   return (
     <div className="aos-page aos-narrow">

@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Card, Icon, Metric, SectionTitle } from "@/components/ui";
+import { Badge, Button, Card, Icon, Metric, SectionTitle } from "@/components/ui";
 import { BarChart, LineChart, ScatterChart } from "@/components/charts";
 import { bandColor, calibration, masteryBand, papers, scoreTrend, subjects, subjectById } from "@/lib/data";
 import { useCoverage, useRawPapers } from "@/lib/hooks";
-import type { Route } from "@/lib/types";
+import type { Route, SessionParams } from "@/lib/types";
 
 const topicsLost = [
   { t: "Capacitance", m: 47 }, { t: "Organic synthesis", m: 39 }, { t: "Series (FP2)", m: 31 },
@@ -13,10 +13,10 @@ const topicsLost = [
   { t: "Recursion", m: 18 }, { t: "Resistivity", m: 16 }, { t: "Equilibria", m: 14 }, { t: "Vectors", m: 9 },
 ];
 
-export function Analytics({ go }: { go: (r: Route) => void }) {
+export function Analytics({ go }: { go: (r: Route, p?: SessionParams) => void }) {
   const [range, setRange] = useState("30 days");
   const coverage = useCoverage();
-  const rawPapers = useRawPapers();
+  const { data: rawPapers, loading: papersLoading } = useRawPapers();
 
   // Total questions available across all subjects from the live DB
   const totalQAvailable = coverage.reduce((s, c) => s + c.total_questions, 0);
@@ -202,18 +202,27 @@ export function Analytics({ go }: { go: (r: Route) => void }) {
         </table>
       </Card>
 
-      {rawPapers.length > 0 && (
-        <>
-          <SectionTitle
-            action={
+      <>
+        <SectionTitle
+          action={
+            rawPapers.length > 0 ? (
               <span className="aos-muted" style={{ fontSize: 12 }}>
                 {rawPapers.length} papers · question_bank.db
               </span>
-            }
-          >
-            Paper library
-          </SectionTitle>
-          <Card pad={false}>
+            ) : undefined
+          }
+        >
+          Paper library
+        </SectionTitle>
+        <Card pad={false}>
+          {papersLoading ? (
+            <div style={{ padding: 24, color: "var(--text-3)" }}>Loading papers…</div>
+          ) : rawPapers.length === 0 ? (
+            <div className="aos-empty-state" style={{ padding: 32 }}>
+              <Icon name="database" size={20} style={{ color: "var(--text-3)" }} />
+              <span>No papers found in question_bank.db. Run the ingestion pipeline to populate.</span>
+            </div>
+          ) : (
             <table className="aos-table">
               <thead>
                 <tr>
@@ -223,6 +232,7 @@ export function Analytics({ go }: { go: (r: Route) => void }) {
                   <th>Session</th>
                   <th>Questions</th>
                   <th>Status</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -234,17 +244,36 @@ export function Analytics({ go }: { go: (r: Route) => void }) {
                     <td>{p.session}</td>
                     <td>{p.question_count}</td>
                     <td>
-                      <span className="aos-muted" style={{ fontSize: 12 }}>
-                        Not attempted
-                      </span>
+                      {p.score != null ? (
+                        <Badge tone="green">{Math.round((p.score / (p.max ?? 1)) * 100)}%</Badge>
+                      ) : (
+                        <span className="aos-muted" style={{ fontSize: 12 }}>Not attempted</span>
+                      )}
+                    </td>
+                    <td>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        icon="player-play"
+                        onClick={() =>
+                          go("timer", {
+                            paperId: String(p.id),
+                            paperCode: p.code,
+                            paperUnit: p.unit,
+                            paperSession: p.session,
+                          })
+                        }
+                      >
+                        Start
+                      </Button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </Card>
-        </>
-      )}
+          )}
+        </Card>
+      </>
     </div>
   );
 }

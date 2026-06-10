@@ -1,6 +1,39 @@
 # RESTART.md — Session Continuity
 
 ## Current Phase
+**FULL-STACK INTEGRATION COMPLETE — real-data app live (2026-06-10)**
+
+### This session — frontend wired to real databases, end-to-end loop verified
+The full loop runs on real data: select paper → timed session → marking with real
+markscheme → marks saved → mastery updated → dashboard reflects it.
+
+**Backend (`backend/main.py`)** — every endpoint queries a real SQLite DB, zero mock data:
+- Papers, paper questions, single-question detail (with markscheme + examiner)
+- Sessions: POST create, PATCH per-question (time + marks), POST complete
+- `complete_session` aggregates score and updates `progress.db` mastery
+  (`syllabus_completion`) per the spaced-repetition policy, **scoped by subject + module**
+- `/api/dashboard`, `/api/coverage`, `/api/weaknesses` (real module-level aggregation
+  from `session_questions`), `/api/subjects/{id}`, `/api/briefing`, `/api/analytics`
+- Run: `DATA_DIR=<repo>/data uvicorn backend.main:app --port 8000` (DATA_DIR override
+  lets the worktree backend read the main repo's databases)
+
+**Extraction pipelines run (local, no API cost)** — see `scripts/`:
+- `scripts/extract_markschemes.py` → 793 questions now have real markscheme entries
+- `scripts/extract_examiner.py` → 231 reports, 28k observations, 168 misconceptions
+- Matching: exam code + nearest-preceding exam date (handles mark-scheme publication lag)
+
+**Frontend (`frontend/`)** — all primary screens on real hooks (`lib/hooks.ts`),
+skeleton loaders, honest empty states, error states. Build passes (`npm run build`).
+
+**Known data-quality gaps (ingestion pipeline, not the app):**
+- Question extraction sparse on scanned PDFs; marks captured for ~1/2260 (rest default
+  to 0→1), difficulty mostly default 2. `tesseract` not installed → scanned pages skip OCR.
+- Telegram: `.env` still has placeholder token/chat_id. Briefing generation + send code
+  path verified; **live send needs a real bot token from @BotFather**.
+
+---
+
+## Prior Phase Completion Summary
 **ALL PHASES COMPLETE — Production Ready**
 
 ## Phase Completion Summary (2026-06-06)

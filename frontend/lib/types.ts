@@ -203,3 +203,65 @@ export type Route =
   | "weaknesses"
   | "university"
   | "settings";
+
+// ── API response types (real data from backend) ──────────────────────────────
+
+export interface ApiPaper {
+  id: string;
+  code: string;
+  full_code: string;
+  subject: string;
+  unit: string;
+  session: string;
+  year: number;
+  question_count: number;
+  score: number | null;
+  max: number | null;
+  time: number | null;
+  target: number | null;
+  days_ago: number | null;
+}
+
+export interface ApiQuestion {
+  id: string;
+  n: string;
+  marks: number;
+  text: string;
+  latex: string;
+  difficulty: number;
+  has_diagram: boolean;
+  paper_code: string;
+  session: string;
+  subject: string;
+  module_code: string;
+  markscheme: { code: string; text: string }[];
+  examiner: string | null;
+}
+
+export interface DashboardMetrics {
+  total_questions_attempted: number;
+  avg_score: number;
+  sessions: number;
+}
+
+export interface DashboardData {
+  metrics: DashboardMetrics;
+  due_reviews: { topic: string; subject: string; status: string; overdue: boolean }[];
+  examiner_traps: { topic: string; text: string; years: string[]; freq: number }[];
+  question_of_day: {
+    id: string;
+    topic: string;
+    unit: string;
+    marks: number;
+    difficulty: string;
+    text: string;
+  } | null;
+}
+
+export interface SessionParams {
+  paperId?: string;
+  sessionId?: string;
+  paperCode?: string;
+  paperUnit?: string;
+  paperSession?: string;
+}

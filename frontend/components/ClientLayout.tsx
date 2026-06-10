@@ -15,7 +15,7 @@ import { Analytics } from "@/components/screens/Analytics";
 import { Weaknesses } from "@/components/screens/Weaknesses";
 import { University } from "@/components/screens/University";
 import { Settings } from "@/components/screens/Settings";
-import type { Route } from "@/lib/types";
+import type { Route, SessionParams } from "@/lib/types";
 
 function Btn({ children, icon, primary, onClick }: {
   children: ReactNode;
@@ -36,6 +36,7 @@ function Btn({ children, icon, primary, onClick }: {
 
 export function ClientLayout() {
   const [route, setRoute] = useState<Route>("home");
+  const [session, setSession] = useState<SessionParams>({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dark, setDark] = useState(false);
 
@@ -48,18 +49,19 @@ export function ClientLayout() {
     document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
   }, [dark]);
 
-  const go = (r: Route) => {
+  const go = (r: Route, params?: SessionParams) => {
     setRoute(r);
+    if (params) setSession((prev) => ({ ...prev, ...params }));
     setSidebarOpen(false);
   };
 
   const toggleDark = () => setDark((d) => !d);
 
   const TOP_ACTIONS: Partial<Record<Route, ReactNode>> = {
-    home:       <Btn icon="player-play" primary onClick={() => go("timer")}>Start paper</Btn>,
-    timer:      <Btn icon="checkbox" onClick={() => go("marking")}>Go to marking</Btn>,
-    marking:    <Btn icon="player-play" primary onClick={() => go("timer")}>New session</Btn>,
-    subjects:   <Btn icon="player-play" primary onClick={() => go("timer")}>Start paper</Btn>,
+    home:       <Btn icon="player-play" primary onClick={() => go("analytics")}>Start paper</Btn>,
+    timer:      <Btn icon="checkbox" onClick={() => go("marking", session)}>Go to marking</Btn>,
+    marking:    <Btn icon="player-play" primary onClick={() => go("analytics")}>New session</Btn>,
+    subjects:   <Btn icon="player-play" primary onClick={() => go("analytics")}>Start paper</Btn>,
     weaknesses: <Btn icon="notebook" primary onClick={() => go("booklets")}>Generate booklet</Btn>,
     briefing:   <Btn icon="send" onClick={() => go("settings")}>Briefing settings</Btn>,
     tutor:      <Btn icon="plus" onClick={() => go("tutor")}>New chat</Btn>,
@@ -70,8 +72,8 @@ export function ClientLayout() {
     switch (route) {
       case "home":       return <Home go={go} greeting="Good morning, Mouad Maamma." />;
       case "briefing":   return <Briefing go={go} />;
-      case "timer":      return <Timer go={go} />;
-      case "marking":    return <Marking go={go} />;
+      case "timer":      return <Timer go={go} session={session} />;
+      case "marking":    return <Marking go={go} session={session} />;
       case "subjects":   return <Subjects go={go} />;
       case "questions":  return <QuestionReview go={go} />;
       case "tutor":      return <Tutor />;
