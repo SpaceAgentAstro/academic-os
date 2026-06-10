@@ -69,6 +69,9 @@ async def start_bot() -> None:
     app.add_handler(CommandHandler("briefing", _cmd_briefing))
     app.add_handler(CommandHandler("status", _cmd_status))
     app.add_handler(CommandHandler("coverage", _cmd_coverage))
+    app.add_handler(CommandHandler("quiz", _cmd_quiz))
+    app.add_handler(CommandHandler("revise", _cmd_revise))
+    app.add_handler(CommandHandler("progress", _cmd_progress))
 
     logger.info("Starting Academic OS Telegram bot")
     await app.run_polling()
@@ -89,3 +92,105 @@ async def _cmd_status(update: Any, context: Any) -> None:
 async def _cmd_coverage(update: Any, context: Any) -> None:
     from briefing.generator import _section2_curriculum_progress
     await update.message.reply_text(_section2_curriculum_progress(), parse_mode="Markdown")
+
+
+async def _cmd_quiz(update: Any, context: Any) -> None:
+    """Return a single practice question from the question bank.
+
+    Usage: /quiz [subject]
+    Subject defaults to Mathematics when not specified.
+    """
+    from agents.delivery.retrieval_agent import get_questions
+
+    args = context.args if context.args else []
+    subject = " ".join(args).strip().title() if args else "Mathematics"
+
+    questions = get_questions(subject=subject, limit=1)
+    if not questions:
+        await update.message.reply_text(
+            f"No questions found for *{subject}*. Ingest past papers first.",
+            parse_mode="Markdown",
+        )
+        return
+
+    q = questions[0]
+    text = (
+        f"*Quiz — {subject}*\n"
+        f"_{q.get('paper_code', '?')} {q.get('session', '')} · "
+        f"Q{q['question_number']} · {q.get('marks', '?')} marks · "
+        f"Difficulty {q.get('difficulty', '?')}/5_\n\n"
+        f"{q.get('raw_text') or q.get('latex_text') or '(No question text extracted)'}"
+    )
+    await update.message.reply_text(text, parse_mode="Markdown")
+
+
+async def _cmd_revise(update: Any, context: Any) -> None:
+    """Build and send a revision pack for a subject.
+
+    Usage: /revise [subject]
+    Subject defaults to Mathematics when not specified.
+    """
+    from agents.delivery.revision_agent import build_revision_pack
+
+    args = context.args if context.args else []
+    subject = " ".join(args).strip().title() if args else "Mathematics"
+
+    pack = build_revision_pack(subject=subject, max_questions=10)
+
+    if not pack.questions:
+        await update.message.reply_text(
+            f"No questions available for *{subject}*. Ingest past papers first.",
+            parse_mode="Markdown",
+        )
+        return
+
+    marks = sum(q.get("marks", 0) for q in pack.questions)
+    topics = ", ".join(pack.focus_topics[:3]) or "General"
+    lines = [
+        f"*Revision Pack — {subject}*",
+        f"_{len(pack.questions)} questions · {marks} marks · "
+        f"~{pack.estimated_duration_minutes} min_",
+        f"Focus: {topics}",
+    ]
+
+    if pack.misconception_reminders:
+        lines.append(f"\n⚠️ *Watch out:* {pack.misconception_reminders[0][:120]}")
+
+    lines.append("\n*Questions:*")
+    for q in pack.questions:
+        code = q.get("paper_code", "?")
+        session = q.get("session", "")
+        lines.append(
+            f"• Q{q['question_number']} · {code} {session} · "
+            f"{q.get('marks', '?')} marks · diff {q.get('difficulty', '?')}/5"
+        )
+
+    await update.message.reply_text("\n".join(lines), parse_mode="Markdown")
+
+
+async def _cmd_progress(update: Any, context: Any) -> None:
+    """Show specification coverage per module for all subjects."""
+    from agents.infrastructure.curriculum_agent import get_specification_coverage
+
+    subjects = [
+        ("Mathematics", "MATH"),
+        ("Further Mathematics", "FM"),
+        ("Physics", "PHY"),
+        ("Chemistry", "CHEM"),
+        ("Computer Science", "CS"),
+    ]
+
+    lines = ["*Curriculum Progress*"]
+    for subject, _code in subjects:
+        try:
+            coverage = get_specification_coverage(subject)
+            if coverage:
+                parts = [f"{mod}: {pct}%" for mod, pct in sorted(coverage.items())]
+                avg = round(sum(coverage.values()) / len(coverage), 1)
+                lines.append(f"• *{subject}* (avg {avg}%): {', '.join(parts)}")
+            else:
+                lines.append(f"• *{subject}*: No syllabus data — run seed_syllabus.py")
+        except Exception as exc:
+            lines.append(f"• *{subject}*: Error — {exc}")
+
+    await update.message.reply_text("\n".join(lines), parse_mode="Markdown")

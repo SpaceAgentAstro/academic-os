@@ -33,20 +33,20 @@
 - [P2] Implement Past Paper Agent: question boundary detection
 - [P2] Implement Past Paper Agent: question-to-spec-point mapping logic
 
-## Phase 3 — Planned
+## Phase 3 — Complete ✅ (2026-06-09)
 
-- [P3] Implement Markscheme Agent: M/A/B/E/Q mark type parsing
-- [P3] Implement Markscheme Agent: alternative method extraction
-- [P3] Implement Markscheme Agent: follow-through rule detection
-- [P3] Implement Examiner Report Agent: observation extraction
-- [P3] Implement Examiner Report Agent: misconception detection
-- [P3] Implement Diagram Agent: diagram boundary detection in extracted images
-- [P3] Implement Diagram Agent: Physics diagram classifier (circuits, fields, mechanics, vectors)
-- [P3] Implement Diagram Agent: Chemistry diagram classifier (mechanisms, spectra, molecules)
-- [P3] Implement Diagram Agent: CS diagram classifier (logic gates, flowcharts, network, architecture)
-- [P3] Implement Diagram Agent: Maths diagram classifier (graphs, geometry)
-- [P3] Implement Misconception Agent: cross-source aggregation from examiner reports
-- [P3] Implement Misconception Agent: corrective intervention generator
+- ~~[P3] Implement Markscheme Agent: M/A/B/E/Q mark type parsing~~
+- ~~[P3] Implement Markscheme Agent: alternative method extraction~~
+- ~~[P3] Implement Markscheme Agent: follow-through rule detection~~
+- ~~[P3] Implement Examiner Report Agent: observation extraction~~
+- ~~[P3] Implement Examiner Report Agent: misconception detection~~
+- ~~[P3] Implement Diagram Agent: diagram boundary detection in extracted images~~
+- ~~[P3] Implement Diagram Agent: Physics diagram classifier (circuits, fields, mechanics, vectors)~~
+- ~~[P3] Implement Diagram Agent: Chemistry diagram classifier (mechanisms, spectra, molecules)~~
+- ~~[P3] Implement Diagram Agent: CS diagram classifier (logic gates, flowcharts, network, architecture)~~
+- ~~[P3] Implement Diagram Agent: Maths diagram classifier (graphs, geometry)~~
+- ~~[P3] Implement Misconception Agent: cross-source aggregation from examiner reports~~
+- ~~[P3] Implement Misconception Agent: corrective intervention generator~~
 
 ## Phase 4 — Planned
 
@@ -59,22 +59,22 @@
 - [P4] Implement Analytics Agent: mastery score calculation
 - [P4] Implement Analytics Agent: trend detection (improving / declining / stagnant)
 
-## Phase 5 — Planned
+## Phase 5 — Complete ✅ (2026-06-09)
 
-- [P5] Implement Curriculum Agent: syllabus coverage tracker
-- [P5] Implement Curriculum Agent: specification point completion workflow
-- [P5] Implement Curriculum Agent: topic scheduling with spaced repetition
-- [P5] Implement Curriculum Agent: confirmation-gated progression
-- [P5] Write complete syllabus specification for all 5 subjects in structured JSON
+- ~~[P5] Implement Curriculum Agent: syllabus coverage tracker~~
+- ~~[P5] Implement Curriculum Agent: specification point completion workflow~~
+- ~~[P5] Implement Curriculum Agent: topic scheduling with spaced repetition~~
+- ~~[P5] Implement Curriculum Agent: confirmation-gated progression~~
+- ~~[P5] Write complete syllabus specification for all 5 subjects in structured JSON~~
 
-## Phase 6 — Planned
+## Phase 6 — Complete ✅ (2026-06-09)
 
-- [P6] Implement Telegram Agent: bot setup and command routing
-- [P6] Implement Telegram Agent: daily briefing delivery
-- [P6] Implement Telegram Agent: interactive revision commands (/quiz, /revise, /progress)
-- [P6] Implement Scheduler Agent: daily briefing trigger (configurable time)
-- [P6] Implement Scheduler Agent: paper processing trigger (on new file detection)
-- [P6] Implement Briefing Generator: all 4 sections (Academic Intelligence, Curriculum Progress, Adaptive Revision, System Status)
+- ~~[P6] Implement Telegram Agent: bot setup and command routing~~
+- ~~[P6] Implement Telegram Agent: daily briefing delivery~~
+- ~~[P6] Implement Telegram Agent: interactive revision commands (/quiz, /revise, /progress)~~
+- ~~[P6] Implement Scheduler Agent: daily briefing trigger (configurable time)~~
+- ~~[P6] Implement Scheduler Agent: paper processing trigger (on new file detection)~~
+- ~~[P6] Implement Briefing Generator: all 4 sections (Academic Intelligence, Curriculum Progress, Adaptive Revision, System Status)~~
 
 ## Technical Debt
 

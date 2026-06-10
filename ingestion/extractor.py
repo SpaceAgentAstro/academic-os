@@ -131,9 +131,23 @@ def extract_markscheme_blocks(raw_text: str) -> list[dict[str, Any]]:
 
 
 def _parse_mark_lines(q_num: str, body: str) -> list[dict[str, Any]]:
+    """Parse mark lines, detecting alternative methods and inline alternatives.
+
+    Each entry dict gains:
+    - alternatives: list[str]  — accepted alternative phrasings (from "accept" / "oe")
+    - required_terms: list[str] — phrases that must appear in the student's answer
+    - is_alternative_method: bool — True for entries after an "OR" separator line
+    """
     entries: list[dict[str, Any]] = []
     seq = 1
+    is_alt_method = False
+
     for line in body.splitlines():
+        # Detect OR / Alternative Method separator
+        if _ALT_METHOD_SEP.match(line):
+            is_alt_method = True
+            continue
+
         m = _MARK_TYPE_LINE.match(line)
         if m:
             raw_type = m.group(1)
@@ -148,8 +162,12 @@ def _parse_mark_lines(q_num: str, body: str) -> list[dict[str, Any]]:
                 "marks_value": marks_val,
                 "description": description,
                 "conditionality": conditionality,
+                "alternatives": extract_alternatives(description),
+                "required_terms": extract_required_terms(description),
+                "is_alternative_method": is_alt_method,
             })
             seq += 1
+
     return entries
 
 
@@ -168,6 +186,64 @@ def _extract_conditionality(line: str) -> str | None:
     if "ft" in lower or "follow" in lower:
         return "follow_through"
     return None
+
+
+# Patterns for inline alternative answers within a mark description.
+# Matches: "(oe)", "or equivalent", "accept x or y", "accept: ..."
+_INLINE_ALT = re.compile(
+    r"\(oe\)|or equivalent\b|isw\b|"
+    r"accept[s]?\s*[:\-]?\s*([^,;.]{3,80})",
+    re.I,
+)
+
+# Required term patterns: "must include", "must state", "must use", "key word(s): x"
+_REQUIRED_TERM = re.compile(
+    r"(?:must\s+(?:include|state|use|mention|write)\s+)['\"]?([^,;.\"']{3,60})|"
+    r"key\s+words?\s*:\s*([^,;.]{3,60})",
+    re.I,
+)
+
+
+def extract_alternatives(description: str) -> list[str]:
+    """Extract accepted alternative answers/phrasings from a mark description.
+
+    Returns a list of alternative strings (may be empty).
+    """
+    alts: list[str] = []
+    if re.search(r"\(oe\)|or equivalent\b|isw\b", description, re.I):
+        alts.append("(oe) — any equivalent correct form accepted")
+    for m in _INLINE_ALT.finditer(description):
+        text = m.group(1)
+        if text:
+            alts.append(text.strip())
+    # Deduplicate while preserving order
+    seen: set[str] = set()
+    unique: list[str] = []
+    for a in alts:
+        if a not in seen:
+            seen.add(a)
+            unique.append(a)
+    return unique
+
+
+def extract_required_terms(description: str) -> list[str]:
+    """Extract required terms/phrases from a mark description.
+
+    Returns a list of required term strings (may be empty).
+    """
+    terms: list[str] = []
+    for m in _REQUIRED_TERM.finditer(description):
+        text = m.group(1) or m.group(2)
+        if text:
+            terms.append(text.strip())
+    return terms
+
+
+# Separator indicating an alternative method in a mark scheme body
+_ALT_METHOD_SEP = re.compile(
+    r"^\s*(?:OR|or|Alternative\s+[Mm]ethod|Alt\.?\s+[Mm]ethod)\s*[:\-]?\s*$",
+    re.MULTILINE,
+)
 
 
 def extract_report_observations(raw_text: str) -> list[dict[str, Any]]:

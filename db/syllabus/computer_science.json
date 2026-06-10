@@ -1,0 +1,316 @@
+{
+  "subject": {
+    "name": "Computer Science",
+    "board": "Cambridge International",
+    "qualification": "AS & A Level",
+    "code": "CS"
+  },
+  "modules": [
+    {
+      "name": "Theory Fundamentals",
+      "code": "P1",
+      "sequence": 1,
+      "topics": [
+        {
+          "name": "Information Representation",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Number Systems",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Convert between denary, binary, and hexadecimal number representations"},
+                {"spec_ref": "1.1.2", "description": "Perform binary addition and subtraction; use two's complement for negative numbers"},
+                {"spec_ref": "1.1.3", "description": "Understand overflow and its detection"},
+                {"spec_ref": "1.1.4", "description": "Represent and manipulate binary fractions; understand fixed-point and floating-point formats"},
+                {"spec_ref": "1.1.5", "description": "Understand normalisation of floating-point numbers; explain rounding errors and underflow/overflow"}
+              ]
+            },
+            {
+              "name": "Character and Multimedia Encoding",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "1.2.1", "description": "Know ASCII and Unicode character encoding; understand the need for Unicode"},
+                {"spec_ref": "1.2.2", "description": "Describe how images are represented using pixels, bit depth, resolution, and colour depth"},
+                {"spec_ref": "1.2.3", "description": "Describe how sound is represented using sampling rate, sample resolution, and the ADC process"},
+                {"spec_ref": "1.2.4", "description": "Describe lossless and lossy compression; explain run-length encoding (RLE)"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Communication and Networking",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Network Fundamentals",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Describe LAN, WAN, and the Internet; distinguish between bus, star, and mesh topologies"},
+                {"spec_ref": "2.1.2", "description": "Understand client-server and peer-to-peer models"},
+                {"spec_ref": "2.1.3", "description": "Explain the purpose of protocols: TCP/IP, HTTP, FTP, SMTP, POP3"},
+                {"spec_ref": "2.1.4", "description": "Describe the TCP/IP four-layer model; explain the role of each layer"}
+              ]
+            },
+            {
+              "name": "Security and Encryption",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "2.2.1", "description": "Explain symmetric and asymmetric encryption; describe public and private key use"},
+                {"spec_ref": "2.2.2", "description": "Describe digital certificates and digital signatures"},
+                {"spec_ref": "2.2.3", "description": "Identify common security threats: malware, phishing, man-in-the-middle, SQL injection"},
+                {"spec_ref": "2.2.4", "description": "Describe firewall types, intrusion detection, and other security measures"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Hardware",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Processor Architecture",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Describe the von Neumann architecture: ALU, CU, registers, buses"},
+                {"spec_ref": "3.1.2", "description": "Explain the fetch-decode-execute cycle in detail"},
+                {"spec_ref": "3.1.3", "description": "Understand factors affecting processor performance: clock speed, cores, cache, pipelining"},
+                {"spec_ref": "3.1.4", "description": "Describe RISC vs CISC architectures; understand Harvard architecture"}
+              ]
+            },
+            {
+              "name": "Memory and Storage",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "3.2.1", "description": "Distinguish between RAM and ROM; describe the memory hierarchy"},
+                {"spec_ref": "3.2.2", "description": "Explain the purpose of cache memory (L1, L2, L3) and virtual memory"},
+                {"spec_ref": "3.2.3", "description": "Compare primary, secondary, and tertiary storage; compare storage media (HDD, SSD, optical)"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Software",
+          "sequence": 4,
+          "subtopics": [
+            {
+              "name": "Operating Systems",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "4.1.1", "description": "Describe the functions of an operating system: process management, memory management, file management"},
+                {"spec_ref": "4.1.2", "description": "Explain process scheduling algorithms: round robin, shortest job first, priority scheduling"},
+                {"spec_ref": "4.1.3", "description": "Understand interrupts and their role in processor management"}
+              ]
+            },
+            {
+              "name": "Translators",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "4.2.1", "description": "Distinguish between assemblers, compilers, and interpreters"},
+                {"spec_ref": "4.2.2", "description": "Describe the stages of compilation: lexical analysis, syntax analysis, semantic analysis, code generation, optimisation"},
+                {"spec_ref": "4.2.3", "description": "Understand the role of a linker and a loader"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fundamental Problem-solving and Programming",
+      "code": "P2",
+      "sequence": 2,
+      "topics": [
+        {
+          "name": "Algorithm Design and Problem Solving",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Computational Thinking",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Decompose a problem into smaller sub-problems"},
+                {"spec_ref": "1.1.2", "description": "Apply abstraction to identify relevant features and ignore irrelevant detail"},
+                {"spec_ref": "1.1.3", "description": "Construct structure diagrams, flowcharts, and pseudocode to represent algorithms"}
+              ]
+            },
+            {
+              "name": "Standard Algorithms",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "1.2.1", "description": "Implement and analyse linear search and binary search"},
+                {"spec_ref": "1.2.2", "description": "Implement and analyse bubble sort and merge sort"},
+                {"spec_ref": "1.2.3", "description": "Trace recursive algorithms; write recursive solutions for standard problems"},
+                {"spec_ref": "1.2.4", "description": "Express time complexity using Big-O notation: O(1), O(log n), O(n), O(n log n), O(n²)"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Data Structures",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Arrays and Linked Lists",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Use 1D and 2D arrays; traverse, search, and update elements"},
+                {"spec_ref": "2.1.2", "description": "Describe and implement singly-linked and doubly-linked lists: insertion, deletion, traversal"},
+                {"spec_ref": "2.1.3", "description": "Compare arrays and linked lists for different use cases"}
+              ]
+            },
+            {
+              "name": "Stacks and Queues",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "2.2.1", "description": "Describe and implement a stack using an array; implement push, pop, peek, isEmpty"},
+                {"spec_ref": "2.2.2", "description": "Describe and implement a queue (linear and circular) using an array"},
+                {"spec_ref": "2.2.3", "description": "Apply stacks to: function call management, expression evaluation (postfix), undo operations"},
+                {"spec_ref": "2.2.4", "description": "Apply queues to: scheduling, I/O buffering, breadth-first search"}
+              ]
+            },
+            {
+              "name": "Trees and Hash Tables",
+              "sequence": 3,
+              "spec_points": [
+                {"spec_ref": "2.3.1", "description": "Describe the structure of binary trees; implement insertion and search"},
+                {"spec_ref": "2.3.2", "description": "Perform and implement pre-order, in-order, and post-order tree traversal"},
+                {"spec_ref": "2.3.3", "description": "Describe hash tables: hash functions, collision resolution (chaining, open addressing)"},
+                {"spec_ref": "2.3.4", "description": "Analyse worst-case and average-case performance of hash table operations"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Programming",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Programming Concepts",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Use variables, constants, data types, assignment, arithmetic and Boolean expressions"},
+                {"spec_ref": "3.1.2", "description": "Use sequence, selection (IF, CASE/SWITCH), and iteration (FOR, WHILE, REPEAT-UNTIL)"},
+                {"spec_ref": "3.1.3", "description": "Define and call procedures and functions; understand parameter passing (by value and reference)"},
+                {"spec_ref": "3.1.4", "description": "Understand scope: local vs global variables"}
+              ]
+            },
+            {
+              "name": "File Handling and Exception Handling",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "3.2.1", "description": "Open, read, write, and close text files in programs"},
+                {"spec_ref": "3.2.2", "description": "Handle runtime errors using exception handling constructs (try/except)"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Advanced Theory",
+      "code": "P3",
+      "sequence": 3,
+      "topics": [
+        {
+          "name": "Further Hardware and Software",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Boolean Algebra and Logic Gates",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Construct and simplify truth tables for logic circuits"},
+                {"spec_ref": "1.1.2", "description": "Apply Boolean algebra laws (De Morgan's theorems, absorption, etc.) to simplify expressions"},
+                {"spec_ref": "1.1.3", "description": "Use Karnaugh maps to simplify Boolean expressions"},
+                {"spec_ref": "1.1.4", "description": "Describe flip-flops (SR, D, JK) and their use in registers"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Computational Thinking and Problem Solving",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Programming Paradigms",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Describe imperative, object-oriented, declarative, and functional programming paradigms"},
+                {"spec_ref": "2.1.2", "description": "Understand OOP concepts: classes, objects, encapsulation, inheritance, polymorphism"},
+                {"spec_ref": "2.1.3", "description": "Describe declarative programming and logical deduction (Prolog-style)"},
+                {"spec_ref": "2.1.4", "description": "Understand functional programming: higher-order functions, map, filter, reduce, immutability"}
+              ]
+            },
+            {
+              "name": "Databases",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "2.2.1", "description": "Understand the relational data model: tables, primary keys, foreign keys"},
+                {"spec_ref": "2.2.2", "description": "Normalise tables to 1NF, 2NF, and 3NF"},
+                {"spec_ref": "2.2.3", "description": "Write SQL queries: SELECT, FROM, WHERE, JOIN, GROUP BY, ORDER BY, INSERT, UPDATE, DELETE"},
+                {"spec_ref": "2.2.4", "description": "Understand the role of a DBMS; describe ACID properties of transactions"}
+              ]
+            },
+            {
+              "name": "Artificial Intelligence",
+              "sequence": 3,
+              "spec_points": [
+                {"spec_ref": "2.3.1", "description": "Describe AI problem-solving approaches: graph traversal (BFS, DFS), A* algorithm"},
+                {"spec_ref": "2.3.2", "description": "Understand machine learning: training data, supervised vs unsupervised learning"},
+                {"spec_ref": "2.3.3", "description": "Describe neural networks at a high level: neurons, layers, weights, activation functions"},
+                {"spec_ref": "2.3.4", "description": "Discuss ethical and social implications of AI"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Further Problem-solving and Programming",
+      "code": "P4",
+      "sequence": 4,
+      "topics": [
+        {
+          "name": "Further Data Structures and Algorithms",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Graphs",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Represent graphs using adjacency matrices and adjacency lists"},
+                {"spec_ref": "1.1.2", "description": "Implement depth-first search (DFS) and breadth-first search (BFS)"},
+                {"spec_ref": "1.1.3", "description": "Apply Dijkstra's algorithm to find shortest paths"},
+                {"spec_ref": "1.1.4", "description": "Describe minimum spanning trees; apply Prim's and Kruskal's algorithms"}
+              ]
+            },
+            {
+              "name": "Abstract Data Types",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "1.2.1", "description": "Define and implement abstract data types: list, stack, queue, dictionary, graph"},
+                {"spec_ref": "1.2.2", "description": "Choose appropriate data structures for specific problems with justification"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Object-Oriented Programming",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Advanced OOP",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Design class hierarchies using inheritance; implement abstract classes and interfaces"},
+                {"spec_ref": "2.1.2", "description": "Apply polymorphism through method overriding"},
+                {"spec_ref": "2.1.3", "description": "Use UML class diagrams to model object-oriented systems"},
+                {"spec_ref": "2.1.4", "description": "Design and implement OOP solutions to substantial problems"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

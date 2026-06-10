@@ -1,4 +1,4 @@
-"""Tests for Phase 3 agents: markscheme, examiner_report, diagram."""
+"""Tests for Phase 3 agents: markscheme, examiner_report, diagram, misconception."""
 from __future__ import annotations
 
 import sqlite3
@@ -194,3 +194,235 @@ def test_process_images_from_paper(diag_db, tmp_path):
 
     rows = diag_db.execute("SELECT * FROM diagrams").fetchall()
     assert len(rows) == 2
+
+
+# ── Extractor: alternative and required-term extraction ──────────────────────
+
+def test_extract_alternatives_oe():
+    from ingestion.extractor import extract_alternatives
+    alts = extract_alternatives("M1: Write the formula (oe)")
+    assert len(alts) == 1
+    assert "oe" in alts[0].lower()
+
+
+def test_extract_alternatives_accept():
+    from ingestion.extractor import extract_alternatives
+    alts = extract_alternatives("B1: Accept 'velocity' or 'speed'")
+    assert any("velocity" in a.lower() or "speed" in a.lower() for a in alts)
+
+
+def test_extract_alternatives_none():
+    from ingestion.extractor import extract_alternatives
+    alts = extract_alternatives("M1: Correct substitution")
+    assert alts == []
+
+
+def test_extract_required_terms():
+    from ingestion.extractor import extract_required_terms
+    terms = extract_required_terms("B1: Must include 'conservation of momentum'")
+    assert len(terms) >= 1
+    assert any("conservation" in t.lower() for t in terms)
+
+
+def test_extract_required_terms_none():
+    from ingestion.extractor import extract_required_terms
+    terms = extract_required_terms("A1: Correct answer 12.0")
+    assert terms == []
+
+
+def test_parse_mark_lines_alt_method_flag():
+    from ingestion.extractor import _parse_mark_lines
+    body = "M1: Primary approach\nA1: Answer\nOR\nM1: Alternative approach\nA1: Alt answer"
+    entries = _parse_mark_lines("1", body)
+    assert len(entries) == 4
+    primary = [e for e in entries if not e["is_alternative_method"]]
+    alts = [e for e in entries if e["is_alternative_method"]]
+    assert len(primary) == 2
+    assert len(alts) == 2
+
+
+def test_parse_mark_lines_alt_method_is_tagged():
+    from ingestion.extractor import _parse_mark_lines
+    body = "M1: First\nOR\nM1: Second"
+    entries = _parse_mark_lines("1", body)
+    alt_entries = [e for e in entries if e["is_alternative_method"]]
+    # The extractor tags the flag; markscheme_agent applies the sequence offset
+    assert len(alt_entries) == 1
+    assert alt_entries[0]["mark_type"] == "M"
+
+
+# ── Markscheme Agent: alternative and ft rule writing ────────────────────────
+
+def _seed_question(ms_db, qb_db) -> int:
+    """Seed a paper + question, returning question_id."""
+    now = "2023-01-01T00:00:00+00:00"
+    qb_db.execute(
+        "INSERT INTO papers (qualification, subject, module_code, paper_code, session, year, "
+        "paper_type, source_file, processed_at) VALUES (?,?,?,?,?,?,?,?,?)",
+        ("Edexcel IAL", "Physics", "Unit 5", "WPH15", "June 2023", 2023, "question_paper", "f.pdf", now),
+    )
+    qb_db.execute(
+        "INSERT INTO questions (paper_id, question_number, marks, difficulty, has_diagram) "
+        "VALUES (1, '3', 5, 3, 0)"
+    )
+    qb_db.commit()
+    # ms_db doesn't have FK enforcement cross-DB in tests
+    ms_db.execute(
+        "INSERT INTO markscheme_entries (question_id, sequence, mark_type, marks_value, description) "
+        "VALUES (1, 1, 'M', 1, 'Write equation V = V0 e^(-t/RC) (oe)')"
+    )
+    ms_db.commit()
+    return 1
+
+
+def test_write_mark_alternative(ms_db, qb_db):
+    from agents.analysis.markscheme_agent import _write_mark_alternative
+    _seed_question(ms_db, qb_db)
+    entry_id = ms_db.execute("SELECT id FROM markscheme_entries LIMIT 1").fetchone()[0]
+    _write_mark_alternative(ms_db, entry_id, "(oe) — any equivalent form", "oe")
+    rows = ms_db.execute("SELECT * FROM mark_alternatives").fetchall()
+    assert len(rows) == 1
+    assert rows[0]["markscheme_entry_id"] == entry_id
+    assert "oe" in rows[0]["alternative_text"].lower()
+
+
+def test_write_mark_alternative_no_duplicate(ms_db, qb_db):
+    from agents.analysis.markscheme_agent import _write_mark_alternative
+    _seed_question(ms_db, qb_db)
+    entry_id = ms_db.execute("SELECT id FROM markscheme_entries LIMIT 1").fetchone()[0]
+    _write_mark_alternative(ms_db, entry_id, "same text")
+    _write_mark_alternative(ms_db, entry_id, "same text")
+    rows = ms_db.execute("SELECT * FROM mark_alternatives").fetchall()
+    assert len(rows) == 1
+
+
+def test_write_required_term(ms_db, qb_db):
+    from agents.analysis.markscheme_agent import _write_required_term
+    _seed_question(ms_db, qb_db)
+    entry_id = ms_db.execute("SELECT id FROM markscheme_entries LIMIT 1").fetchone()[0]
+    _write_required_term(ms_db, entry_id, "exponential decay")
+    rows = ms_db.execute("SELECT * FROM required_terms").fetchall()
+    assert len(rows) == 1
+    assert rows[0]["term"] == "exponential decay"
+    assert rows[0]["is_mandatory"] == 1
+
+
+def test_write_ft_rules(ms_db, qb_db):
+    from agents.analysis.markscheme_agent import MarkEntry, _write_ft_rules
+    _seed_question(ms_db, qb_db)
+    question_id = 1
+    entries = [
+        MarkEntry(sequence=1, mark_type="M", marks_value=1, description="Primary"),
+        MarkEntry(sequence=2, mark_type="A", marks_value=1, description="Answer (ft)",
+                  conditionality="follow_through"),
+    ]
+    _write_ft_rules(ms_db, question_id, entries)
+    rules = ms_db.execute("SELECT * FROM follow_through_rules").fetchall()
+    assert len(rules) == 1
+    assert rules[0]["from_mark_sequence"] == 1
+    assert rules[0]["to_mark_sequence"] == 2
+
+
+def test_write_ft_rules_no_duplicate(ms_db, qb_db):
+    from agents.analysis.markscheme_agent import MarkEntry, _write_ft_rules
+    _seed_question(ms_db, qb_db)
+    entries = [
+        MarkEntry(sequence=1, mark_type="M", marks_value=1, description="Primary"),
+        MarkEntry(sequence=2, mark_type="A", marks_value=1, description="ft mark",
+                  conditionality="follow_through"),
+    ]
+    _write_ft_rules(ms_db, 1, entries)
+    _write_ft_rules(ms_db, 1, entries)  # second call should not duplicate
+    rules = ms_db.execute("SELECT * FROM follow_through_rules").fetchall()
+    assert len(rules) == 1
+
+
+# ── Misconception Agent ───────────────────────────────────────────────────────
+
+def _seed_misconception(er_db) -> int:
+    """Insert a misconception and return its id."""
+    from datetime import date
+    today = date.today().isoformat()
+    er_db.execute(
+        "INSERT INTO misconceptions "
+        "(subject, module_code, topic, description, frequency, last_seen, is_active) "
+        "VALUES (?,?,?,?,?,?,?)",
+        ("Physics", "Unit 5", "Capacitance",
+         "Students drop the negative sign when taking ln of both sides.", 3, today, 1),
+    )
+    er_db.commit()
+    return er_db.execute("SELECT last_insert_rowid()").fetchone()[0]
+
+
+def test_aggregate_misconceptions(er_db):
+    from agents.analysis.misconception_agent import aggregate_misconceptions
+    _seed_misconception(er_db)
+    results = aggregate_misconceptions("Physics", "Unit 5", er_conn=er_db)
+    assert len(results) == 1
+    assert results[0]["topic"] == "Capacitance"
+    assert results[0]["frequency"] == 3
+
+
+def test_aggregate_misconceptions_empty(er_db):
+    from agents.analysis.misconception_agent import aggregate_misconceptions
+    results = aggregate_misconceptions("Chemistry", "Unit 4", er_conn=er_db)
+    assert results == []
+
+
+def test_get_active_misconceptions_no_filter(er_db):
+    from agents.analysis.misconception_agent import get_active_misconceptions
+    _seed_misconception(er_db)
+    results = get_active_misconceptions(er_conn=er_db)
+    assert len(results) == 1
+
+
+def test_get_active_misconceptions_subject_filter(er_db):
+    from agents.analysis.misconception_agent import get_active_misconceptions
+    _seed_misconception(er_db)
+    results = get_active_misconceptions(subject="Chemistry", er_conn=er_db)
+    assert results == []
+    results = get_active_misconceptions(subject="Physics", er_conn=er_db)
+    assert len(results) == 1
+
+
+def test_get_active_misconceptions_limit(er_db):
+    from agents.analysis.misconception_agent import get_active_misconceptions
+    from datetime import date
+    today = date.today().isoformat()
+    for i in range(5):
+        er_db.execute(
+            "INSERT INTO misconceptions "
+            "(subject, module_code, topic, description, frequency, last_seen, is_active) "
+            "VALUES (?,?,?,?,?,?,?)",
+            ("Mathematics", "P2", "Logs", f"Error variant {i}", i + 1, today, 1),
+        )
+    er_db.commit()
+    results = get_active_misconceptions(subject="Mathematics", limit=3, er_conn=er_db)
+    assert len(results) == 3
+
+
+def test_generate_corrective_intervention(er_db):
+    from agents.analysis.misconception_agent import generate_corrective_intervention
+    misc_id = _seed_misconception(er_db)
+    text = generate_corrective_intervention(misc_id, er_conn=er_db)
+    assert isinstance(text, str)
+    assert len(text) > 20
+    assert "Capacitance" in text
+
+
+def test_generate_corrective_intervention_persisted(er_db):
+    from agents.analysis.misconception_agent import generate_corrective_intervention
+    misc_id = _seed_misconception(er_db)
+    text1 = generate_corrective_intervention(misc_id, er_conn=er_db)
+    text2 = generate_corrective_intervention(misc_id, er_conn=er_db)
+    assert text1 == text2
+    rows = er_db.execute(
+        "SELECT * FROM corrective_interventions WHERE misconception_id=?", (misc_id,)
+    ).fetchall()
+    assert len(rows) == 1  # only stored once
+
+
+def test_generate_corrective_intervention_not_found(er_db):
+    from agents.analysis.misconception_agent import generate_corrective_intervention
+    with pytest.raises(ValueError, match="not found"):
+        generate_corrective_intervention(9999, er_conn=er_db)

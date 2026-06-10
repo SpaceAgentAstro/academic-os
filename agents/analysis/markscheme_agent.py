@@ -13,6 +13,9 @@ logger = logging.getLogger(__name__)
 
 MARK_TYPES = frozenset({"M", "A", "B", "E", "Q", "dM", "ddM", "ft"})
 
+# Sequence offset so alternative-method entries don't collide with primary ones
+_ALT_METHOD_SEQ_OFFSET = 100
+
 
 @dataclass
 class MarkEntry:
@@ -23,6 +26,7 @@ class MarkEntry:
     conditionality: str | None = None
     alternatives: list[str] = field(default_factory=list)
     required_terms: list[str] = field(default_factory=list)
+    is_alternative_method: bool = False
 
 
 def parse_markscheme(pdf_path: Path) -> dict[str, list[MarkEntry]]:
@@ -31,6 +35,8 @@ def parse_markscheme(pdf_path: Path) -> dict[str, list[MarkEntry]]:
     raw_entries = extract_markscheme_blocks(full_text)
 
     result: dict[str, list[MarkEntry]] = {}
+    alt_seq_counters: dict[str, int] = {}  # track per-question alt method sequence
+
     for entry in raw_entries:
         q_num = entry["question_number"]
         mark_type = entry["mark_type"]
@@ -38,12 +44,24 @@ def parse_markscheme(pdf_path: Path) -> dict[str, list[MarkEntry]]:
             logger.debug("Unknown mark type '%s' — defaulting to M", mark_type)
             mark_type = "M"
 
+        is_alt = entry.get("is_alternative_method", False)
+        if is_alt:
+            # Assign sequence in the alt-method range (100+)
+            counter = alt_seq_counters.get(q_num, 0) + 1
+            alt_seq_counters[q_num] = counter
+            seq = _ALT_METHOD_SEQ_OFFSET + counter
+        else:
+            seq = entry["sequence"]
+
         me = MarkEntry(
-            sequence=entry["sequence"],
+            sequence=seq,
             mark_type=mark_type,
             marks_value=entry["marks_value"],
             description=entry["description"],
             conditionality=entry.get("conditionality"),
+            alternatives=entry.get("alternatives", []),
+            required_terms=entry.get("required_terms", []),
+            is_alternative_method=is_alt,
         )
         result.setdefault(q_num, []).append(me)
 
@@ -89,6 +107,73 @@ def _write_markscheme_entry(
     return cur.lastrowid  # type: ignore[return-value]
 
 
+def _write_mark_alternative(
+    ms_conn: sqlite3.Connection,
+    entry_id: int,
+    alternative_text: str,
+    note: str | None = None,
+) -> None:
+    """Insert a mark alternative. Silently skips duplicates."""
+    # Check for existing to avoid duplication on re-ingestion
+    exists = ms_conn.execute(
+        "SELECT 1 FROM mark_alternatives WHERE markscheme_entry_id=? AND alternative_text=?",
+        (entry_id, alternative_text),
+    ).fetchone()
+    if not exists:
+        ms_conn.execute(
+            "INSERT INTO mark_alternatives (markscheme_entry_id, alternative_text, note) VALUES (?,?,?)",
+            (entry_id, alternative_text, note),
+        )
+
+
+def _write_required_term(
+    ms_conn: sqlite3.Connection,
+    entry_id: int,
+    term: str,
+) -> None:
+    """Insert a required term. Silently skips duplicates."""
+    exists = ms_conn.execute(
+        "SELECT 1 FROM required_terms WHERE markscheme_entry_id=? AND term=?",
+        (entry_id, term),
+    ).fetchone()
+    if not exists:
+        ms_conn.execute(
+            "INSERT INTO required_terms (markscheme_entry_id, term, is_mandatory) VALUES (?,?,1)",
+            (entry_id, term),
+        )
+
+
+def _write_ft_rules(
+    ms_conn: sqlite3.Connection,
+    question_id: int,
+    entries: list[MarkEntry],
+) -> None:
+    """Write follow-through rules for a question's mark entries.
+
+    For each ft entry, links it to the most recent non-ft preceding entry.
+    """
+    last_primary_seq: int | None = None
+    for entry in sorted(entries, key=lambda e: e.sequence):
+        if entry.conditionality != "follow_through":
+            last_primary_seq = entry.sequence
+            continue
+        if last_primary_seq is None:
+            continue
+        # Avoid duplicate rules
+        exists = ms_conn.execute(
+            """SELECT 1 FROM follow_through_rules
+               WHERE question_id=? AND from_mark_sequence=? AND to_mark_sequence=?""",
+            (question_id, last_primary_seq, entry.sequence),
+        ).fetchone()
+        if not exists:
+            ms_conn.execute(
+                """INSERT INTO follow_through_rules
+                   (question_id, from_mark_sequence, to_mark_sequence, condition)
+                   VALUES (?,?,?,?)""",
+                (question_id, last_primary_seq, entry.sequence, "follow_through"),
+            )
+
+
 def ingest_markscheme(
     pdf_path: Path,
     paper_id: int,
@@ -96,6 +181,12 @@ def ingest_markscheme(
     qb_conn: sqlite3.Connection | None = None,
 ) -> None:
     """Full mark scheme ingestion: parse → link to questions → write to markscheme.db.
+
+    Writes:
+    - markscheme_entries (primary mark entries)
+    - mark_alternatives (oe / accept variants)
+    - required_terms (must-include phrases)
+    - follow_through_rules (ft mark dependencies)
 
     Accepts optional connection arguments for testability (in-memory SQLite).
     """
@@ -114,8 +205,19 @@ def ingest_markscheme(
                     q_num, paper_id,
                 )
                 continue
+
             for entry in entries:
-                _write_markscheme_entry(ms, question_id, entry)
+                entry_id = _write_markscheme_entry(ms, question_id, entry)
+                # Write inline alternative answers / "oe" / "accept" entries
+                for alt in entry.alternatives:
+                    _write_mark_alternative(ms, entry_id, alt)
+                # Write required terms
+                for term in entry.required_terms:
+                    _write_required_term(ms, entry_id, term)
+
+            # Write follow-through dependency rules for this question
+            _write_ft_rules(ms, question_id, entries)
+
         ms.commit()
         logger.info("Mark scheme for paper %d written (%d questions)", paper_id, len(parsed))
 

@@ -1,0 +1,365 @@
+{
+  "subject": {
+    "name": "Physics",
+    "board": "Pearson Edexcel",
+    "qualification": "IAL",
+    "code": "PHY"
+  },
+  "modules": [
+    {
+      "name": "Physics on the Go",
+      "code": "Unit1",
+      "sequence": 1,
+      "topics": [
+        {
+          "name": "Mechanics",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Scalars and Vectors",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Distinguish between scalar and vector quantities with examples"},
+                {"spec_ref": "1.1.2", "description": "Add and subtract vectors by scale drawing and by calculation"},
+                {"spec_ref": "1.1.3", "description": "Resolve a vector into perpendicular components"}
+              ]
+            },
+            {
+              "name": "Kinematics",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "1.2.1", "description": "Define displacement, instantaneous speed/velocity, average speed/velocity, acceleration"},
+                {"spec_ref": "1.2.2", "description": "Use SUVAT equations for uniform acceleration"},
+                {"spec_ref": "1.2.3", "description": "Analyse motion from displacement-time and velocity-time graphs"},
+                {"spec_ref": "1.2.4", "description": "Solve projectile motion problems using components"}
+              ]
+            },
+            {
+              "name": "Dynamics",
+              "sequence": 3,
+              "spec_points": [
+                {"spec_ref": "1.3.1", "description": "State and apply Newton's three laws of motion"},
+                {"spec_ref": "1.3.2", "description": "Define momentum p = mv; state and apply Newton's 2nd law as F = Δp/Δt"},
+                {"spec_ref": "1.3.3", "description": "Apply conservation of momentum to collisions and explosions"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Electric Circuits",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Current, Charge, and Potential Difference",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Define electric current as rate of flow of charge: I = ΔQ/Δt"},
+                {"spec_ref": "2.1.2", "description": "Define potential difference V = W/Q and electromotive force"},
+                {"spec_ref": "2.1.3", "description": "Explain current in terms of electron drift velocity: I = nAve"}
+              ]
+            },
+            {
+              "name": "Resistance and Resistivity",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "2.2.1", "description": "Define resistance R = V/I and state Ohm's law"},
+                {"spec_ref": "2.2.2", "description": "Know and use R = ρL/A; define resistivity"},
+                {"spec_ref": "2.2.3", "description": "Recall and use P = IV = I²R = V²/R"},
+                {"spec_ref": "2.2.4", "description": "Describe the effect of temperature on resistance of metals and NTC thermistors"}
+              ]
+            },
+            {
+              "name": "Series and Parallel Circuits",
+              "sequence": 3,
+              "spec_points": [
+                {"spec_ref": "2.3.1", "description": "Calculate total resistance in series and parallel combinations"},
+                {"spec_ref": "2.3.2", "description": "Apply Kirchhoff's laws to simple circuit analysis"},
+                {"spec_ref": "2.3.3", "description": "Analyse potential divider circuits"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Materials",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Stress, Strain, and Young Modulus",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Define tensile stress, tensile strain, and Young modulus"},
+                {"spec_ref": "3.1.2", "description": "Describe the behaviour of materials under stress: elastic, plastic, fracture"},
+                {"spec_ref": "3.1.3", "description": "Interpret and sketch stress-strain graphs for metals, polymers, and ceramics"},
+                {"spec_ref": "3.1.4", "description": "Calculate energy stored in a stretched material: E = ½Fe = ½kx²"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Physics at Work",
+      "code": "Unit2",
+      "sequence": 2,
+      "topics": [
+        {
+          "name": "Waves",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Wave Properties",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Describe longitudinal and transverse waves; identify crests, troughs, wavelength, frequency, period, amplitude"},
+                {"spec_ref": "1.1.2", "description": "Use v = fλ"},
+                {"spec_ref": "1.1.3", "description": "Describe reflection, refraction, and diffraction of waves"}
+              ]
+            },
+            {
+              "name": "Superposition and Interference",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "1.2.1", "description": "Apply the principle of superposition to construct resultant waves"},
+                {"spec_ref": "1.2.2", "description": "Explain path difference and conditions for constructive/destructive interference"},
+                {"spec_ref": "1.2.3", "description": "Analyse Young's double-slit experiment: λ = ax/D"},
+                {"spec_ref": "1.2.4", "description": "Describe standing waves and explain nodes and antinodes"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Optics",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Refraction and Total Internal Reflection",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Apply Snell's law: n₁ sin θ₁ = n₂ sin θ₂"},
+                {"spec_ref": "2.1.2", "description": "Define refractive index n = c/v"},
+                {"spec_ref": "2.1.3", "description": "Calculate the critical angle and explain total internal reflection"},
+                {"spec_ref": "2.1.4", "description": "Explain the principles of optical fibres"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Quantum Physics",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Photoelectric Effect",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Explain the photoelectric effect and its significance for the quantum model"},
+                {"spec_ref": "3.1.2", "description": "Use E = hf and the equation hf = φ + ½mvmax²"},
+                {"spec_ref": "3.1.3", "description": "Define threshold frequency and work function; explain why wave model fails"},
+                {"spec_ref": "3.1.4", "description": "Describe wave-particle duality; use de Broglie wavelength λ = h/mv"}
+              ]
+            },
+            {
+              "name": "Energy Levels and Spectra",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "3.2.1", "description": "Explain line emission and absorption spectra in terms of energy level transitions"},
+                {"spec_ref": "3.2.2", "description": "Use ΔE = hf for photon emission/absorption"},
+                {"spec_ref": "3.2.3", "description": "Understand the electronvolt as a unit of energy"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Exploring Physics",
+      "code": "Unit3",
+      "sequence": 3,
+      "topics": [
+        {
+          "name": "Practical Skills",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Experimental Design and Measurement",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Plan experiments to test hypotheses, including identification of variables"},
+                {"spec_ref": "1.1.2", "description": "Identify systematic and random errors; understand accuracy and precision"},
+                {"spec_ref": "1.1.3", "description": "Estimate and combine uncertainties using absolute and percentage methods"},
+                {"spec_ref": "1.1.4", "description": "Present data in tables with appropriate significant figures; draw and interpret graphs"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Physics on the Move",
+      "code": "Unit4",
+      "sequence": 4,
+      "topics": [
+        {
+          "name": "Further Mechanics",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Circular Motion",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Define radian; use ω = Δθ/Δt, v = rω, a = v²/r = rω²"},
+                {"spec_ref": "1.1.2", "description": "Apply F = mv²/r and identify centripetal force in context"},
+                {"spec_ref": "1.1.3", "description": "Solve problems involving banking, conical pendulum, and vertical circles"}
+              ]
+            },
+            {
+              "name": "Simple Harmonic Motion",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "1.2.1", "description": "State the defining condition for SHM: a = -ω²x; use x = A cos(ωt)"},
+                {"spec_ref": "1.2.2", "description": "Use v = ±ω√(A²-x²); understand KE-PE interchange in SHM"},
+                {"spec_ref": "1.2.3", "description": "Derive T = 2π√(l/g) for a simple pendulum and T = 2π√(m/k) for a mass-spring system"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Electric and Magnetic Fields",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Electric Fields",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Define electric field strength E = F/Q; draw field line diagrams"},
+                {"spec_ref": "2.1.2", "description": "Apply Coulomb's law F = kQ₁Q₂/r²"},
+                {"spec_ref": "2.1.3", "description": "Know E = kQ/r² for a point charge; E = V/d for a uniform field"},
+                {"spec_ref": "2.1.4", "description": "Define electric potential; use W = QV"}
+              ]
+            },
+            {
+              "name": "Magnetic Fields",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "2.2.1", "description": "Describe magnetic field patterns around wires and solenoids"},
+                {"spec_ref": "2.2.2", "description": "Apply F = BIL sinθ and F = BQv sinθ"},
+                {"spec_ref": "2.2.3", "description": "Explain and apply electromagnetic induction; use Faraday's and Lenz's laws"},
+                {"spec_ref": "2.2.4", "description": "Understand and use transformers: Vs/Vp = Ns/Np"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Nuclear and Particle Physics",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "The Nucleus and Radioactivity",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Describe the composition of the nucleus; define nucleon number, proton number"},
+                {"spec_ref": "3.1.2", "description": "Describe properties of α, β, γ radiation and their interactions with matter"},
+                {"spec_ref": "3.1.3", "description": "Write balanced nuclear equations for decay"},
+                {"spec_ref": "3.1.4", "description": "Explain nuclear stability in terms of N-Z graph"}
+              ]
+            },
+            {
+              "name": "Particle Physics",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "3.2.1", "description": "Describe the quark model; identify up, down, strange quarks and their properties"},
+                {"spec_ref": "3.2.2", "description": "Classify particles as hadrons (baryons, mesons) and leptons"},
+                {"spec_ref": "3.2.3", "description": "Understand lepton number and baryon number conservation"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Physics from Creation to Collapse",
+      "code": "Unit5",
+      "sequence": 5,
+      "topics": [
+        {
+          "name": "Thermal Physics",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Kinetic Theory and Gas Laws",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "State and use Boyle's law, Charles' law, and the pressure law"},
+                {"spec_ref": "1.1.2", "description": "Use the ideal gas equation pV = nRT and pV = NkT"},
+                {"spec_ref": "1.1.3", "description": "Derive and use pV = ⅓Nm<c²>; relate kinetic energy to temperature"},
+                {"spec_ref": "1.1.4", "description": "Distinguish between internal energy, heat, and work"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Nuclear Decay and Radioactivity",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Radioactive Decay",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Define activity A = -dN/dt = λN; state units (Bq)"},
+                {"spec_ref": "2.1.2", "description": "Use N = N₀e^(-λt) and A = A₀e^(-λt)"},
+                {"spec_ref": "2.1.3", "description": "Define and calculate half-life: T½ = ln2/λ"},
+                {"spec_ref": "2.1.4", "description": "Apply radioactive decay to carbon dating and medical tracers"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Astrophysics and Cosmology",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Stars and the Universe",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Describe the Hertzsprung-Russell diagram and stellar evolution"},
+                {"spec_ref": "3.1.2", "description": "Understand luminosity, flux, and the inverse square law"},
+                {"spec_ref": "3.1.3", "description": "Use Wien's displacement law λmax ∝ 1/T and Stefan-Boltzmann law L = 4πr²σT⁴"},
+                {"spec_ref": "3.1.4", "description": "Explain the Big Bang theory and evidence from red shift and CMB"}
+              ]
+            },
+            {
+              "name": "Hubble's Law",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "3.2.1", "description": "State Hubble's law v = H₀d; estimate the age of the universe"},
+                {"spec_ref": "3.2.2", "description": "Explain red shift and use Δλ/λ = v/c"},
+                {"spec_ref": "3.2.3", "description": "Understand the evidence for dark matter and dark energy"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Experimental Physics",
+      "code": "Unit6",
+      "sequence": 6,
+      "topics": [
+        {
+          "name": "Advanced Practical Skills",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Planning and Analysis",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Plan investigations to test relationships, controlling variables"},
+                {"spec_ref": "1.1.2", "description": "Evaluate experimental methods and suggest improvements"},
+                {"spec_ref": "1.1.3", "description": "Carry out detailed error analysis including propagation of uncertainties"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

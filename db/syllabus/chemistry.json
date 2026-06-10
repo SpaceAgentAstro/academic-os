@@ -1,0 +1,323 @@
+{
+  "subject": {
+    "name": "Chemistry",
+    "board": "Pearson Edexcel",
+    "qualification": "IAL",
+    "code": "CHEM"
+  },
+  "modules": [
+    {
+      "name": "The Core Principles of Chemistry",
+      "code": "Unit1",
+      "sequence": 1,
+      "topics": [
+        {
+          "name": "Atomic Structure and the Periodic Table",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Atomic Structure",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Describe the relative charges and masses of protons, neutrons, and electrons"},
+                {"spec_ref": "1.1.2", "description": "Define atomic number, mass number, and isotopes"},
+                {"spec_ref": "1.1.3", "description": "Describe the arrangement of electrons in shells, sub-shells, and orbitals"},
+                {"spec_ref": "1.1.4", "description": "Write electron configurations using s, p, d notation"}
+              ]
+            },
+            {
+              "name": "Periodic Table Trends",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "1.2.1", "description": "Explain trends in atomic radius, ionisation energy, and electronegativity across periods and down groups"},
+                {"spec_ref": "1.2.2", "description": "Explain successive ionisation energies and their relationship to electronic structure"},
+                {"spec_ref": "1.2.3", "description": "Describe properties and reactions of elements in Groups 1, 2, and 7"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Bonding and Structure",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Types of Bonding",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Describe ionic bonding and the formation of ionic compounds"},
+                {"spec_ref": "2.1.2", "description": "Describe covalent bonding (including co-ordinate/dative covalent bonds)"},
+                {"spec_ref": "2.1.3", "description": "Describe metallic bonding and its relationship to physical properties"},
+                {"spec_ref": "2.1.4", "description": "Predict the shape of molecules using VSEPR theory"}
+              ]
+            },
+            {
+              "name": "Intermolecular Forces",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "2.2.1", "description": "Describe van der Waals forces, permanent dipole-dipole forces, and hydrogen bonding"},
+                {"spec_ref": "2.2.2", "description": "Explain the anomalous properties of water in terms of hydrogen bonding"},
+                {"spec_ref": "2.2.3", "description": "Explain trends in boiling points of molecules in terms of intermolecular forces"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Formulae, Equations, and Moles",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Moles and Calculations",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Use the concept of the mole and Avogadro's constant"},
+                {"spec_ref": "3.1.2", "description": "Calculate molar masses; convert between mass, moles, and number of particles"},
+                {"spec_ref": "3.1.3", "description": "Calculate amounts using the ideal gas equation pV = nRT"},
+                {"spec_ref": "3.1.4", "description": "Perform reacting quantities calculations using balanced equations"},
+                {"spec_ref": "3.1.5", "description": "Calculate percentage yield and atom economy"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Energetics",
+          "sequence": 4,
+          "subtopics": [
+            {
+              "name": "Enthalpy Changes",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "4.1.1", "description": "Define standard enthalpy changes: formation, combustion, neutralisation"},
+                {"spec_ref": "4.1.2", "description": "Apply Hess's law and use energy cycles (Born-Haber at A2 level)"},
+                {"spec_ref": "4.1.3", "description": "Use bond enthalpies to estimate ΔH for reactions"},
+                {"spec_ref": "4.1.4", "description": "Calculate enthalpy changes from calorimetry data using q = mcΔT"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Application of Core Principles of Chemistry",
+      "code": "Unit2",
+      "sequence": 2,
+      "topics": [
+        {
+          "name": "Kinetics",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Rate of Reaction",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Define rate of reaction; describe factors affecting rate"},
+                {"spec_ref": "1.1.2", "description": "Explain collision theory and the effect of temperature on rate"},
+                {"spec_ref": "1.1.3", "description": "Draw and interpret Maxwell-Boltzmann distribution curves"},
+                {"spec_ref": "1.1.4", "description": "Explain the role of catalysts in lowering activation energy"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Equilibria",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Dynamic Equilibrium",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Explain dynamic equilibrium and Le Chatelier's principle"},
+                {"spec_ref": "2.1.2", "description": "Write expressions for Kc and calculate values with units"},
+                {"spec_ref": "2.1.3", "description": "Explain how changes in temperature, pressure, and concentration affect Kc"},
+                {"spec_ref": "2.1.4", "description": "Apply equilibrium principles to the Haber process and Contact process"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Organic Chemistry",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Introduction to Organic Chemistry",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Understand nomenclature: IUPAC naming of alkanes, alkenes, halogenoalkanes, alcohols"},
+                {"spec_ref": "3.1.2", "description": "Distinguish between homologous series, functional groups, structural isomers"},
+                {"spec_ref": "3.1.3", "description": "Explain E/Z (cis/trans) isomerism in alkenes"}
+              ]
+            },
+            {
+              "name": "Alkanes and Alkenes",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "3.2.1", "description": "Describe free radical substitution of alkanes (initiation, propagation, termination)"},
+                {"spec_ref": "3.2.2", "description": "Describe electrophilic addition to alkenes (mechanism with curly arrows)"},
+                {"spec_ref": "3.2.3", "description": "Explain Markovnikov's rule for addition to unsymmetrical alkenes"},
+                {"spec_ref": "3.2.4", "description": "Describe the reactions of alkenes with Br₂, HBr, H₂SO₄/H₂O, and H₂"}
+              ]
+            },
+            {
+              "name": "Halogenoalkanes and Alcohols",
+              "sequence": 3,
+              "spec_points": [
+                {"spec_ref": "3.3.1", "description": "Describe nucleophilic substitution of halogenoalkanes (SN1 and SN2 mechanisms)"},
+                {"spec_ref": "3.3.2", "description": "Explain elimination reactions of halogenoalkanes"},
+                {"spec_ref": "3.3.3", "description": "Describe oxidation of primary, secondary, and tertiary alcohols with K₂Cr₂O₇/H₂SO₄"},
+                {"spec_ref": "3.3.4", "description": "Describe dehydration of alcohols and esterification"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Chemistry Laboratory Skills I",
+      "code": "Unit3",
+      "sequence": 3,
+      "topics": [
+        {
+          "name": "Laboratory Techniques",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Practical Skills",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Perform and describe titration procedures with correct technique"},
+                {"spec_ref": "1.1.2", "description": "Describe procedures for synthesis, purification (recrystallisation, distillation), and characterisation"},
+                {"spec_ref": "1.1.3", "description": "Identify chemical substances using tests: flame tests, precipitate reactions, gas tests"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "General Principles of Chemistry I",
+      "code": "Unit4",
+      "sequence": 4,
+      "topics": [
+        {
+          "name": "Rates, Equilibrium, and pH",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Reaction Orders and Rate Equations",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Determine orders of reaction from experimental data (initial rates and concentration-time graphs)"},
+                {"spec_ref": "1.1.2", "description": "Write and use rate equations: rate = k[A]^m[B]^n"},
+                {"spec_ref": "1.1.3", "description": "Use the Arrhenius equation k = Ae^(-Ea/RT); construct and interpret ln k vs 1/T graphs"},
+                {"spec_ref": "1.1.4", "description": "Propose and test reaction mechanisms consistent with the rate equation"}
+              ]
+            },
+            {
+              "name": "Acids, Bases, and pH",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "1.2.1", "description": "Define Brønsted-Lowry acid and base; identify conjugate pairs"},
+                {"spec_ref": "1.2.2", "description": "Calculate pH from [H⁺]; use Kw = [H⁺][OH⁻] = 1.0×10⁻¹⁴ at 25°C"},
+                {"spec_ref": "1.2.3", "description": "Calculate Ka and pKa; distinguish strong and weak acids"},
+                {"spec_ref": "1.2.4", "description": "Describe buffer solutions and calculate pH of buffers using Ka"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Electrode Potentials and Electrochemistry",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Redox and Electrochemical Cells",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Define oxidation and reduction in terms of electron transfer and oxidation numbers"},
+                {"spec_ref": "2.1.2", "description": "Construct half-equations and overall redox equations"},
+                {"spec_ref": "2.1.3", "description": "Use standard electrode potentials to predict cell EMF and feasibility of reactions"},
+                {"spec_ref": "2.1.4", "description": "Describe fuel cells and rechargeable batteries"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "General Principles of Chemistry II",
+      "code": "Unit5",
+      "sequence": 5,
+      "topics": [
+        {
+          "name": "Transition Metals",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Properties of Transition Metals",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Define transition metals; explain variable oxidation states with examples"},
+                {"spec_ref": "1.1.2", "description": "Describe the formation of complex ions; use ligand and coordination number terminology"},
+                {"spec_ref": "1.1.3", "description": "Explain the colour of transition metal complexes in terms of d-orbital splitting"},
+                {"spec_ref": "1.1.4", "description": "Describe ligand substitution and precipitation reactions of copper and iron complexes"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Further Organic Chemistry",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Carbonyl Compounds",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Describe the reactions of aldehydes and ketones: nucleophilic addition, reduction"},
+                {"spec_ref": "2.1.2", "description": "Distinguish between aldehydes and ketones using Tollens' and Fehling's tests"},
+                {"spec_ref": "2.1.3", "description": "Describe the reactions of carboxylic acids and esters (esterification, hydrolysis)"}
+              ]
+            },
+            {
+              "name": "Amines and Amino Acids",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "2.2.1", "description": "Explain the basicity of amines; describe formation of ammonium salts and amides"},
+                {"spec_ref": "2.2.2", "description": "Describe the properties of amino acids; explain zwitterion formation"},
+                {"spec_ref": "2.2.3", "description": "Describe the formation and hydrolysis of peptide bonds"}
+              ]
+            },
+            {
+              "name": "Polymers and Analysis",
+              "sequence": 3,
+              "spec_points": [
+                {"spec_ref": "2.3.1", "description": "Describe addition polymerisation and condensation polymerisation"},
+                {"spec_ref": "2.3.2", "description": "Interpret mass spectra (molecular ion, base peak, fragmentation patterns)"},
+                {"spec_ref": "2.3.3", "description": "Interpret NMR spectra: chemical shift, integration, splitting patterns"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Chemistry Laboratory Skills II",
+      "code": "Unit6",
+      "sequence": 6,
+      "topics": [
+        {
+          "name": "Advanced Laboratory Work",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Analytical Techniques",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Plan and carry out multi-step syntheses with appropriate safety precautions"},
+                {"spec_ref": "1.1.2", "description": "Apply analytical methods (chromatography, spectroscopy) to identify substances"},
+                {"spec_ref": "1.1.3", "description": "Evaluate experimental procedures and suggest modifications to improve accuracy"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
