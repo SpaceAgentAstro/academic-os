@@ -1,0 +1,149 @@
+{
+  "subject": "Chemistry",
+  "module_code": "Unit1",
+  "module_name": "The Core Principles of Chemistry",
+  "topics": [
+    {
+      "name": "Atomic Structure and the Periodic Table",
+      "subtopics": [
+        {
+          "name": "Atomic Structure",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Describe the relative charges and masses of protons, neutrons, and electrons"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Define atomic number, mass number, and isotopes"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Describe the arrangement of electrons in shells, sub-shells, and orbitals"
+            },
+            {
+              "spec_ref": "1.1.4",
+              "description": "Write electron configurations using s, p, d notation"
+            }
+          ]
+        },
+        {
+          "name": "Periodic Table Trends",
+          "specification_points": [
+            {
+              "spec_ref": "1.2.1",
+              "description": "Explain trends in atomic radius, ionisation energy, and electronegativity across periods and down groups"
+            },
+            {
+              "spec_ref": "1.2.2",
+              "description": "Explain successive ionisation energies and their relationship to electronic structure"
+            },
+            {
+              "spec_ref": "1.2.3",
+              "description": "Describe properties and reactions of elements in Groups 1, 2, and 7"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bonding and Structure",
+      "subtopics": [
+        {
+          "name": "Types of Bonding",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Describe ionic bonding and the formation of ionic compounds"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Describe covalent bonding (including co-ordinate/dative covalent bonds)"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Describe metallic bonding and its relationship to physical properties"
+            },
+            {
+              "spec_ref": "2.1.4",
+              "description": "Predict the shape of molecules using VSEPR theory"
+            }
+          ]
+        },
+        {
+          "name": "Intermolecular Forces",
+          "specification_points": [
+            {
+              "spec_ref": "2.2.1",
+              "description": "Describe van der Waals forces, permanent dipole-dipole forces, and hydrogen bonding"
+            },
+            {
+              "spec_ref": "2.2.2",
+              "description": "Explain the anomalous properties of water in terms of hydrogen bonding"
+            },
+            {
+              "spec_ref": "2.2.3",
+              "description": "Explain trends in boiling points of molecules in terms of intermolecular forces"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Formulae, Equations, and Moles",
+      "subtopics": [
+        {
+          "name": "Moles and Calculations",
+          "specification_points": [
+            {
+              "spec_ref": "3.1.1",
+              "description": "Use the concept of the mole and Avogadro's constant"
+            },
+            {
+              "spec_ref": "3.1.2",
+              "description": "Calculate molar masses; convert between mass, moles, and number of particles"
+            },
+            {
+              "spec_ref": "3.1.3",
+              "description": "Calculate amounts using the ideal gas equation pV = nRT"
+            },
+            {
+              "spec_ref": "3.1.4",
+              "description": "Perform reacting quantities calculations using balanced equations"
+            },
+            {
+              "spec_ref": "3.1.5",
+              "description": "Calculate percentage yield and atom economy"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Energetics",
+      "subtopics": [
+        {
+          "name": "Enthalpy Changes",
+          "specification_points": [
+            {
+              "spec_ref": "4.1.1",
+              "description": "Define standard enthalpy changes: formation, combustion, neutralisation"
+            },
+            {
+              "spec_ref": "4.1.2",
+              "description": "Apply Hess's law and use energy cycles (Born-Haber at A2 level)"
+            },
+            {
+              "spec_ref": "4.1.3",
+              "description": "Use bond enthalpies to estimate \u0394H for reactions"
+            },
+            {
+              "spec_ref": "4.1.4",
+              "description": "Calculate enthalpy changes from calorimetry data using q = mc\u0394T"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

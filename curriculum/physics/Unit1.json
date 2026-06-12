@@ -1,0 +1,153 @@
+{
+  "subject": "Physics",
+  "module_code": "Unit1",
+  "module_name": "Physics on the Go",
+  "topics": [
+    {
+      "name": "Mechanics",
+      "subtopics": [
+        {
+          "name": "Scalars and Vectors",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Distinguish between scalar and vector quantities with examples"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Add and subtract vectors by scale drawing and by calculation"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Resolve a vector into perpendicular components"
+            }
+          ]
+        },
+        {
+          "name": "Kinematics",
+          "specification_points": [
+            {
+              "spec_ref": "1.2.1",
+              "description": "Define displacement, instantaneous speed/velocity, average speed/velocity, acceleration"
+            },
+            {
+              "spec_ref": "1.2.2",
+              "description": "Use SUVAT equations for uniform acceleration"
+            },
+            {
+              "spec_ref": "1.2.3",
+              "description": "Analyse motion from displacement-time and velocity-time graphs"
+            },
+            {
+              "spec_ref": "1.2.4",
+              "description": "Solve projectile motion problems using components"
+            }
+          ]
+        },
+        {
+          "name": "Dynamics",
+          "specification_points": [
+            {
+              "spec_ref": "1.3.1",
+              "description": "State and apply Newton's three laws of motion"
+            },
+            {
+              "spec_ref": "1.3.2",
+              "description": "Define momentum p = mv; state and apply Newton's 2nd law as F = \u0394p/\u0394t"
+            },
+            {
+              "spec_ref": "1.3.3",
+              "description": "Apply conservation of momentum to collisions and explosions"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Electric Circuits",
+      "subtopics": [
+        {
+          "name": "Current, Charge, and Potential Difference",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Define electric current as rate of flow of charge: I = \u0394Q/\u0394t"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Define potential difference V = W/Q and electromotive force"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Explain current in terms of electron drift velocity: I = nAve"
+            }
+          ]
+        },
+        {
+          "name": "Resistance and Resistivity",
+          "specification_points": [
+            {
+              "spec_ref": "2.2.1",
+              "description": "Define resistance R = V/I and state Ohm's law"
+            },
+            {
+              "spec_ref": "2.2.2",
+              "description": "Know and use R = \u03c1L/A; define resistivity"
+            },
+            {
+              "spec_ref": "2.2.3",
+              "description": "Recall and use P = IV = I\u00b2R = V\u00b2/R"
+            },
+            {
+              "spec_ref": "2.2.4",
+              "description": "Describe the effect of temperature on resistance of metals and NTC thermistors"
+            }
+          ]
+        },
+        {
+          "name": "Series and Parallel Circuits",
+          "specification_points": [
+            {
+              "spec_ref": "2.3.1",
+              "description": "Calculate total resistance in series and parallel combinations"
+            },
+            {
+              "spec_ref": "2.3.2",
+              "description": "Apply Kirchhoff's laws to simple circuit analysis"
+            },
+            {
+              "spec_ref": "2.3.3",
+              "description": "Analyse potential divider circuits"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Materials",
+      "subtopics": [
+        {
+          "name": "Stress, Strain, and Young Modulus",
+          "specification_points": [
+            {
+              "spec_ref": "3.1.1",
+              "description": "Define tensile stress, tensile strain, and Young modulus"
+            },
+            {
+              "spec_ref": "3.1.2",
+              "description": "Describe the behaviour of materials under stress: elastic, plastic, fracture"
+            },
+            {
+              "spec_ref": "3.1.3",
+              "description": "Interpret and sketch stress-strain graphs for metals, polymers, and ceramics"
+            },
+            {
+              "spec_ref": "3.1.4",
+              "description": "Calculate energy stored in a stretched material: E = \u00bdFe = \u00bdkx\u00b2"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

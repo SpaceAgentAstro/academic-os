@@ -1,0 +1,29 @@
+{
+  "subject": "Chemistry",
+  "module_code": "Unit6",
+  "module_name": "Chemistry Laboratory Skills II",
+  "topics": [
+    {
+      "name": "Advanced Laboratory Work",
+      "subtopics": [
+        {
+          "name": "Analytical Techniques",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Plan and carry out multi-step syntheses with appropriate safety precautions"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Apply analytical methods (chromatography, spectroscopy) to identify substances"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Evaluate experimental procedures and suggest modifications to improve accuracy"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

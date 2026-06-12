@@ -1,0 +1,29 @@
+{
+  "subject": "Physics",
+  "module_code": "Unit6",
+  "module_name": "Experimental Physics",
+  "topics": [
+    {
+      "name": "Advanced Practical Skills",
+      "subtopics": [
+        {
+          "name": "Planning and Analysis",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Plan investigations to test relationships, controlling variables"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Evaluate experimental methods and suggest improvements"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Carry out detailed error analysis including propagation of uncertainties"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

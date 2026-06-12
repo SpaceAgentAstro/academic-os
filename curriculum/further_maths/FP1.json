@@ -1,0 +1,146 @@
+{
+  "subject": "Further Mathematics",
+  "module_code": "FP1",
+  "module_name": "Further Pure Mathematics 1",
+  "topics": [
+    {
+      "name": "Complex Numbers",
+      "subtopics": [
+        {
+          "name": "Argand Diagram and Modulus-Argument Form",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Represent complex numbers on an Argand diagram"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Convert between Cartesian form a+bi and modulus-argument form r(cos\u03b8 + i sin\u03b8)"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Multiply and divide complex numbers in modulus-argument form"
+            },
+            {
+              "spec_ref": "1.1.4",
+              "description": "Find loci in the Argand diagram: |z - a| = r, arg(z - a) = \u03b8"
+            }
+          ]
+        },
+        {
+          "name": "De Moivre's Theorem",
+          "specification_points": [
+            {
+              "spec_ref": "1.2.1",
+              "description": "State and use De Moivre's theorem: [r(cos\u03b8 + i sin\u03b8)]\u207f = r\u207f(cosn\u03b8 + i sinn\u03b8)"
+            },
+            {
+              "spec_ref": "1.2.2",
+              "description": "Use De Moivre's theorem to find roots of complex numbers"
+            },
+            {
+              "spec_ref": "1.2.3",
+              "description": "Express trigonometric identities for cos\u207f\u03b8 and sin\u207f\u03b8 using De Moivre's theorem"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Series",
+      "subtopics": [
+        {
+          "name": "Summation of Series",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Know and use \u03a3r = n(n+1)/2, \u03a3r\u00b2 = n(n+1)(2n+1)/6, \u03a3r\u00b3 = [n(n+1)/2]\u00b2"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Use the method of differences to sum series"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Prove summation results by induction"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Matrices",
+      "subtopics": [
+        {
+          "name": "Matrix Operations and Transformations",
+          "specification_points": [
+            {
+              "spec_ref": "3.1.1",
+              "description": "Add, subtract, and multiply matrices; understand non-commutativity"
+            },
+            {
+              "spec_ref": "3.1.2",
+              "description": "Find the inverse of a 2\u00d72 matrix; know det(AB) = det(A)\u00d7det(B)"
+            },
+            {
+              "spec_ref": "3.1.3",
+              "description": "Use matrices to represent 2D linear transformations: rotations, reflections, enlargements, shears"
+            },
+            {
+              "spec_ref": "3.1.4",
+              "description": "Find the eigenvalues and eigenvectors of 2\u00d72 matrices"
+            },
+            {
+              "spec_ref": "3.1.5",
+              "description": "Diagonalise 2\u00d72 matrices where possible"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Proof by Induction",
+      "subtopics": [
+        {
+          "name": "Mathematical Induction",
+          "specification_points": [
+            {
+              "spec_ref": "4.1.1",
+              "description": "Prove results for series by mathematical induction"
+            },
+            {
+              "spec_ref": "4.1.2",
+              "description": "Prove divisibility results by induction"
+            },
+            {
+              "spec_ref": "4.1.3",
+              "description": "Prove matrix power results by induction"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Roots of Polynomial Equations",
+      "subtopics": [
+        {
+          "name": "Symmetric Functions of Roots",
+          "specification_points": [
+            {
+              "spec_ref": "5.1.1",
+              "description": "Use Vieta's formulae for quadratic, cubic, and quartic equations"
+            },
+            {
+              "spec_ref": "5.1.2",
+              "description": "Form new equations whose roots are related to those of a given equation"
+            },
+            {
+              "spec_ref": "5.1.3",
+              "description": "Express symmetric functions (\u03a3\u03b1, \u03a3\u03b1\u03b2, \u03a3\u03b1\u00b2) in terms of coefficients"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+{
+  "subject": "Mathematics",
+  "module_code": "S1",
+  "module_name": "Statistics 1",
+  "topics": [
+    {
+      "name": "Data Presentation and Interpretation",
+      "subtopics": [
+        {
+          "name": "Measures of Location and Spread",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Calculate and interpret mean, median, mode, range, IQR, variance, and standard deviation"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Calculate measures for grouped data"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Understand coding and its effect on mean and standard deviation"
+            }
+          ]
+        },
+        {
+          "name": "Diagrams and Graphs",
+          "specification_points": [
+            {
+              "spec_ref": "1.2.1",
+              "description": "Interpret and draw histograms, box plots, cumulative frequency diagrams"
+            },
+            {
+              "spec_ref": "1.2.2",
+              "description": "Compare distributions using measures and diagrams"
+            },
+            {
+              "spec_ref": "1.2.3",
+              "description": "Identify outliers and skewness"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Probability",
+      "subtopics": [
+        {
+          "name": "Basic Probability",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Use Venn diagrams and tree diagrams to solve probability problems"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Understand mutually exclusive and independent events"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Use the addition law P(A\u222aB) = P(A) + P(B) - P(A\u2229B)"
+            },
+            {
+              "spec_ref": "2.1.4",
+              "description": "Use conditional probability P(A|B) = P(A\u2229B)/P(B)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Correlation and Regression",
+      "subtopics": [
+        {
+          "name": "Regression and Correlation",
+          "specification_points": [
+            {
+              "spec_ref": "3.1.1",
+              "description": "Calculate and interpret the product moment correlation coefficient (PMCC)"
+            },
+            {
+              "spec_ref": "3.1.2",
+              "description": "Find and use the equation of a regression line y on x"
+            },
+            {
+              "spec_ref": "3.1.3",
+              "description": "Understand interpolation, extrapolation, and their limitations"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Discrete Random Variables",
+      "subtopics": [
+        {
+          "name": "Probability Distributions",
+          "specification_points": [
+            {
+              "spec_ref": "4.1.1",
+              "description": "Set up and use probability distribution tables"
+            },
+            {
+              "spec_ref": "4.1.2",
+              "description": "Calculate E(X), Var(X), E(aX+b), Var(aX+b)"
+            }
+          ]
+        },
+        {
+          "name": "Binomial Distribution",
+          "specification_points": [
+            {
+              "spec_ref": "4.2.1",
+              "description": "Recognise and use the binomial distribution B(n, p)"
+            },
+            {
+              "spec_ref": "4.2.2",
+              "description": "Calculate binomial probabilities and use cumulative tables"
+            },
+            {
+              "spec_ref": "4.2.3",
+              "description": "Apply binomial distribution to modelling real situations"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Normal Distribution",
+      "subtopics": [
+        {
+          "name": "The Normal Distribution",
+          "specification_points": [
+            {
+              "spec_ref": "5.1.1",
+              "description": "Understand the Normal distribution N(\u03bc, \u03c3\u00b2) and its properties"
+            },
+            {
+              "spec_ref": "5.1.2",
+              "description": "Standardise to Z ~ N(0, 1) and use Z-tables"
+            },
+            {
+              "spec_ref": "5.1.3",
+              "description": "Find unknown \u03bc or \u03c3 given probability information"
+            },
+            {
+              "spec_ref": "5.1.4",
+              "description": "Apply the Normal distribution as a model"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "subject": "Further Mathematics",
+  "module_code": "FP3",
+  "module_name": "Further Pure Mathematics 3",
+  "topics": [
+    {
+      "name": "Further Calculus",
+      "subtopics": [
+        {
+          "name": "Series Expansions",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Find Maclaurin and Taylor series expansions for standard functions"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Use series to find limits and approximate integrals"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Determine the range of validity for a series"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Further Differential Equations",
+      "subtopics": [
+        {
+          "name": "First-order Systems and Coupled Equations",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Solve first-order linear differential equations using an integrating factor"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Solve coupled first-order linear differential equations"
+            }
+          ]
+        },
+        {
+          "name": "Further Second-order ODEs",
+          "specification_points": [
+            {
+              "spec_ref": "2.2.1",
+              "description": "Solve second-order linear ODEs with variable coefficients using substitution"
+            },
+            {
+              "spec_ref": "2.2.2",
+              "description": "Use substitution to reduce order of differential equations"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Further Vectors",
+      "subtopics": [
+        {
+          "name": "Vector Product",
+          "specification_points": [
+            {
+              "spec_ref": "3.1.1",
+              "description": "Calculate the vector (cross) product a \u00d7 b and interpret geometrically"
+            },
+            {
+              "spec_ref": "3.1.2",
+              "description": "Use the vector product to find areas of parallelograms and triangles"
+            },
+            {
+              "spec_ref": "3.1.3",
+              "description": "Calculate scalar triple product and use it for volume of parallelepiped"
+            },
+            {
+              "spec_ref": "3.1.4",
+              "description": "Find the equation of a plane using the normal vector"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

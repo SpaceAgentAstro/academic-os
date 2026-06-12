@@ -1,0 +1,29 @@
+{
+  "subject": "Chemistry",
+  "module_code": "Unit3",
+  "module_name": "Chemistry Laboratory Skills I",
+  "topics": [
+    {
+      "name": "Laboratory Techniques",
+      "subtopics": [
+        {
+          "name": "Practical Skills",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Perform and describe titration procedures with correct technique"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Describe procedures for synthesis, purification (recrystallisation, distillation), and characterisation"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Identify chemical substances using tests: flame tests, precipitate reactions, gas tests"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

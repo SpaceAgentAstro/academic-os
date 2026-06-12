@@ -1,0 +1,102 @@
+{
+  "subject": "Physics",
+  "module_code": "Unit5",
+  "module_name": "Physics from Creation to Collapse",
+  "topics": [
+    {
+      "name": "Thermal Physics",
+      "subtopics": [
+        {
+          "name": "Kinetic Theory and Gas Laws",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "State and use Boyle's law, Charles' law, and the pressure law"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Use the ideal gas equation pV = nRT and pV = NkT"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Derive and use pV = \u2153Nm<c\u00b2>; relate kinetic energy to temperature"
+            },
+            {
+              "spec_ref": "1.1.4",
+              "description": "Distinguish between internal energy, heat, and work"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Nuclear Decay and Radioactivity",
+      "subtopics": [
+        {
+          "name": "Radioactive Decay",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Define activity A = -dN/dt = \u03bbN; state units (Bq)"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Use N = N\u2080e^(-\u03bbt) and A = A\u2080e^(-\u03bbt)"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Define and calculate half-life: T\u00bd = ln2/\u03bb"
+            },
+            {
+              "spec_ref": "2.1.4",
+              "description": "Apply radioactive decay to carbon dating and medical tracers"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Astrophysics and Cosmology",
+      "subtopics": [
+        {
+          "name": "Stars and the Universe",
+          "specification_points": [
+            {
+              "spec_ref": "3.1.1",
+              "description": "Describe the Hertzsprung-Russell diagram and stellar evolution"
+            },
+            {
+              "spec_ref": "3.1.2",
+              "description": "Understand luminosity, flux, and the inverse square law"
+            },
+            {
+              "spec_ref": "3.1.3",
+              "description": "Use Wien's displacement law \u03bbmax \u221d 1/T and Stefan-Boltzmann law L = 4\u03c0r\u00b2\u03c3T\u2074"
+            },
+            {
+              "spec_ref": "3.1.4",
+              "description": "Explain the Big Bang theory and evidence from red shift and CMB"
+            }
+          ]
+        },
+        {
+          "name": "Hubble's Law",
+          "specification_points": [
+            {
+              "spec_ref": "3.2.1",
+              "description": "State Hubble's law v = H\u2080d; estimate the age of the universe"
+            },
+            {
+              "spec_ref": "3.2.2",
+              "description": "Explain red shift and use \u0394\u03bb/\u03bb = v/c"
+            },
+            {
+              "spec_ref": "3.2.3",
+              "description": "Understand the evidence for dark matter and dark energy"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

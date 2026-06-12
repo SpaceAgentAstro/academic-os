@@ -1,0 +1,51 @@
+{
+  "subject": "Further Mathematics",
+  "module_code": "FM1",
+  "module_name": "Mechanics 1",
+  "topics": [
+    {
+      "name": "Collisions",
+      "subtopics": [
+        {
+          "name": "Direct and Oblique Collisions",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Apply Newton's law of restitution to direct collisions"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Solve problems involving oblique collisions with a smooth surface"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Use conservation of momentum and energy loss in collisions"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Further Circular Motion",
+      "subtopics": [
+        {
+          "name": "Non-uniform Circular Motion",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Apply energy conservation and Newton's second law to circular motion problems"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Find conditions for completing a vertical circle or leaving the surface"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Solve problems involving particles on the inside/outside of a sphere"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

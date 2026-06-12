@@ -1,0 +1,89 @@
+{
+  "subject": "Chemistry",
+  "module_code": "Unit5",
+  "module_name": "General Principles of Chemistry II",
+  "topics": [
+    {
+      "name": "Transition Metals",
+      "subtopics": [
+        {
+          "name": "Properties of Transition Metals",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Define transition metals; explain variable oxidation states with examples"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Describe the formation of complex ions; use ligand and coordination number terminology"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Explain the colour of transition metal complexes in terms of d-orbital splitting"
+            },
+            {
+              "spec_ref": "1.1.4",
+              "description": "Describe ligand substitution and precipitation reactions of copper and iron complexes"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Further Organic Chemistry",
+      "subtopics": [
+        {
+          "name": "Carbonyl Compounds",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Describe the reactions of aldehydes and ketones: nucleophilic addition, reduction"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Distinguish between aldehydes and ketones using Tollens' and Fehling's tests"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Describe the reactions of carboxylic acids and esters (esterification, hydrolysis)"
+            }
+          ]
+        },
+        {
+          "name": "Amines and Amino Acids",
+          "specification_points": [
+            {
+              "spec_ref": "2.2.1",
+              "description": "Explain the basicity of amines; describe formation of ammonium salts and amides"
+            },
+            {
+              "spec_ref": "2.2.2",
+              "description": "Describe the properties of amino acids; explain zwitterion formation"
+            },
+            {
+              "spec_ref": "2.2.3",
+              "description": "Describe the formation and hydrolysis of peptide bonds"
+            }
+          ]
+        },
+        {
+          "name": "Polymers and Analysis",
+          "specification_points": [
+            {
+              "spec_ref": "2.3.1",
+              "description": "Describe addition polymerisation and condensation polymerisation"
+            },
+            {
+              "spec_ref": "2.3.2",
+              "description": "Interpret mass spectra (molecular ion, base peak, fragmentation patterns)"
+            },
+            {
+              "spec_ref": "2.3.3",
+              "description": "Interpret NMR spectra: chemical shift, integration, splitting patterns"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "subject": "Mathematics",
+  "module_code": "M2",
+  "module_name": "Mechanics 2",
+  "topics": [
+    {
+      "name": "Kinematics",
+      "subtopics": [
+        {
+          "name": "Variable Acceleration",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Use differentiation and integration to solve variable acceleration problems"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Apply calculus to projectile motion"
+            }
+          ]
+        },
+        {
+          "name": "Projectile Motion",
+          "specification_points": [
+            {
+              "spec_ref": "1.2.1",
+              "description": "Model projectile motion with horizontal/vertical components under constant gravity"
+            },
+            {
+              "spec_ref": "1.2.2",
+              "description": "Find the range, maximum height, and time of flight"
+            },
+            {
+              "spec_ref": "1.2.3",
+              "description": "Derive and use the trajectory equation y = x tan\u03b1 - gx\u00b2/(2u\u00b2cos\u00b2\u03b1)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Moments and Equilibrium",
+      "subtopics": [
+        {
+          "name": "Moments of Forces",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Calculate moments of forces about a point"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Apply conditions for equilibrium of a rigid body (\u03a3F = 0, \u03a3M = 0)"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Solve problems involving beams on supports and tipping/sliding"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Energy, Work, and Power",
+      "subtopics": [
+        {
+          "name": "Work-Energy Theorem",
+          "specification_points": [
+            {
+              "spec_ref": "3.1.1",
+              "description": "Use the work-energy theorem: Work done = \u0394KE"
+            },
+            {
+              "spec_ref": "3.1.2",
+              "description": "Apply conservation of energy (KE + PE = constant)"
+            },
+            {
+              "spec_ref": "3.1.3",
+              "description": "Calculate power P = Fv; solve problems involving engine power and resistance"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

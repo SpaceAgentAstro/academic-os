@@ -1,0 +1,72 @@
+{
+  "subject": "Computer Science",
+  "module_code": "P4",
+  "module_name": "Further Problem-solving and Programming",
+  "topics": [
+    {
+      "name": "Further Data Structures and Algorithms",
+      "subtopics": [
+        {
+          "name": "Graphs",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Represent graphs using adjacency matrices and adjacency lists"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Implement depth-first search (DFS) and breadth-first search (BFS)"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Apply Dijkstra's algorithm to find shortest paths"
+            },
+            {
+              "spec_ref": "1.1.4",
+              "description": "Describe minimum spanning trees; apply Prim's and Kruskal's algorithms"
+            }
+          ]
+        },
+        {
+          "name": "Abstract Data Types",
+          "specification_points": [
+            {
+              "spec_ref": "1.2.1",
+              "description": "Define and implement abstract data types: list, stack, queue, dictionary, graph"
+            },
+            {
+              "spec_ref": "1.2.2",
+              "description": "Choose appropriate data structures for specific problems with justification"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Object-Oriented Programming",
+      "subtopics": [
+        {
+          "name": "Advanced OOP",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Design class hierarchies using inheritance; implement abstract classes and interfaces"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Apply polymorphism through method overriding"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Use UML class diagrams to model object-oriented systems"
+            },
+            {
+              "spec_ref": "2.1.4",
+              "description": "Design and implement OOP solutions to substantial problems"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

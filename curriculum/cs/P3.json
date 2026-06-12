@@ -1,0 +1,101 @@
+{
+  "subject": "Computer Science",
+  "module_code": "P3",
+  "module_name": "Advanced Theory",
+  "topics": [
+    {
+      "name": "Further Hardware and Software",
+      "subtopics": [
+        {
+          "name": "Boolean Algebra and Logic Gates",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Construct and simplify truth tables for logic circuits"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Apply Boolean algebra laws (De Morgan's theorems, absorption, etc.) to simplify expressions"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Use Karnaugh maps to simplify Boolean expressions"
+            },
+            {
+              "spec_ref": "1.1.4",
+              "description": "Describe flip-flops (SR, D, JK) and their use in registers"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Computational Thinking and Problem Solving",
+      "subtopics": [
+        {
+          "name": "Programming Paradigms",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Describe imperative, object-oriented, declarative, and functional programming paradigms"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Understand OOP concepts: classes, objects, encapsulation, inheritance, polymorphism"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Describe declarative programming and logical deduction (Prolog-style)"
+            },
+            {
+              "spec_ref": "2.1.4",
+              "description": "Understand functional programming: higher-order functions, map, filter, reduce, immutability"
+            }
+          ]
+        },
+        {
+          "name": "Databases",
+          "specification_points": [
+            {
+              "spec_ref": "2.2.1",
+              "description": "Understand the relational data model: tables, primary keys, foreign keys"
+            },
+            {
+              "spec_ref": "2.2.2",
+              "description": "Normalise tables to 1NF, 2NF, and 3NF"
+            },
+            {
+              "spec_ref": "2.2.3",
+              "description": "Write SQL queries: SELECT, FROM, WHERE, JOIN, GROUP BY, ORDER BY, INSERT, UPDATE, DELETE"
+            },
+            {
+              "spec_ref": "2.2.4",
+              "description": "Understand the role of a DBMS; describe ACID properties of transactions"
+            }
+          ]
+        },
+        {
+          "name": "Artificial Intelligence",
+          "specification_points": [
+            {
+              "spec_ref": "2.3.1",
+              "description": "Describe AI problem-solving approaches: graph traversal (BFS, DFS), A* algorithm"
+            },
+            {
+              "spec_ref": "2.3.2",
+              "description": "Understand machine learning: training data, supervised vs unsupervised learning"
+            },
+            {
+              "spec_ref": "2.3.3",
+              "description": "Describe neural networks at a high level: neurons, layers, weights, activation functions"
+            },
+            {
+              "spec_ref": "2.3.4",
+              "description": "Discuss ethical and social implications of AI"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

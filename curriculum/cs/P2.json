@@ -1,0 +1,153 @@
+{
+  "subject": "Computer Science",
+  "module_code": "P2",
+  "module_name": "Fundamental Problem-solving and Programming",
+  "topics": [
+    {
+      "name": "Algorithm Design and Problem Solving",
+      "subtopics": [
+        {
+          "name": "Computational Thinking",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Decompose a problem into smaller sub-problems"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Apply abstraction to identify relevant features and ignore irrelevant detail"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Construct structure diagrams, flowcharts, and pseudocode to represent algorithms"
+            }
+          ]
+        },
+        {
+          "name": "Standard Algorithms",
+          "specification_points": [
+            {
+              "spec_ref": "1.2.1",
+              "description": "Implement and analyse linear search and binary search"
+            },
+            {
+              "spec_ref": "1.2.2",
+              "description": "Implement and analyse bubble sort and merge sort"
+            },
+            {
+              "spec_ref": "1.2.3",
+              "description": "Trace recursive algorithms; write recursive solutions for standard problems"
+            },
+            {
+              "spec_ref": "1.2.4",
+              "description": "Express time complexity using Big-O notation: O(1), O(log n), O(n), O(n log n), O(n\u00b2)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Data Structures",
+      "subtopics": [
+        {
+          "name": "Arrays and Linked Lists",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Use 1D and 2D arrays; traverse, search, and update elements"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Describe and implement singly-linked and doubly-linked lists: insertion, deletion, traversal"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Compare arrays and linked lists for different use cases"
+            }
+          ]
+        },
+        {
+          "name": "Stacks and Queues",
+          "specification_points": [
+            {
+              "spec_ref": "2.2.1",
+              "description": "Describe and implement a stack using an array; implement push, pop, peek, isEmpty"
+            },
+            {
+              "spec_ref": "2.2.2",
+              "description": "Describe and implement a queue (linear and circular) using an array"
+            },
+            {
+              "spec_ref": "2.2.3",
+              "description": "Apply stacks to: function call management, expression evaluation (postfix), undo operations"
+            },
+            {
+              "spec_ref": "2.2.4",
+              "description": "Apply queues to: scheduling, I/O buffering, breadth-first search"
+            }
+          ]
+        },
+        {
+          "name": "Trees and Hash Tables",
+          "specification_points": [
+            {
+              "spec_ref": "2.3.1",
+              "description": "Describe the structure of binary trees; implement insertion and search"
+            },
+            {
+              "spec_ref": "2.3.2",
+              "description": "Perform and implement pre-order, in-order, and post-order tree traversal"
+            },
+            {
+              "spec_ref": "2.3.3",
+              "description": "Describe hash tables: hash functions, collision resolution (chaining, open addressing)"
+            },
+            {
+              "spec_ref": "2.3.4",
+              "description": "Analyse worst-case and average-case performance of hash table operations"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Programming",
+      "subtopics": [
+        {
+          "name": "Programming Concepts",
+          "specification_points": [
+            {
+              "spec_ref": "3.1.1",
+              "description": "Use variables, constants, data types, assignment, arithmetic and Boolean expressions"
+            },
+            {
+              "spec_ref": "3.1.2",
+              "description": "Use sequence, selection (IF, CASE/SWITCH), and iteration (FOR, WHILE, REPEAT-UNTIL)"
+            },
+            {
+              "spec_ref": "3.1.3",
+              "description": "Define and call procedures and functions; understand parameter passing (by value and reference)"
+            },
+            {
+              "spec_ref": "3.1.4",
+              "description": "Understand scope: local vs global variables"
+            }
+          ]
+        },
+        {
+          "name": "File Handling and Exception Handling",
+          "specification_points": [
+            {
+              "spec_ref": "3.2.1",
+              "description": "Open, read, write, and close text files in programs"
+            },
+            {
+              "spec_ref": "3.2.2",
+              "description": "Handle runtime errors using exception handling constructs (try/except)"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

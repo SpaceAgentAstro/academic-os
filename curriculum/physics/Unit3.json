@@ -1,0 +1,33 @@
+{
+  "subject": "Physics",
+  "module_code": "Unit3",
+  "module_name": "Exploring Physics",
+  "topics": [
+    {
+      "name": "Practical Skills",
+      "subtopics": [
+        {
+          "name": "Experimental Design and Measurement",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Plan experiments to test hypotheses, including identification of variables"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Identify systematic and random errors; understand accuracy and precision"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Estimate and combine uncertainties using absolute and percentage methods"
+            },
+            {
+              "spec_ref": "1.1.4",
+              "description": "Present data in tables with appropriate significant figures; draw and interpret graphs"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

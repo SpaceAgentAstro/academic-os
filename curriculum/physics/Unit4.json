@@ -1,0 +1,136 @@
+{
+  "subject": "Physics",
+  "module_code": "Unit4",
+  "module_name": "Physics on the Move",
+  "topics": [
+    {
+      "name": "Further Mechanics",
+      "subtopics": [
+        {
+          "name": "Circular Motion",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Define radian; use \u03c9 = \u0394\u03b8/\u0394t, v = r\u03c9, a = v\u00b2/r = r\u03c9\u00b2"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Apply F = mv\u00b2/r and identify centripetal force in context"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Solve problems involving banking, conical pendulum, and vertical circles"
+            }
+          ]
+        },
+        {
+          "name": "Simple Harmonic Motion",
+          "specification_points": [
+            {
+              "spec_ref": "1.2.1",
+              "description": "State the defining condition for SHM: a = -\u03c9\u00b2x; use x = A cos(\u03c9t)"
+            },
+            {
+              "spec_ref": "1.2.2",
+              "description": "Use v = \u00b1\u03c9\u221a(A\u00b2-x\u00b2); understand KE-PE interchange in SHM"
+            },
+            {
+              "spec_ref": "1.2.3",
+              "description": "Derive T = 2\u03c0\u221a(l/g) for a simple pendulum and T = 2\u03c0\u221a(m/k) for a mass-spring system"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Electric and Magnetic Fields",
+      "subtopics": [
+        {
+          "name": "Electric Fields",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Define electric field strength E = F/Q; draw field line diagrams"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Apply Coulomb's law F = kQ\u2081Q\u2082/r\u00b2"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Know E = kQ/r\u00b2 for a point charge; E = V/d for a uniform field"
+            },
+            {
+              "spec_ref": "2.1.4",
+              "description": "Define electric potential; use W = QV"
+            }
+          ]
+        },
+        {
+          "name": "Magnetic Fields",
+          "specification_points": [
+            {
+              "spec_ref": "2.2.1",
+              "description": "Describe magnetic field patterns around wires and solenoids"
+            },
+            {
+              "spec_ref": "2.2.2",
+              "description": "Apply F = BIL sin\u03b8 and F = BQv sin\u03b8"
+            },
+            {
+              "spec_ref": "2.2.3",
+              "description": "Explain and apply electromagnetic induction; use Faraday's and Lenz's laws"
+            },
+            {
+              "spec_ref": "2.2.4",
+              "description": "Understand and use transformers: Vs/Vp = Ns/Np"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Nuclear and Particle Physics",
+      "subtopics": [
+        {
+          "name": "The Nucleus and Radioactivity",
+          "specification_points": [
+            {
+              "spec_ref": "3.1.1",
+              "description": "Describe the composition of the nucleus; define nucleon number, proton number"
+            },
+            {
+              "spec_ref": "3.1.2",
+              "description": "Describe properties of \u03b1, \u03b2, \u03b3 radiation and their interactions with matter"
+            },
+            {
+              "spec_ref": "3.1.3",
+              "description": "Write balanced nuclear equations for decay"
+            },
+            {
+              "spec_ref": "3.1.4",
+              "description": "Explain nuclear stability in terms of N-Z graph"
+            }
+          ]
+        },
+        {
+          "name": "Particle Physics",
+          "specification_points": [
+            {
+              "spec_ref": "3.2.1",
+              "description": "Describe the quark model; identify up, down, strange quarks and their properties"
+            },
+            {
+              "spec_ref": "3.2.2",
+              "description": "Classify particles as hadrons (baryons, mesons) and leptons"
+            },
+            {
+              "spec_ref": "3.2.3",
+              "description": "Understand lepton number and baryon number conservation"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

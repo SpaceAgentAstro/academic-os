@@ -1,0 +1,94 @@
+{
+  "subject": "Mathematics",
+  "module_code": "S2",
+  "module_name": "Statistics 2",
+  "topics": [
+    {
+      "name": "Further Probability",
+      "subtopics": [
+        {
+          "name": "Continuous Random Variables",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Understand and use probability density functions (PDFs) and cumulative distribution functions (CDFs)"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Calculate E(X) and Var(X) for continuous distributions"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Find the median and mode of a continuous distribution"
+            }
+          ]
+        },
+        {
+          "name": "Poisson Distribution",
+          "specification_points": [
+            {
+              "spec_ref": "1.2.1",
+              "description": "Recognise and use the Poisson distribution Po(\u03bb)"
+            },
+            {
+              "spec_ref": "1.2.2",
+              "description": "Calculate Poisson probabilities and use tables"
+            },
+            {
+              "spec_ref": "1.2.3",
+              "description": "Know that for a Poisson distribution E(X) = Var(X) = \u03bb"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Hypothesis Testing",
+      "subtopics": [
+        {
+          "name": "Hypothesis Testing Principles",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Set up null and alternative hypotheses; one-tailed and two-tailed tests"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Conduct hypothesis tests for the binomial parameter p"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Conduct hypothesis tests for the Poisson parameter \u03bb"
+            },
+            {
+              "spec_ref": "2.1.4",
+              "description": "Understand Type I and Type II errors and their probabilities"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Combinations of Random Variables",
+      "subtopics": [
+        {
+          "name": "Linear Combinations",
+          "specification_points": [
+            {
+              "spec_ref": "3.1.1",
+              "description": "Find the distribution of aX + bY for independent Normal random variables"
+            },
+            {
+              "spec_ref": "3.1.2",
+              "description": "Understand the Central Limit Theorem and apply it to sample means"
+            },
+            {
+              "spec_ref": "3.1.3",
+              "description": "Apply the Normal approximation to the Binomial distribution"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

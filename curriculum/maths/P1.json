@@ -1,0 +1,334 @@
+{
+  "subject": "Mathematics",
+  "module_code": "P1",
+  "module_name": "Pure Mathematics 1",
+  "topics": [
+    {
+      "name": "Algebra and Functions",
+      "subtopics": [
+        {
+          "name": "Indices and Surds",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Use and manipulate surds, including rationalising the denominator"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Use the laws of indices for all rational exponents"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Simplify expressions involving indices and surds"
+            }
+          ]
+        },
+        {
+          "name": "Quadratics",
+          "specification_points": [
+            {
+              "spec_ref": "1.2.1",
+              "description": "Solve quadratic equations by factorisation, completing the square, and the quadratic formula"
+            },
+            {
+              "spec_ref": "1.2.2",
+              "description": "Complete the square for a quadratic expression"
+            },
+            {
+              "spec_ref": "1.2.3",
+              "description": "Use the discriminant to determine the nature of roots"
+            },
+            {
+              "spec_ref": "1.2.4",
+              "description": "Solve quadratic inequalities in one variable"
+            }
+          ]
+        },
+        {
+          "name": "Graphs and Transformations",
+          "specification_points": [
+            {
+              "spec_ref": "1.3.1",
+              "description": "Sketch and interpret graphs of common functions including y = |f(x)| and y = f(|x|)"
+            },
+            {
+              "spec_ref": "1.3.2",
+              "description": "Apply transformations: y = f(x+a), y = f(ax), y = af(x), y = f(x)+a"
+            },
+            {
+              "spec_ref": "1.3.3",
+              "description": "Understand and use the modulus function"
+            }
+          ]
+        },
+        {
+          "name": "Simultaneous and Linear Equations",
+          "specification_points": [
+            {
+              "spec_ref": "1.4.1",
+              "description": "Solve simultaneous equations, including one linear and one quadratic"
+            },
+            {
+              "spec_ref": "1.4.2",
+              "description": "Interpret geometric significance of solutions"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Coordinate Geometry",
+      "subtopics": [
+        {
+          "name": "Straight Lines",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Know and use the equation y = mx + c and related forms"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Find the equation of a line through two points or through a point with a given gradient"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Understand the conditions for parallel and perpendicular lines"
+            },
+            {
+              "spec_ref": "2.1.4",
+              "description": "Calculate distances and midpoints using coordinates"
+            }
+          ]
+        },
+        {
+          "name": "Circles",
+          "specification_points": [
+            {
+              "spec_ref": "2.2.1",
+              "description": "Know the equation of a circle in standard form (x-a)\u00b2 + (y-b)\u00b2 = r\u00b2"
+            },
+            {
+              "spec_ref": "2.2.2",
+              "description": "Complete the square to find the centre and radius of a circle"
+            },
+            {
+              "spec_ref": "2.2.3",
+              "description": "Find the equation of the tangent to a circle at a given point"
+            },
+            {
+              "spec_ref": "2.2.4",
+              "description": "Solve problems involving circles and lines"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Further Algebra",
+      "subtopics": [
+        {
+          "name": "Binomial Expansion",
+          "specification_points": [
+            {
+              "spec_ref": "3.1.1",
+              "description": "Use the binomial expansion of (a+bx)^n for positive integer n"
+            },
+            {
+              "spec_ref": "3.1.2",
+              "description": "Find a specific term in a binomial expansion"
+            },
+            {
+              "spec_ref": "3.1.3",
+              "description": "Know and use Pascal's triangle and nCr notation"
+            }
+          ]
+        },
+        {
+          "name": "Sequences and Series",
+          "specification_points": [
+            {
+              "spec_ref": "3.2.1",
+              "description": "Understand arithmetic sequences and series; use Sn = n/2(a+l) and Sn = n/2(2a+(n-1)d)"
+            },
+            {
+              "spec_ref": "3.2.2",
+              "description": "Understand geometric sequences and series; use Sn = a(1-r\u207f)/(1-r)"
+            },
+            {
+              "spec_ref": "3.2.3",
+              "description": "Know conditions for convergence of geometric series; use S\u221e = a/(1-r)"
+            },
+            {
+              "spec_ref": "3.2.4",
+              "description": "Use sigma notation"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Trigonometry",
+      "subtopics": [
+        {
+          "name": "Trigonometric Ratios and Graphs",
+          "specification_points": [
+            {
+              "spec_ref": "4.1.1",
+              "description": "Know exact values of sin, cos, tan for 0\u00b0, 30\u00b0, 45\u00b0, 60\u00b0, 90\u00b0"
+            },
+            {
+              "spec_ref": "4.1.2",
+              "description": "Sketch graphs of sin, cos, tan and understand their properties"
+            },
+            {
+              "spec_ref": "4.1.3",
+              "description": "Apply transformations to trigonometric graphs"
+            }
+          ]
+        },
+        {
+          "name": "Trigonometric Identities and Equations",
+          "specification_points": [
+            {
+              "spec_ref": "4.2.1",
+              "description": "Know and use sin\u00b2\u03b8 + cos\u00b2\u03b8 \u2261 1 and tan\u03b8 \u2261 sin\u03b8/cos\u03b8"
+            },
+            {
+              "spec_ref": "4.2.2",
+              "description": "Solve trigonometric equations in given intervals"
+            },
+            {
+              "spec_ref": "4.2.3",
+              "description": "Use identities to simplify expressions and solve equations"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Exponentials and Logarithms",
+      "subtopics": [
+        {
+          "name": "Exponential Functions",
+          "specification_points": [
+            {
+              "spec_ref": "5.1.1",
+              "description": "Know and use the function e\u02e3 and its graph"
+            },
+            {
+              "spec_ref": "5.1.2",
+              "description": "Know that d/dx(e\u02e3) = e\u02e3"
+            },
+            {
+              "spec_ref": "5.1.3",
+              "description": "Sketch and interpret exponential growth and decay models"
+            }
+          ]
+        },
+        {
+          "name": "Logarithms",
+          "specification_points": [
+            {
+              "spec_ref": "5.2.1",
+              "description": "Know and use the definition and properties of logarithms"
+            },
+            {
+              "spec_ref": "5.2.2",
+              "description": "Use laws of logarithms: log(ab), log(a/b), log(a\u207f)"
+            },
+            {
+              "spec_ref": "5.2.3",
+              "description": "Solve equations of the form a\u02e3 = b"
+            },
+            {
+              "spec_ref": "5.2.4",
+              "description": "Use logarithmic graphs to linearise exponential and power relationships"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Differentiation",
+      "subtopics": [
+        {
+          "name": "Basic Differentiation",
+          "specification_points": [
+            {
+              "spec_ref": "6.1.1",
+              "description": "Differentiate polynomials and expressions of the form x\u207f"
+            },
+            {
+              "spec_ref": "6.1.2",
+              "description": "Differentiate e\u02e3, ln x, sin x, cos x, tan x"
+            },
+            {
+              "spec_ref": "6.1.3",
+              "description": "Apply the chain rule, product rule, and quotient rule"
+            }
+          ]
+        },
+        {
+          "name": "Applications of Differentiation",
+          "specification_points": [
+            {
+              "spec_ref": "6.2.1",
+              "description": "Find stationary points and determine their nature"
+            },
+            {
+              "spec_ref": "6.2.2",
+              "description": "Find equations of tangents and normals to curves"
+            },
+            {
+              "spec_ref": "6.2.3",
+              "description": "Sketch curves using information from calculus"
+            },
+            {
+              "spec_ref": "6.2.4",
+              "description": "Apply differentiation to optimisation problems"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Integration",
+      "subtopics": [
+        {
+          "name": "Basic Integration",
+          "specification_points": [
+            {
+              "spec_ref": "7.1.1",
+              "description": "Integrate polynomials and functions of the form x\u207f (n \u2260 -1)"
+            },
+            {
+              "spec_ref": "7.1.2",
+              "description": "Integrate e\u02e3, 1/x, sin x, cos x"
+            },
+            {
+              "spec_ref": "7.1.3",
+              "description": "Evaluate definite integrals"
+            }
+          ]
+        },
+        {
+          "name": "Applications of Integration",
+          "specification_points": [
+            {
+              "spec_ref": "7.2.1",
+              "description": "Find the area under a curve and between curves"
+            },
+            {
+              "spec_ref": "7.2.2",
+              "description": "Understand the relationship between differentiation and integration as reverse processes"
+            },
+            {
+              "spec_ref": "7.2.3",
+              "description": "Evaluate areas involving negative regions"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "subject": "Chemistry",
+  "module_code": "Unit4",
+  "module_name": "General Principles of Chemistry I",
+  "topics": [
+    {
+      "name": "Rates, Equilibrium, and pH",
+      "subtopics": [
+        {
+          "name": "Reaction Orders and Rate Equations",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Determine orders of reaction from experimental data (initial rates and concentration-time graphs)"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Write and use rate equations: rate = k[A]^m[B]^n"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Use the Arrhenius equation k = Ae^(-Ea/RT); construct and interpret ln k vs 1/T graphs"
+            },
+            {
+              "spec_ref": "1.1.4",
+              "description": "Propose and test reaction mechanisms consistent with the rate equation"
+            }
+          ]
+        },
+        {
+          "name": "Acids, Bases, and pH",
+          "specification_points": [
+            {
+              "spec_ref": "1.2.1",
+              "description": "Define Br\u00f8nsted-Lowry acid and base; identify conjugate pairs"
+            },
+            {
+              "spec_ref": "1.2.2",
+              "description": "Calculate pH from [H\u207a]; use Kw = [H\u207a][OH\u207b] = 1.0\u00d710\u207b\u00b9\u2074 at 25\u00b0C"
+            },
+            {
+              "spec_ref": "1.2.3",
+              "description": "Calculate Ka and pKa; distinguish strong and weak acids"
+            },
+            {
+              "spec_ref": "1.2.4",
+              "description": "Describe buffer solutions and calculate pH of buffers using Ka"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Electrode Potentials and Electrochemistry",
+      "subtopics": [
+        {
+          "name": "Redox and Electrochemical Cells",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Define oxidation and reduction in terms of electron transfer and oxidation numbers"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Construct half-equations and overall redox equations"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Use standard electrode potentials to predict cell EMF and feasibility of reactions"
+            },
+            {
+              "spec_ref": "2.1.4",
+              "description": "Describe fuel cells and rechargeable batteries"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

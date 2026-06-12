@@ -1,0 +1,123 @@
+{
+  "subject": "Chemistry",
+  "module_code": "Unit2",
+  "module_name": "Application of Core Principles of Chemistry",
+  "topics": [
+    {
+      "name": "Kinetics",
+      "subtopics": [
+        {
+          "name": "Rate of Reaction",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Define rate of reaction; describe factors affecting rate"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Explain collision theory and the effect of temperature on rate"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Draw and interpret Maxwell-Boltzmann distribution curves"
+            },
+            {
+              "spec_ref": "1.1.4",
+              "description": "Explain the role of catalysts in lowering activation energy"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Equilibria",
+      "subtopics": [
+        {
+          "name": "Dynamic Equilibrium",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Explain dynamic equilibrium and Le Chatelier's principle"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Write expressions for Kc and calculate values with units"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Explain how changes in temperature, pressure, and concentration affect Kc"
+            },
+            {
+              "spec_ref": "2.1.4",
+              "description": "Apply equilibrium principles to the Haber process and Contact process"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Organic Chemistry",
+      "subtopics": [
+        {
+          "name": "Introduction to Organic Chemistry",
+          "specification_points": [
+            {
+              "spec_ref": "3.1.1",
+              "description": "Understand nomenclature: IUPAC naming of alkanes, alkenes, halogenoalkanes, alcohols"
+            },
+            {
+              "spec_ref": "3.1.2",
+              "description": "Distinguish between homologous series, functional groups, structural isomers"
+            },
+            {
+              "spec_ref": "3.1.3",
+              "description": "Explain E/Z (cis/trans) isomerism in alkenes"
+            }
+          ]
+        },
+        {
+          "name": "Alkanes and Alkenes",
+          "specification_points": [
+            {
+              "spec_ref": "3.2.1",
+              "description": "Describe free radical substitution of alkanes (initiation, propagation, termination)"
+            },
+            {
+              "spec_ref": "3.2.2",
+              "description": "Describe electrophilic addition to alkenes (mechanism with curly arrows)"
+            },
+            {
+              "spec_ref": "3.2.3",
+              "description": "Explain Markovnikov's rule for addition to unsymmetrical alkenes"
+            },
+            {
+              "spec_ref": "3.2.4",
+              "description": "Describe the reactions of alkenes with Br\u2082, HBr, H\u2082SO\u2084/H\u2082O, and H\u2082"
+            }
+          ]
+        },
+        {
+          "name": "Halogenoalkanes and Alcohols",
+          "specification_points": [
+            {
+              "spec_ref": "3.3.1",
+              "description": "Describe nucleophilic substitution of halogenoalkanes (SN1 and SN2 mechanisms)"
+            },
+            {
+              "spec_ref": "3.3.2",
+              "description": "Explain elimination reactions of halogenoalkanes"
+            },
+            {
+              "spec_ref": "3.3.3",
+              "description": "Describe oxidation of primary, secondary, and tertiary alcohols with K\u2082Cr\u2082O\u2087/H\u2082SO\u2084"
+            },
+            {
+              "spec_ref": "3.3.4",
+              "description": "Describe dehydration of alcohols and esterification"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

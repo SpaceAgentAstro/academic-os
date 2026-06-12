@@ -1,0 +1,124 @@
+{
+  "subject": "Mathematics",
+  "module_code": "P3",
+  "module_name": "Pure Mathematics 3",
+  "topics": [
+    {
+      "name": "Vectors",
+      "subtopics": [
+        {
+          "name": "Vector Algebra",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Use vectors in 3D, including magnitude, addition, and scalar multiplication"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Calculate the scalar (dot) product and use it to find angles between vectors"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Use unit vectors and position vectors"
+            }
+          ]
+        },
+        {
+          "name": "Lines in 3D",
+          "specification_points": [
+            {
+              "spec_ref": "1.2.1",
+              "description": "Find the vector equation of a straight line in the form r = a + tb"
+            },
+            {
+              "spec_ref": "1.2.2",
+              "description": "Determine whether lines are parallel, intersecting, or skew"
+            },
+            {
+              "spec_ref": "1.2.3",
+              "description": "Find angles between lines and the distance between skew lines"
+            }
+          ]
+        },
+        {
+          "name": "Planes",
+          "specification_points": [
+            {
+              "spec_ref": "1.3.1",
+              "description": "Find the equation of a plane in Cartesian and vector form"
+            },
+            {
+              "spec_ref": "1.3.2",
+              "description": "Find the angle between two planes and between a line and a plane"
+            },
+            {
+              "spec_ref": "1.3.3",
+              "description": "Find the intersection of lines and planes"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Numerical Methods",
+      "subtopics": [
+        {
+          "name": "Root Finding",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Locate a root by sign change, using a table of values"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Apply the Newton-Raphson method to find roots"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Use fixed-point iteration x\u2099\u208a\u2081 = g(x\u2099) and understand convergence"
+            }
+          ]
+        },
+        {
+          "name": "Numerical Integration",
+          "specification_points": [
+            {
+              "spec_ref": "2.2.1",
+              "description": "Use the trapezium rule to estimate definite integrals"
+            },
+            {
+              "spec_ref": "2.2.2",
+              "description": "Understand sources of error in numerical methods"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Further Algebra",
+      "subtopics": [
+        {
+          "name": "Complex Numbers",
+          "specification_points": [
+            {
+              "spec_ref": "3.1.1",
+              "description": "Understand imaginary and complex numbers in the form a + bi"
+            },
+            {
+              "spec_ref": "3.1.2",
+              "description": "Add, subtract, multiply, and divide complex numbers"
+            },
+            {
+              "spec_ref": "3.1.3",
+              "description": "Find complex roots of quadratics"
+            },
+            {
+              "spec_ref": "3.1.4",
+              "description": "Understand the Argand diagram; represent complex numbers geometrically"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

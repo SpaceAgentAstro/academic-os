@@ -1,0 +1,90 @@
+{
+  "subject": "Mathematics",
+  "module_code": "M1",
+  "module_name": "Mechanics 1",
+  "topics": [
+    {
+      "name": "Kinematics",
+      "subtopics": [
+        {
+          "name": "Motion in a Straight Line",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Use the SUVAT equations for uniform acceleration"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Interpret displacement-time and velocity-time graphs"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Solve problems involving vertical motion under gravity"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Statics",
+      "subtopics": [
+        {
+          "name": "Forces and Equilibrium",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Resolve forces into components and find resultants"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Apply conditions for equilibrium of a particle"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Use friction: F \u2264 \u03bcN; maximum friction F = \u03bcN"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dynamics",
+      "subtopics": [
+        {
+          "name": "Newton's Laws",
+          "specification_points": [
+            {
+              "spec_ref": "3.1.1",
+              "description": "Apply Newton's second law F = ma to single particles and connected particles"
+            },
+            {
+              "spec_ref": "3.1.2",
+              "description": "Solve problems involving Atwood machines and connected particles on inclines"
+            },
+            {
+              "spec_ref": "3.1.3",
+              "description": "Understand apparent weight and lift problems"
+            }
+          ]
+        },
+        {
+          "name": "Momentum and Impulse",
+          "specification_points": [
+            {
+              "spec_ref": "3.2.1",
+              "description": "Use momentum = mv and the impulse-momentum principle: I = \u0394(mv)"
+            },
+            {
+              "spec_ref": "3.2.2",
+              "description": "Apply conservation of momentum to collisions"
+            },
+            {
+              "spec_ref": "3.2.3",
+              "description": "Use Newton's law of restitution: e = relative speed of separation / relative speed of approach"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "subject": "Mathematics",
+  "module_code": "M3",
+  "module_name": "Mechanics 3",
+  "topics": [
+    {
+      "name": "Circular Motion",
+      "subtopics": [
+        {
+          "name": "Uniform Circular Motion",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Understand radian measure; use arc length s = r\u03b8 and sector area A = \u00bdr\u00b2\u03b8"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Apply centripetal acceleration a = v\u00b2/r = r\u03c9\u00b2 and force F = mv\u00b2/r"
+            },
+            {
+              "spec_ref": "1.1.3",
+              "description": "Solve problems involving conical pendulums, banked tracks, and vertical circles"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Simple Harmonic Motion",
+      "subtopics": [
+        {
+          "name": "SHM Equations",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Understand and derive the SHM equation \u1e8d = -\u03c9\u00b2x"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Use x = A cos(\u03c9t+\u03c6); find amplitude, period, frequency"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Use v\u00b2 = \u03c9\u00b2(A\u00b2 - x\u00b2) to find velocity at a given displacement"
+            },
+            {
+              "spec_ref": "2.1.4",
+              "description": "Model springs and elastic strings using Hooke's Law with SHM"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Elastic Strings and Springs",
+      "subtopics": [
+        {
+          "name": "Hooke's Law",
+          "specification_points": [
+            {
+              "spec_ref": "3.1.1",
+              "description": "Use Hooke's Law T = kx = \u03bbx/l for elastic strings and springs"
+            },
+            {
+              "spec_ref": "3.1.2",
+              "description": "Calculate elastic potential energy EPE = \u03bbx\u00b2/(2l)"
+            },
+            {
+              "spec_ref": "3.1.3",
+              "description": "Apply conservation of energy to problems involving elastic strings and springs"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

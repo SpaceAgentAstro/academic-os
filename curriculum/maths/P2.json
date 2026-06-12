@@ -1,0 +1,222 @@
+{
+  "subject": "Mathematics",
+  "module_code": "P2",
+  "module_name": "Pure Mathematics 2",
+  "topics": [
+    {
+      "name": "Proof",
+      "subtopics": [
+        {
+          "name": "Methods of Proof",
+          "specification_points": [
+            {
+              "spec_ref": "1.1.1",
+              "description": "Understand and construct proofs by contradiction"
+            },
+            {
+              "spec_ref": "1.1.2",
+              "description": "Understand and use proof by mathematical induction"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Further Algebra",
+      "subtopics": [
+        {
+          "name": "Algebraic Division and Factor Theorem",
+          "specification_points": [
+            {
+              "spec_ref": "2.1.1",
+              "description": "Perform algebraic long division"
+            },
+            {
+              "spec_ref": "2.1.2",
+              "description": "Use the factor theorem and remainder theorem"
+            },
+            {
+              "spec_ref": "2.1.3",
+              "description": "Factorise polynomials using the factor theorem"
+            }
+          ]
+        },
+        {
+          "name": "Partial Fractions",
+          "specification_points": [
+            {
+              "spec_ref": "2.2.1",
+              "description": "Decompose rational expressions into partial fractions with distinct linear factors"
+            },
+            {
+              "spec_ref": "2.2.2",
+              "description": "Decompose with repeated linear factors"
+            },
+            {
+              "spec_ref": "2.2.3",
+              "description": "Use partial fractions in integration and binomial expansion"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Coordinate Geometry in the (x, y) Plane",
+      "subtopics": [
+        {
+          "name": "Parametric Equations",
+          "specification_points": [
+            {
+              "spec_ref": "3.1.1",
+              "description": "Understand parametric equations and sketch parametric curves"
+            },
+            {
+              "spec_ref": "3.1.2",
+              "description": "Convert between parametric and Cartesian forms"
+            },
+            {
+              "spec_ref": "3.1.3",
+              "description": "Find dy/dx for parametric equations using the chain rule"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Further Trigonometry",
+      "subtopics": [
+        {
+          "name": "Reciprocal Trigonometric Functions",
+          "specification_points": [
+            {
+              "spec_ref": "4.1.1",
+              "description": "Know and use sec x, cosec x, cot x and their graphs"
+            },
+            {
+              "spec_ref": "4.1.2",
+              "description": "Prove and use identities 1 + tan\u00b2x \u2261 sec\u00b2x and 1 + cot\u00b2x \u2261 cosec\u00b2x"
+            }
+          ]
+        },
+        {
+          "name": "Inverse Trigonometric Functions",
+          "specification_points": [
+            {
+              "spec_ref": "4.2.1",
+              "description": "Know and use arcsin, arccos, arctan and their domains and ranges"
+            },
+            {
+              "spec_ref": "4.2.2",
+              "description": "Differentiate inverse trigonometric functions"
+            }
+          ]
+        },
+        {
+          "name": "Addition Formulae",
+          "specification_points": [
+            {
+              "spec_ref": "4.3.1",
+              "description": "Know and use sin(A\u00b1B), cos(A\u00b1B), tan(A\u00b1B) formulae"
+            },
+            {
+              "spec_ref": "4.3.2",
+              "description": "Derive and use double angle formulae"
+            },
+            {
+              "spec_ref": "4.3.3",
+              "description": "Express a cos \u03b8 + b sin \u03b8 in the form R cos(\u03b8 \u00b1 \u03b1) or R sin(\u03b8 \u00b1 \u03b1)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Exponentials and Logarithms",
+      "subtopics": [
+        {
+          "name": "Further Logarithms",
+          "specification_points": [
+            {
+              "spec_ref": "5.1.1",
+              "description": "Differentiate and integrate ln x and related functions"
+            },
+            {
+              "spec_ref": "5.1.2",
+              "description": "Solve differential equations involving logarithms"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Further Differentiation",
+      "subtopics": [
+        {
+          "name": "Implicit Differentiation",
+          "specification_points": [
+            {
+              "spec_ref": "6.1.1",
+              "description": "Differentiate implicitly, including finding dy/dx in terms of x and y"
+            },
+            {
+              "spec_ref": "6.1.2",
+              "description": "Find stationary points on implicit curves"
+            }
+          ]
+        },
+        {
+          "name": "Rates of Change",
+          "specification_points": [
+            {
+              "spec_ref": "6.2.1",
+              "description": "Form and solve differential equations involving rates of change"
+            },
+            {
+              "spec_ref": "6.2.2",
+              "description": "Use connected rates of change with the chain rule"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Further Integration",
+      "subtopics": [
+        {
+          "name": "Integration Techniques",
+          "specification_points": [
+            {
+              "spec_ref": "7.1.1",
+              "description": "Integrate using substitution"
+            },
+            {
+              "spec_ref": "7.1.2",
+              "description": "Integrate by parts"
+            },
+            {
+              "spec_ref": "7.1.3",
+              "description": "Integrate using partial fractions"
+            },
+            {
+              "spec_ref": "7.1.4",
+              "description": "Integrate trigonometric functions using identities"
+            }
+          ]
+        },
+        {
+          "name": "Differential Equations",
+          "specification_points": [
+            {
+              "spec_ref": "7.2.1",
+              "description": "Solve first-order differential equations with separable variables"
+            },
+            {
+              "spec_ref": "7.2.2",
+              "description": "Interpret differential equations in context; formulate and solve growth/decay models"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
