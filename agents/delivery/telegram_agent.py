@@ -60,7 +60,7 @@ async def send_daily_briefing(briefing_text: str) -> None:
     await send_message(briefing_text, parse_mode="Markdown")
 
 
-async def start_bot() -> None:
+def start_bot() -> None:
     """Start the Telegram bot and register command handlers."""
     from config.settings import TELEGRAM_BOT_TOKEN
     from telegram.ext import Application, CommandHandler
@@ -74,7 +74,7 @@ async def start_bot() -> None:
     app.add_handler(CommandHandler("progress", _cmd_progress))
 
     logger.info("Starting Academic OS Telegram bot")
-    await app.run_polling()
+    app.run_polling()
 
 
 async def _cmd_briefing(update: Any, context: Any) -> None:
@@ -194,3 +194,7 @@ async def _cmd_progress(update: Any, context: Any) -> None:
             lines.append(f"• *{subject}*: Error — {exc}")
 
     await update.message.reply_text("\n".join(lines), parse_mode="Markdown")
+
+
+if __name__ == "__main__":
+    start_bot()
