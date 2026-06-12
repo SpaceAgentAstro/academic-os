@@ -22,6 +22,7 @@ DB_MARKSCHEME     = DATA_DIR / "markscheme.db"
 DB_EXAMINER       = DATA_DIR / "examiner_reports.db"
 DB_DIAGRAMS       = DATA_DIR / "diagrams.db"
 DB_ANALYTICS      = DATA_DIR / "analytics.db"
+DB_ATTEMPTS       = DATA_DIR / "attempts.db"
 
 # Telegram
 TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN", "")

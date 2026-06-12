@@ -1,100 +1,53 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+export interface FetchState<T> {
+  data: T | null;
+  loading: boolean;
+  error: string | null;
+  retry: () => void;
+}
 
-// ---------------------------------------------------------------------------
-// Core hook — starts with fallback, replaces with live data if response is non-empty
-// ---------------------------------------------------------------------------
-
-export function useApi<T>(
-  endpoint: string,
-  fallback: T,
-  isUsable: (d: T) => boolean = (d) =>
-    Array.isArray(d) ? (d as unknown[]).length > 0 : Boolean(d),
-): T {
-  const [data, setData] = useState<T>(fallback);
+/**
+ * Fetch wrapper with explicit loading / error / data states.
+ * There is deliberately NO fallback value: if the API is down the screen
+ * shows an error with a retry button, never stale or fabricated data.
+ */
+export function useFetch<T>(fetcher: () => Promise<T>, deps: unknown[] = []): FetchState<T> {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const fetcherRef = useRef(fetcher);
+  fetcherRef.current = fetcher;
 
   useEffect(() => {
-    const controller = new AbortController();
-    fetch(`${API}${endpoint}`, { signal: controller.signal })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d: T | null) => {
-        if (d !== null && d !== undefined && isUsable(d)) setData(d);
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    fetcherRef
+      .current()
+      .then((d) => {
+        if (!cancelled) {
+          setData(d);
+          setLoading(false);
+        }
       })
-      .catch(() => {});
-    return () => controller.abort();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [endpoint]);
+      .catch((e: Error) => {
+        if (!cancelled) {
+          console.error("useFetch error:", e);
+          setError(e.message);
+          setLoading(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attempt, ...deps]);
 
-  return data;
-}
+  const retry = useCallback(() => setAttempt((a) => a + 1), []);
 
-// ---------------------------------------------------------------------------
-// DB status (Settings screen)
-// ---------------------------------------------------------------------------
-
-export interface DbEntry {
-  name: string;
-  label: string;
-  ok: boolean;
-}
-
-export interface DbStatus {
-  databases: DbEntry[];
-}
-
-export function useStatus(): DbStatus | null {
-  return useApi<DbStatus | null>(
-    "/api/status",
-    null,
-    (d) => Boolean(d?.databases?.length),
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Raw papers from question_bank.db (Analytics screen)
-// ---------------------------------------------------------------------------
-
-export interface RawPaper {
-  id: string;
-  code: string;
-  full_code: string;
-  subject: string;
-  unit: string;
-  session: string;
-  year: number;
-  question_count: number;
-  score: null;
-  max: null;
-  time: null;
-  target: null;
-  days_ago: null;
-}
-
-export function useRawPapers(subject?: string): RawPaper[] {
-  const ep = subject ? `/api/papers?subject=${subject}` : "/api/papers";
-  return useApi<RawPaper[]>(ep, [], (d) => Array.isArray(d) && d.length > 0);
-}
-
-// ---------------------------------------------------------------------------
-// Coverage (question counts per subject)
-// ---------------------------------------------------------------------------
-
-export interface CoverageItem {
-  subject: string;
-  subject_id: string;
-  papers: number;
-  total_questions: number;
-  attempted: number;
-  pct: number;
-}
-
-export function useCoverage(): CoverageItem[] {
-  return useApi<CoverageItem[]>(
-    "/api/coverage",
-    [],
-    (d) => Array.isArray(d) && d.length > 0,
-  );
+  return { data, loading, error, retry };
 }

@@ -17,6 +17,9 @@ async def send_message(text: str, parse_mode: str = "Markdown") -> None:
     from telegram import Bot
     from telegram.error import TelegramError
 
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        raise RuntimeError("Telegram bot token and chat ID must be configured in the environment.")
+
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
     chunks = _split_message(text, _MAX_MESSAGE_LENGTH)
     for chunk in chunks:
@@ -60,7 +63,7 @@ async def send_daily_briefing(briefing_text: str) -> None:
     await send_message(briefing_text, parse_mode="Markdown")
 
 
-async def start_bot() -> None:
+def start_bot() -> None:
     """Start the Telegram bot and register command handlers."""
     from config.settings import TELEGRAM_BOT_TOKEN
     from telegram.ext import Application, CommandHandler
@@ -74,7 +77,7 @@ async def start_bot() -> None:
     app.add_handler(CommandHandler("progress", _cmd_progress))
 
     logger.info("Starting Academic OS Telegram bot")
-    await app.run_polling()
+    app.run_polling()
 
 
 async def _cmd_briefing(update: Any, context: Any) -> None:
