@@ -35,14 +35,24 @@ def advance_topic(
     new_status: str,
     confidence: int,
     progress_conn: sqlite3.Connection | None = None,
+    *,
+    confirmed: bool = False,
 ) -> None:
     """Advance a specification point's status.
 
     Validates that new_status is a forward progression (no backwards moves unless
-    explicitly forced). Requires student confirmation before calling.
+    explicitly forced). Progression never happens autonomously: the caller must
+    pass confirmed=True after obtaining explicit student confirmation
+    (context.md / AGENTS.md constraint).
     """
     from config.settings import DB_PROGRESS
     from db.models import get_db
+
+    if not confirmed:
+        raise PermissionError(
+            "advance_topic requires student confirmation: pass confirmed=True "
+            "only after the student has explicitly confirmed the progression"
+        )
 
     def _run(conn: sqlite3.Connection) -> None:
         today = date.today().isoformat()

@@ -45,7 +45,7 @@ def _seed_progress(conn: sqlite3.Connection) -> int:
 def test_advance_topic_inserts_new(progress_db):
     from agents.infrastructure.curriculum_agent import advance_topic
     sp_id = _seed_progress(progress_db)
-    advance_topic(sp_id, "taught", 3, progress_conn=progress_db)
+    advance_topic(sp_id, "taught", 3, progress_conn=progress_db, confirmed=True)
     row = progress_db.execute(
         "SELECT status, confidence FROM syllabus_completion WHERE spec_point_id=?", (sp_id,)
     ).fetchone()
@@ -56,8 +56,8 @@ def test_advance_topic_inserts_new(progress_db):
 def test_advance_topic_updates_existing(progress_db):
     from agents.infrastructure.curriculum_agent import advance_topic
     sp_id = _seed_progress(progress_db)
-    advance_topic(sp_id, "taught", 3, progress_conn=progress_db)
-    advance_topic(sp_id, "reviewed", 4, progress_conn=progress_db)
+    advance_topic(sp_id, "taught", 3, progress_conn=progress_db, confirmed=True)
+    advance_topic(sp_id, "reviewed", 4, progress_conn=progress_db, confirmed=True)
     row = progress_db.execute(
         "SELECT status FROM syllabus_completion WHERE spec_point_id=?", (sp_id,)
     ).fetchone()
@@ -67,8 +67,8 @@ def test_advance_topic_updates_existing(progress_db):
 def test_advance_topic_blocks_backwards_move(progress_db):
     from agents.infrastructure.curriculum_agent import advance_topic
     sp_id = _seed_progress(progress_db)
-    advance_topic(sp_id, "mastered", 5, progress_conn=progress_db)
-    advance_topic(sp_id, "in_progress", 2, progress_conn=progress_db)  # Should be ignored
+    advance_topic(sp_id, "mastered", 5, progress_conn=progress_db, confirmed=True)
+    advance_topic(sp_id, "in_progress", 2, progress_conn=progress_db, confirmed=True)  # Should be ignored
     row = progress_db.execute(
         "SELECT status FROM syllabus_completion WHERE spec_point_id=?", (sp_id,)
     ).fetchone()
@@ -88,7 +88,7 @@ def test_update_completion_adds_notes(progress_db):
 def test_schedule_review_sets_next_review(progress_db):
     from agents.infrastructure.curriculum_agent import advance_topic, schedule_review
     sp_id = _seed_progress(progress_db)
-    advance_topic(sp_id, "taught", 3, progress_conn=progress_db)
+    advance_topic(sp_id, "taught", 3, progress_conn=progress_db, confirmed=True)
     schedule_review(sp_id, "correct", progress_conn=progress_db)
     row = progress_db.execute(
         "SELECT next_review FROM syllabus_completion WHERE spec_point_id=?", (sp_id,)
@@ -102,7 +102,7 @@ def test_schedule_review_sets_next_review(progress_db):
 def test_schedule_review_incorrect_short_interval(progress_db):
     from agents.infrastructure.curriculum_agent import advance_topic, schedule_review
     sp_id = _seed_progress(progress_db)
-    advance_topic(sp_id, "in_progress", 1, progress_conn=progress_db)
+    advance_topic(sp_id, "in_progress", 1, progress_conn=progress_db, confirmed=True)
     schedule_review(sp_id, "incorrect", progress_conn=progress_db)
     row = progress_db.execute(
         "SELECT next_review FROM syllabus_completion WHERE spec_point_id=?", (sp_id,)
@@ -122,7 +122,7 @@ def test_get_next_review_queue_empty(progress_db):
 def test_get_next_review_queue_returns_due(progress_db):
     from agents.infrastructure.curriculum_agent import advance_topic, get_next_review_queue
     sp_id = _seed_progress(progress_db)
-    advance_topic(sp_id, "taught", 2, progress_conn=progress_db)
+    advance_topic(sp_id, "taught", 2, progress_conn=progress_db, confirmed=True)
     # Force next_review to today
     progress_db.execute(
         "UPDATE syllabus_completion SET next_review=date('now') WHERE spec_point_id=?", (sp_id,)
@@ -144,7 +144,7 @@ def test_get_specification_coverage_empty(progress_db):
 def test_get_specification_coverage_partial(progress_db):
     from agents.infrastructure.curriculum_agent import advance_topic, get_specification_coverage
     sp_id = _seed_progress(progress_db)
-    advance_topic(sp_id, "mastered", 5, progress_conn=progress_db)
+    advance_topic(sp_id, "mastered", 5, progress_conn=progress_db, confirmed=True)
     coverage = get_specification_coverage("Mathematics", progress_conn=progress_db)
     assert coverage["P1"] == 100.0
 
@@ -156,3 +156,15 @@ def test_get_current_progression_structure(progress_db):
     assert result["total"] == 1
     assert "by_status" in result
     assert result["coverage_pct"] == 0.0
+
+
+def test_advance_topic_requires_confirmation(progress_db):
+    import pytest
+    from agents.infrastructure.curriculum_agent import advance_topic
+    sp_id = _seed_progress(progress_db)
+    with pytest.raises(PermissionError):
+        advance_topic(sp_id, "taught", 3, progress_conn=progress_db)
+    row = progress_db.execute(
+        "SELECT status FROM syllabus_completion WHERE spec_point_id=?", (sp_id,)
+    ).fetchone()
+    assert row is None  # nothing written without confirmation
