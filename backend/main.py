@@ -13,8 +13,9 @@ from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +58,16 @@ def _scalar(db_path: Path, sql: str, params: tuple = (), default: Any = 0) -> An
     except Exception as exc:
         logger.debug("DB scalar skipped (%s): %s", db_path.name, exc)
         return default
+
+
+def _attempts_db() -> Path:
+    """attempts.db path, with its schema applied on first use (additive only)."""
+    from config.settings import DB_ATTEMPTS
+    from db.models import SCHEMA_DIR, get_db
+    if not DB_ATTEMPTS.exists():
+        with get_db(DB_ATTEMPTS) as conn:
+            conn.executescript((SCHEMA_DIR / "attempts.sql").read_text())
+    return DB_ATTEMPTS
 
 
 # ---------------------------------------------------------------------------
@@ -383,10 +394,10 @@ def get_analytics() -> dict:
     sessions = _query(
         DB_ANALYTICS,
         """
-        SELECT marks_awarded, marks_available, start_time
+        SELECT marks_awarded, marks_available, started_at
         FROM revision_sessions
         WHERE marks_available > 0
-        ORDER BY start_time ASC
+        ORDER BY started_at ASC
         LIMIT 30
         """,
     )
@@ -398,3 +409,149 @@ def get_analytics() -> dict:
     ]
 
     return {"score_trend": trend, "sessions": len(sessions)}
+
+
+# ---------------------------------------------------------------------------
+# Sessions & attempts (writes — attempts.db)
+# ---------------------------------------------------------------------------
+
+class SessionCreate(BaseModel):
+    paper_id: str
+    target_seconds: int = Field(default=3600, gt=0)
+
+
+class QuestionMark(BaseModel):
+    awarded: int = Field(ge=0)
+    max_marks: int = Field(gt=0)
+    tags: list[str] = []
+    confidence: int | None = Field(default=None, ge=1, le=5)
+    note: str | None = None
+    time_seconds: int = Field(default=0, ge=0)
+
+
+class AttemptCreate(BaseModel):
+    question_id: str
+    awarded: int = Field(ge=0)
+    max_marks: int = Field(gt=0)
+    confidence: int | None = Field(default=None, ge=1, le=5)
+    tags: list[str] = []
+    time_seconds: int = Field(default=0, ge=0)
+    note: str | None = None
+
+
+def _insert_attempt(
+    conn: Any, session_id: int | None, question_id: str, body: QuestionMark | AttemptCreate
+) -> int:
+    if body.awarded > body.max_marks:
+        raise HTTPException(422, "awarded marks exceed marks available")
+    cur = conn.execute(
+        """
+        INSERT INTO attempts
+            (session_id, question_id, marks_awarded, marks_available,
+             confidence, time_seconds, notes, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+        """,
+        (session_id, question_id, body.awarded, body.max_marks,
+         body.confidence, body.time_seconds, body.note),
+    )
+    attempt_id = cur.lastrowid
+    for tag in body.tags:
+        conn.execute(
+            "INSERT OR IGNORE INTO attempt_mistakes (attempt_id, mistake_type) VALUES (?, ?)",
+            (attempt_id, tag),
+        )
+    return attempt_id
+
+
+@app.post("/api/sessions")
+def create_session(body: SessionCreate) -> dict:
+    from db.models import get_db
+
+    with get_db(_attempts_db()) as conn:
+        cur = conn.execute(
+            """
+            INSERT INTO sessions
+                (paper_id, started_at, official_time_seconds, target_time_seconds)
+            VALUES (?, datetime('now'), ?, ?)
+            """,
+            # Two-thirds rule: the official allowance is the target / (2/3)
+            (body.paper_id, round(body.target_seconds * 1.5), body.target_seconds),
+        )
+        return {"id": str(cur.lastrowid)}
+
+
+@app.patch("/api/sessions/{session_id}/questions/{question_id}")
+def mark_session_question(session_id: int, question_id: str, body: QuestionMark) -> dict:
+    from db.models import get_db
+
+    with get_db(_attempts_db()) as conn:
+        exists = conn.execute("SELECT 1 FROM sessions WHERE id = ?", (session_id,)).fetchone()
+        if not exists:
+            raise HTTPException(404, f"session {session_id} not found")
+        attempt_id = _insert_attempt(conn, session_id, question_id, body)
+        conn.execute(
+            """
+            INSERT INTO question_times (session_id, question_id, time_seconds, status)
+            VALUES (?, ?, ?, 'complete')
+            ON CONFLICT(session_id, question_id)
+            DO UPDATE SET time_seconds = excluded.time_seconds, status = 'complete'
+            """,
+            (session_id, question_id, body.time_seconds),
+        )
+        return {"attempt_id": attempt_id}
+
+
+class QuestionTime(BaseModel):
+    question_id: str
+    time_seconds: int = Field(ge=0)
+
+
+@app.post("/api/sessions/{session_id}/times")
+def log_question_time(session_id: int, body: QuestionTime) -> dict:
+    from db.models import get_db
+
+    with get_db(_attempts_db()) as conn:
+        exists = conn.execute("SELECT 1 FROM sessions WHERE id = ?", (session_id,)).fetchone()
+        if not exists:
+            raise HTTPException(404, f"session {session_id} not found")
+        conn.execute(
+            """
+            INSERT INTO question_times (session_id, question_id, time_seconds, status)
+            VALUES (?, ?, ?, 'complete')
+            ON CONFLICT(session_id, question_id)
+            DO UPDATE SET time_seconds = excluded.time_seconds, status = 'complete'
+            """,
+            (session_id, body.question_id, body.time_seconds),
+        )
+        return {"ok": True}
+
+
+@app.post("/api/sessions/{session_id}/complete")
+def complete_session(session_id: int) -> dict:
+    from db.models import get_db
+
+    with get_db(_attempts_db()) as conn:
+        cur = conn.execute(
+            """
+            UPDATE sessions
+            SET ended_at = datetime('now'),
+                total_time_seconds = (
+                    SELECT COALESCE(SUM(time_seconds), 0)
+                    FROM question_times WHERE session_id = ?
+                )
+            WHERE id = ?
+            """,
+            (session_id, session_id),
+        )
+        if cur.rowcount == 0:
+            raise HTTPException(404, f"session {session_id} not found")
+        return {"id": str(session_id), "completed": True}
+
+
+@app.post("/api/attempts")
+def log_attempt(body: AttemptCreate) -> dict:
+    from db.models import get_db
+
+    with get_db(_attempts_db()) as conn:
+        attempt_id = _insert_attempt(conn, None, body.question_id, body)
+        return {"attempt_id": attempt_id}

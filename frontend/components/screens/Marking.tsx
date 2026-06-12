@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Badge, Button, Card, GradeBadge, Icon, SectionTitle } from "@/components/ui";
 import { gradeFromPct, markingPaper } from "@/lib/data";
+import { api } from "@/lib/api";
 import type { Route } from "@/lib/types";
 
 const MISTAKES = [
@@ -75,6 +76,18 @@ export function Marking({ go }: { go: (r: Route) => void }) {
     const next = [...awarded];
     if (next[active] == null) next[active] = 0;
     setAwarded(next);
+    // Persist; the UI stays usable when the backend is offline.
+    api
+      .logAttempt({
+        question_id: `${paper.code}-Q${q.n}`,
+        awarded: next[active] ?? 0,
+        max_marks: q.marks,
+        confidence: conf,
+        tags,
+        time_seconds: 0,
+        note: note || undefined,
+      })
+      .catch(() => {});
     const n = nextUnmarked(active, next);
     if (n !== -1) goTo(n);
   };

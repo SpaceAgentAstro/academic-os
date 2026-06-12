@@ -32,10 +32,23 @@ export const api = {
   markQuestion: (
     sessionId: string,
     questionId: string,
-    body: { awarded: number; tags: string[]; confidence: number; note?: string }
+    body: {
+      awarded: number;
+      max_marks: number;
+      tags: string[];
+      confidence: number;
+      note?: string;
+      time_seconds?: number;
+    }
   ) =>
-    request<unknown>(`/api/sessions/${sessionId}/questions/${questionId}`, {
+    request<{ attempt_id: number }>(`/api/sessions/${sessionId}/questions/${questionId}`, {
       method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+
+  logQuestionTime: (sessionId: string, body: { question_id: string; time_seconds: number }) =>
+    request<unknown>(`/api/sessions/${sessionId}/times`, {
+      method: "POST",
       body: JSON.stringify(body),
     }),
 
@@ -49,6 +62,7 @@ export const api = {
     confidence: number;
     tags: string[];
     time_seconds: number;
+    note?: string;
   }) =>
-    request<unknown>("/api/attempts", { method: "POST", body: JSON.stringify(body) }),
+    request<{ attempt_id: number }>("/api/attempts", { method: "POST", body: JSON.stringify(body) }),
 };

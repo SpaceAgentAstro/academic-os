@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Badge, Button, Card, Icon, SectionTitle } from "@/components/ui";
 import { markingPaper } from "@/lib/data";
+import { api } from "@/lib/api";
 import type { Route } from "@/lib/types";
 
 function fmt(s: number): string {
@@ -27,6 +28,16 @@ export function Timer({ go }: { go: (r: Route) => void }) {
   const [qTimes, setQTimes] = useState<number[]>([...seed, 41]);
   const [running, setRunning] = useState(true);
   const cur = qTimes.length - 1;
+  const sessionId = useRef<string | null>(null);
+
+  useEffect(() => {
+    // Persist the session; the timer keeps working when the backend is offline.
+    api
+      .createSession({ paper_id: paper.code, target_seconds: TARGET })
+      .then((r) => { sessionId.current = r.id; })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!running) return;
@@ -56,8 +67,21 @@ export function Timer({ go }: { go: (r: Route) => void }) {
     ? ["At risk", "warn"]
     : ["On pace", "accent"];
 
+  const finish = () => {
+    if (sessionId.current) api.completeSession(sessionId.current).catch(() => {});
+    go("marking");
+  };
+
   const nextQ = () => {
-    if (cur >= qs.length - 1) { go("marking"); return; }
+    if (sessionId.current) {
+      api
+        .logQuestionTime(sessionId.current, {
+          question_id: `${paper.code}-Q${qs[cur].n}`,
+          time_seconds: qTimes[cur],
+        })
+        .catch(() => {});
+    }
+    if (cur >= qs.length - 1) { finish(); return; }
     setQTimes((t) => [...t, 0]);
   };
 
@@ -154,7 +178,7 @@ export function Timer({ go }: { go: (r: Route) => void }) {
                 ? "Finish — go to marking"
                 : `Done with Q${qs[cur].n} — next question`}
             </Button>
-            <Button variant="ghost" size="lg" onClick={() => go("marking")}>
+            <Button variant="ghost" size="lg" onClick={finish}>
               Finished paper — go to marking
             </Button>
           </div>

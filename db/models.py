@@ -7,6 +7,7 @@ from typing import Generator
 
 from config.settings import (
     DB_ANALYTICS,
+    DB_ATTEMPTS,
     DB_DIAGRAMS,
     DB_EXAMINER,
     DB_MARKSCHEME,
@@ -23,6 +24,7 @@ _DB_SCHEMA_MAP: dict[Path, str] = {
     DB_EXAMINER:      "examiner_reports.sql",
     DB_DIAGRAMS:      "diagrams.sql",
     DB_ANALYTICS:     "analytics.sql",
+    DB_ATTEMPTS:      "attempts.sql",
 }
 
 
