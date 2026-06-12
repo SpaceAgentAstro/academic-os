@@ -38,10 +38,14 @@ export function ClientLayout() {
   const [route, setRoute] = useState<Route>("home");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dark, setDark] = useState(false);
+  const [greeting, setGreeting] = useState("Good morning, Mouad Maamma.");
 
   useEffect(() => {
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     setDark(prefersDark);
+    const h = new Date().getHours();
+    const word = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening";
+    setGreeting(`Good ${word}, Mouad Maamma.`);
   }, []);
 
   useEffect(() => {
@@ -63,12 +67,14 @@ export function ClientLayout() {
     weaknesses: <Btn icon="notebook" primary onClick={() => go("booklets")}>Generate booklet</Btn>,
     briefing:   <Btn icon="send" onClick={() => go("settings")}>Briefing settings</Btn>,
     tutor:      <Btn icon="plus" onClick={() => go("tutor")}>New chat</Btn>,
-    booklets:   <Btn icon="download" primary>Download PDF</Btn>,
+    booklets:   <Btn icon="download" primary onClick={() => window.print()}>Download PDF</Btn>,
   };
 
-  function Screen() {
+  // Rendered via a plain function call (not <Screen />) so the active screen
+  // keeps its state when this layout re-renders (sidebar/theme toggles).
+  function renderScreen() {
     switch (route) {
-      case "home":       return <Home go={go} greeting="Good morning, Mouad Maamma." />;
+      case "home":       return <Home go={go} greeting={greeting} />;
       case "briefing":   return <Briefing go={go} />;
       case "timer":      return <Timer go={go} />;
       case "marking":    return <Marking go={go} />;
@@ -80,7 +86,7 @@ export function ClientLayout() {
       case "weaknesses": return <Weaknesses go={go} />;
       case "university": return <University />;
       case "settings":   return <Settings dark={dark} toggleDark={toggleDark} />;
-      default:           return <Home go={go} greeting="Good morning, Mouad Maamma." />;
+      default:           return <Home go={go} greeting={greeting} />;
     }
   }
 
@@ -97,7 +103,7 @@ export function ClientLayout() {
       <div className="aos-main">
         <TopBar route={route} setOpen={setSidebarOpen} actions={TOP_ACTIONS[route]} />
         <main className="aos-content">
-          <Screen />
+          {renderScreen()}
         </main>
       </div>
     </div>

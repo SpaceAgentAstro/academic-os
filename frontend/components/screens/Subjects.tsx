@@ -130,7 +130,14 @@ export function Subjects({ go }: { go: (r: Route) => void }) {
             </tr>
           </thead>
           <tbody>
-            {(subjPapers.length ? subjPapers : papers.slice(0, 3)).map((p) => {
+            {subjPapers.length === 0 && (
+              <tr>
+                <td colSpan={6} className="aos-muted" style={{ textAlign: "center" }}>
+                  No attempts logged for this subject yet.
+                </td>
+              </tr>
+            )}
+            {subjPapers.map((p) => {
               const pct = Math.round((p.score / p.max) * 100);
               const delta = p.time - p.target;
               return (

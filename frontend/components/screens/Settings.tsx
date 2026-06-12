@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 import { Card, Icon, Toggle } from "@/components/ui";
 import { subjects } from "@/lib/data";
 import { useStatus } from "@/lib/hooks";
+import type { Grade } from "@/lib/types";
 
 function Group({ icon, title, children }: { icon: string; title: string; children: ReactNode }) {
   return (
@@ -35,6 +36,9 @@ const FALLBACK_DBS: [string, string, boolean][] = [
 
 export function Settings({ dark, toggleDark }: { dark?: boolean; toggleDark?: () => void }) {
   const [time, setTime] = useState("07:00");
+  const [targets, setTargets] = useState<Record<string, Grade>>(() =>
+    Object.fromEntries(subjects.map((s) => [s.id, s.predicted]))
+  );
   const status = useStatus();
 
   return (
@@ -76,7 +80,8 @@ export function Settings({ dark, toggleDark }: { dark?: boolean; toggleDark?: ()
               {(["A*", "A", "B"] as const).map((g) => (
                 <button
                   key={g}
-                  className={`aos-tgt ${s.predicted === g ? "sel" : ""}`}
+                  className={`aos-tgt ${targets[s.id] === g ? "sel" : ""}`}
+                  onClick={() => setTargets((t) => ({ ...t, [s.id]: g }))}
                 >
                   {g}
                 </button>

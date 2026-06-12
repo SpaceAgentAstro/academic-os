@@ -10,7 +10,8 @@ export function gradeFromPct(p: number): Grade {
   if (p >= 70) return "B";
   if (p >= 60) return "C";
   if (p >= 50) return "D";
-  return "E";
+  if (p >= 40) return "E";
+  return "U";
 }
 
 export function masteryBand(m: number): "green" | "amber" | "red" {
@@ -25,7 +26,7 @@ export const subjects: Subject[] = [
   {
     id: "physics", name: "Physics", board: "Pearson Edexcel IAL", short: "PHY",
     current: "A", predicted: "A*", confidence: 84,
-    papers: 12, questions: 847, avg: 74,
+    papers: 12, questions: 787, avg: 74,
     units: [
       { code: "U1", name: "Mechanics & Materials", mastery: 81, questions: 168, topics: [
         { name: "Kinematics", mastery: 88, q: 42 },
@@ -257,7 +258,6 @@ export const markingPaper: MarkingPaper = {
   ],
 };
 
-export const markedCount = 7;
 
 export const universities: University[] = [
   { name: "Imperial College London", course: "Physics (MSci)", req: "A*AA", reqGrades: ["A*","A","A"], current: ["A","A*","A"], readiness: 83, predicted: 91, confidence: "High", trend: "up", risks: ["Physics Unit 5 (mastery 43%)", "Chemistry Unit 6 (mastery 38%)", "Time management (118% of target time)"] },
@@ -290,7 +290,7 @@ export const todaysPriorities: TodayPriority[] = [
 ];
 
 export const coverage: Coverage[] = [
-  { subject: "Physics", attempted: 847, pct: 78 },
+  { subject: "Physics", attempted: 787, pct: 78 },
   { subject: "Mathematics", attempted: 312, pct: 41 },
   { subject: "Further Maths", attempted: 89, pct: 23 },
   { subject: "Chemistry", attempted: 421, pct: 56 },
@@ -358,8 +358,12 @@ export function subjectById(id: string): Subject {
   return subjects.find((s) => s.id === id) ?? subjects[0];
 }
 
+export function subjectName(id: string): string {
+  return subjects.find((s) => s.id === id)?.name ?? id;
+}
+
 export function todayStr(): string {
-  return new Date(2026, 5, 8).toLocaleDateString("en-GB", {
+  return new Date().toLocaleDateString("en-GB", {
     weekday: "short", day: "numeric", month: "short", year: "numeric",
   });
 }

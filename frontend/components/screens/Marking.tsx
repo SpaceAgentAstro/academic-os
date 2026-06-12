@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Badge, Button, Card, GradeBadge, Icon, SectionTitle } from "@/components/ui";
-import { gradeFromPct, markingPaper, markedCount } from "@/lib/data";
+import { gradeFromPct, markingPaper } from "@/lib/data";
 import type { Route } from "@/lib/types";
 
 const MISTAKES = [
@@ -16,10 +16,11 @@ const CONF_COLORS = [
 export function Marking({ go }: { go: (r: Route) => void }) {
   const paper = markingPaper;
   const qs = paper.questions;
+  const firstUnmarked = qs.findIndex((q) => q.awarded == null);
   const [awarded, setAwarded] = useState<(number | null)[]>(
-    qs.map((q, i) => (i < markedCount ? q.awarded : null))
+    qs.map((q) => q.awarded)
   );
-  const [active, setActive] = useState(markedCount);
+  const [active, setActive] = useState(firstUnmarked === -1 ? 0 : firstUnmarked);
   const [tags, setTags] = useState<string[]>([]);
   const [conf, setConf] = useState(3);
   const [uploaded, setUploaded] = useState(false);
@@ -52,20 +53,36 @@ export function Marking({ go }: { go: (r: Route) => void }) {
     return "amber";
   };
 
+  const goTo = (i: number) => {
+    setActive(i);
+    setTags([]);
+    setConf(3);
+    setUploaded(false);
+    setOcr(false);
+    setNote("");
+  };
+
+  // Next unmarked question after `from`, wrapping to the start.
+  const nextUnmarked = (from: number, marked: (number | null)[]) => {
+    for (let step = 1; step <= qs.length; step++) {
+      const n = (from + step) % qs.length;
+      if (marked[n] == null) return n;
+    }
+    return -1;
+  };
+
   const save = () => {
     const next = [...awarded];
     if (next[active] == null) next[active] = 0;
     setAwarded(next);
-    let n = active + 1;
-    while (n < qs.length && next[n] != null) n++;
-    if (n < qs.length) {
-      setActive(n);
-      setTags([]);
-      setConf(3);
-      setUploaded(false);
-      setOcr(false);
-      setNote("");
-    }
+    const n = nextUnmarked(active, next);
+    if (n !== -1) goTo(n);
+  };
+
+  // Skip leaves the question unmarked rather than recording a zero.
+  const skip = () => {
+    const n = nextUnmarked(active, awarded);
+    if (n !== -1) goTo(n);
   };
 
   const upload = () => {
@@ -113,7 +130,7 @@ export function Marking({ go }: { go: (r: Route) => void }) {
                 color: tone === "grey" ? "var(--text-2)" : "#fff",
                 borderColor: tone === "grey" ? "var(--border)" : "transparent",
               }}
-              onClick={() => setActive(i)}
+              onClick={() => goTo(i)}
             >
               {qq.n}
             </button>
@@ -252,7 +269,7 @@ export function Marking({ go }: { go: (r: Route) => void }) {
             <Button variant="primary" icon="arrow-right" onClick={save}>
               Save &amp; next question
             </Button>
-            <Button variant="ghost" onClick={save}>
+            <Button variant="ghost" onClick={skip}>
               Skip for now
             </Button>
           </div>

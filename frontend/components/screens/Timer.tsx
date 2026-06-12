@@ -24,7 +24,7 @@ export function Timer({ go }: { go: (r: Route) => void }) {
 
   const seed = [252, 453, 349, 367];
   const [elapsed, setElapsed] = useState(seed.reduce((a, b) => a + b, 0) + 41);
-  const [qTimes, setQTimes] = useState<number[]>([...seed, 0]);
+  const [qTimes, setQTimes] = useState<number[]>([...seed, 41]);
   const [running, setRunning] = useState(true);
   const cur = qTimes.length - 1;
 
@@ -46,9 +46,9 @@ export function Timer({ go }: { go: (r: Route) => void }) {
   const overTarget = elapsed > TARGET;
   const overOfficial = elapsed > OFFICIAL;
   const remaining = Math.max(0, OFFICIAL - elapsed);
-  const pct = Math.min(100, (elapsed / TARGET) * 100);
+  const pct = Math.min(100, (elapsed / OFFICIAL) * 100);
   const curAvgDelta = qTimes[cur] - avg;
-  const overPace = curAvgDelta > 60;
+  const overPace = done > 0 && curAvgDelta > 60;
 
   const pace: [string, string] = overOfficial
     ? ["Over time", "danger"]
@@ -102,7 +102,7 @@ export function Timer({ go }: { go: (r: Route) => void }) {
               {fmt(elapsed)}
             </div>
             <div className="aos-timer-rem">
-              {fmt(remaining)} remaining · target 60:00
+              {fmt(remaining)} remaining of 1:30:00 · target 1:00:00
             </div>
             <div className="aos-timer-track">
               <div
@@ -111,8 +111,8 @@ export function Timer({ go }: { go: (r: Route) => void }) {
               />
               <div
                 className="aos-timer-mark"
-                style={{ left: "66.6%" }}
-                title="Official 90 min"
+                style={{ left: `${(TARGET / OFFICIAL) * 100}%` }}
+                title="Target 60 min"
               />
             </div>
             <div className="aos-timer-controls">

@@ -8,8 +8,11 @@ import type { Route } from "@/lib/types";
 export function Weaknesses({ go }: { go: (r: Route) => void }) {
   const [subj, setSubj] = useState("all");
   const [sortKey, setSortKey] = useState<"lost" | "avg" | "attempts">("lost");
-  const primary = weaknesses[0];
+  const primary = [...weaknesses].sort((a, b) => b.lost - a.lost)[0];
   const maxOcc = Math.max(...primary.breakdown.map((b) => b.n));
+  const trapReports = examinerTraps
+    .filter((t) => t.topic === primary.topic)
+    .reduce((a, t) => a + t.freq, 0);
 
   let rows = weaknesses.filter((w) => subj === "all" || w.subject === subj);
   rows = [...rows].sort((a, b) =>
@@ -68,7 +71,11 @@ export function Weaknesses({ go }: { go: (r: Route) => void }) {
             </div>
             <div className="aos-pw-fail">
               <span className="aos-pw-flabel">Examiner trap</span>{" "}
-              <Badge tone="amber">Yes · 3 reports</Badge>
+              {primary.trap ? (
+                <Badge tone="amber">Yes · {trapReports} report{trapReports !== 1 ? "s" : ""}</Badge>
+              ) : (
+                <Badge>No</Badge>
+              )}
             </div>
             <div className="aos-pw-actions">
               <Button variant="primary" icon="target" onClick={() => go("tutor")}>
@@ -82,8 +89,8 @@ export function Weaknesses({ go }: { go: (r: Route) => void }) {
           <div className="aos-misgraph">
             <div className="aos-mg-title">Misconception graph</div>
             <div className="aos-mg-root">
-              {subjectById(primary.subject).name} → {primary.unit} → {primary.topic} →
-              Discharging
+              {subjectById(primary.subject).name} → {primary.unit} → {primary.topic} →{" "}
+              {primary.subtopic}
             </div>
             {primary.breakdown.map((b, i) => (
               <div key={b.tag} className="aos-mg-branch">

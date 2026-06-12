@@ -74,7 +74,7 @@ export interface RawPaper {
 }
 
 export function useRawPapers(subject?: string): RawPaper[] {
-  const ep = subject ? `/api/papers?subject=${subject}` : "/api/papers";
+  const ep = subject ? `/api/papers?subject=${encodeURIComponent(subject)}` : "/api/papers";
   return useApi<RawPaper[]>(ep, [], (d) => Array.isArray(d) && d.length > 0);
 }
 

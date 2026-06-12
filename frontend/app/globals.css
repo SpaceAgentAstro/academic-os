@@ -49,7 +49,9 @@
   --g-a-bg:#E6F1FB;  --g-a-fg:#0C447C;
   --g-b-bg:#FAEEDA;  --g-b-fg:#633806;
   --g-c-bg:#FAECE7;  --g-c-fg:#712B13;
+  --g-d-bg:#FBEAE3;  --g-d-fg:#66280C;
   --g-e-bg:#FCEBEB;  --g-e-fg:#501313;
+  --g-u-bg:#F5DDDD;  --g-u-fg:#641010;
 
   --st-master-bg:#E1F5EE; --st-master-fg:#085041;
   --st-risk-bg:#FAEEDA;   --st-risk-fg:#633806;
@@ -83,7 +85,9 @@
   --g-a-bg:rgba(44,82,130,.22);   --g-a-fg:#79A6DC;
   --g-b-bg:rgba(154,95,0,.20);    --g-b-fg:#D49A4E;
   --g-c-bg:rgba(139,31,31,.20);   --g-c-fg:#D98A7A;
+  --g-d-bg:rgba(139,60,20,.22);   --g-d-fg:#D89070;
   --g-e-bg:rgba(139,31,31,.24);   --g-e-fg:#E08D8D;
+  --g-u-bg:rgba(139,31,31,.32);   --g-u-fg:#E89B9B;
   --st-master-bg:rgba(13,122,91,.18); --st-master-fg:#67C9A2;
   --st-risk-bg:rgba(154,95,0,.20);    --st-risk-fg:#D49A4E;
   --st-fail-bg:rgba(139,31,31,.22);   --st-fail-fg:#E08D8D;
@@ -183,7 +187,9 @@ button { font-family: inherit; }
 .aos-badge.grade-a  { background: var(--g-a-bg); color: var(--g-a-fg); }
 .aos-badge.grade-b  { background: var(--g-b-bg); color: var(--g-b-fg); }
 .aos-badge.grade-c  { background: var(--g-c-bg); color: var(--g-c-fg); }
+.aos-badge.grade-d  { background: var(--g-d-bg); color: var(--g-d-fg); }
 .aos-badge.grade-e  { background: var(--g-e-bg); color: var(--g-e-fg); }
+.aos-badge.grade-u  { background: var(--g-u-bg); color: var(--g-u-fg); }
 
 .aos-link { color: var(--primary-bright); font-size: 13px; font-weight: 500; cursor: pointer; text-decoration: none; transition: opacity var(--t); }
 .aos-link:hover { opacity: .7; }

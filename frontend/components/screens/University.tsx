@@ -22,7 +22,7 @@ export function University() {
                 <div className="aos-uni-name">{u.name}</div>
                 <div className="aos-uni-course">{u.course}</div>
               </div>
-              <Badge tone={u.confidence === "High" ? "green" : "amber"}>
+              <Badge tone={u.confidence === "High" ? "green" : u.confidence === "Medium" ? "amber" : "red"}>
                 {u.confidence}
               </Badge>
             </div>
@@ -63,7 +63,11 @@ export function University() {
               <div className="aos-uni-readmeta">
                 <span className="aos-muted">Trend to exam</span>
                 <span className="aos-uni-trend">
-                  <Icon name="trending-up" size={14} /> Improving
+                  <Icon
+                    name={u.trend === "up" ? "trending-up" : u.trend === "down" ? "trending-down" : "minus"}
+                    size={14}
+                  />{" "}
+                  {u.trend === "up" ? "Improving" : u.trend === "down" ? "Declining" : "Stable"}
                 </span>
               </div>
             </div>

@@ -1,6 +1,6 @@
 export type MasteryBand = "green" | "amber" | "red";
 export type BadgeTone = "neutral" | "primary" | "green" | "amber" | "red" | "due";
-export type Grade = "A*" | "A" | "B" | "C" | "D" | "E";
+export type Grade = "A*" | "A" | "B" | "C" | "D" | "E" | "U";
 
 export interface Topic {
   name: string;

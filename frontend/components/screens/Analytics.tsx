@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Card, Icon, Metric, SectionTitle } from "@/components/ui";
+import { Card, GradeBadge, Icon, Metric, SectionTitle } from "@/components/ui";
 import { BarChart, LineChart, ScatterChart } from "@/components/charts";
-import { bandColor, calibration, masteryBand, papers, scoreTrend, subjects, subjectById } from "@/lib/data";
+import { bandColor, calibration, gradeFromPct, masteryBand, papers, scoreTrend, subjects, subjectName } from "@/lib/data";
 import { useCoverage, useRawPapers } from "@/lib/hooks";
 import type { Route } from "@/lib/types";
 
@@ -21,6 +21,11 @@ export function Analytics({ go }: { go: (r: Route) => void }) {
   // Total questions available across all subjects from the live DB
   const totalQAvailable = coverage.reduce((s, c) => s + c.total_questions, 0);
   const totalPapersAvailable = coverage.reduce((s, c) => s + c.papers, 0);
+
+  const avgPct =
+    papers.reduce((a, p) => a + (p.score / p.max) * 100, 0) / papers.length;
+  const conf4 = calibration.find((c) => c.conf === 4)?.score ?? 0;
+  const conf2 = calibration.find((c) => c.conf === 2)?.score ?? 0;
 
   const scatter = papers.map((p) => ({
     x: p.time,
@@ -47,14 +52,14 @@ export function Analytics({ go }: { go: (r: Route) => void }) {
       <div className="aos-metric-row">
         <Metric
           label="Question bank"
-          value={totalQAvailable > 0 ? totalQAvailable.toLocaleString() : "847"}
-          sub={totalPapersAvailable > 0 ? `${totalPapersAvailable} papers ingested` : "of 2,260 attempted"}
+          value={totalQAvailable > 0 ? totalQAvailable.toLocaleString() : "2,260"}
+          sub={totalPapersAvailable > 0 ? `${totalPapersAvailable} papers ingested` : "847 attempted"}
           icon="database"
         />
         <Metric
           label="Average score"
-          value="71.4%"
-          sub="+3.2 pts this month"
+          value={`${avgPct.toFixed(1)}%`}
+          sub={`Across ${papers.length} papers`}
           accent="var(--accent)"
           icon="percentage"
         />
@@ -144,15 +149,15 @@ export function Analytics({ go }: { go: (r: Route) => void }) {
             <div className="aos-calib-note danger">
               <Icon name="trending-down" size={16} />
               <span>
-                You are <strong>overconfident</strong> in Logarithms — confidence 4 avg, actual
-                score 41%.
+                You are <strong>overconfident</strong> — confidence 4 answers average only{" "}
+                {conf4}%.
               </span>
             </div>
             <div className="aos-calib-note accent">
               <Icon name="trending-up" size={16} />
               <span>
-                You are <strong>underconfident</strong> in Mechanics — confidence 2 avg, actual
-                score 78%.
+                You are <strong>underconfident</strong> — confidence 2 answers average{" "}
+                {conf2}%.
               </span>
             </div>
           </div>
@@ -183,12 +188,15 @@ export function Analytics({ go }: { go: (r: Route) => void }) {
                 <tr key={p.id} onClick={() => go("marking")}>
                   <td>{p.session}</td>
                   <td className="aos-td-strong">{p.code}</td>
-                  <td>{subjectById(p.subject).name}</td>
+                  <td>{subjectName(p.subject)}</td>
                   <td>{p.unit}</td>
                   <td>
-                    {p.score}/{p.max}
+                    {p.score}/{p.max}{" "}
+                    <span className="aos-muted">({pct}%)</span>
                   </td>
-                  <td>{pct}%</td>
+                  <td>
+                    <GradeBadge grade={gradeFromPct(pct)} />
+                  </td>
                   <td>{p.time}m</td>
                   <td>{p.target}m</td>
                   <td style={{ color: delta > 0 ? "var(--danger)" : "var(--accent)" }}>
@@ -229,7 +237,7 @@ export function Analytics({ go }: { go: (r: Route) => void }) {
                 {rawPapers.slice(0, 50).map((p) => (
                   <tr key={p.id}>
                     <td className="aos-td-strong">{p.code}</td>
-                    <td>{subjectById(p.subject)?.name ?? p.subject}</td>
+                    <td>{subjectName(p.subject)}</td>
                     <td>{p.unit}</td>
                     <td>{p.session}</td>
                     <td>{p.question_count}</td>

@@ -2,25 +2,28 @@
 
 import { Badge, Button, Card, Dot, GradeBadge, Icon, Metric, SectionTitle } from "@/components/ui";
 import {
-  bandColor, gradeFromPct, masteryBand, papers, subjects,
+  bandColor, dueReviews, gradeFromPct, masteryBand, papers, subjects,
   todaysPriorities, examinerTraps, questionOfDay, todayStr,
 } from "@/lib/data";
 import type { Route } from "@/lib/types";
 
 export function Home({ go, greeting }: { go: (r: Route) => void; greeting?: string }) {
+  const avgPct = Math.round(
+    papers.reduce((a, p) => a + (p.score / p.max) * 100, 0) / papers.length
+  );
   return (
     <div className="aos-page">
       <div className="aos-page-head">
         <h1>{greeting ?? "Good morning, Mouad Maamma."}</h1>
         <p className="aos-page-sub">
-          {todayStr()} · 3 topics due for review · Physics Unit 5 exam in 14 days
+          {todayStr()} · {dueReviews.length} topics due for review · Physics Unit 5 exam in 14 days
         </p>
       </div>
 
       <div className="aos-metric-row">
         <Metric label="Predicted grade" value="A*" sub="Confidence 84%" accent="var(--accent)" icon="award" />
         <Metric label="Questions this week" value="47" sub="+12 vs last week" icon="pencil" />
-        <Metric label="Average score" value="71%" sub="Across 8 papers" icon="percentage" />
+        <Metric label="Average score" value={`${avgPct}%`} sub={`Across ${papers.length} papers`} icon="percentage" />
         <Metric label="Study streak" value="9 days" sub="Personal best: 14" icon="flame" />
       </div>
 
@@ -28,7 +31,7 @@ export function Home({ go, greeting }: { go: (r: Route) => void; greeting?: stri
         {/* LEFT */}
         <div className="aos-col">
           <Card pad={false}>
-            <SectionTitle action={<Badge tone="amber">3 due</Badge>}>
+            <SectionTitle action={<Badge tone="amber">{todaysPriorities.length} due</Badge>}>
               Today&apos;s priorities
             </SectionTitle>
             <div className="aos-list">
@@ -121,10 +124,10 @@ export function Home({ go, greeting }: { go: (r: Route) => void; greeting?: stri
             </div>
             <div className="aos-heat-legend">
               <span>
-                <i style={{ background: "var(--accent)" }} />&gt;80%
+                <i style={{ background: "var(--accent)" }} />≥80%
               </span>
               <span>
-                <i style={{ background: "var(--warn)" }} />50–80%
+                <i style={{ background: "var(--warn)" }} />50–79%
               </span>
               <span>
                 <i style={{ background: "var(--danger)" }} />&lt;50%

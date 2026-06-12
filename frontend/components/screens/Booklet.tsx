@@ -28,10 +28,10 @@ export function Booklet() {
           </p>
         </div>
         <div className="aos-bk-actions">
-          <Button variant="primary" icon="download">
+          <Button variant="primary" icon="download" onClick={() => window.print()}>
             Download PDF
           </Button>
-          <Button variant="ghost" icon="send">
+          <Button variant="ghost" icon="send" disabled>
             Send to Telegram
           </Button>
         </div>

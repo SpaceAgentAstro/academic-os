@@ -22,7 +22,13 @@ export function Badge({
 }
 
 const gradeClass = (g: Grade) =>
-  g === "A*" ? "grade-as" : g === "A" ? "grade-a" : g === "B" ? "grade-b" : g === "C" ? "grade-c" : "grade-e";
+  g === "A*" ? "grade-as"
+  : g === "A" ? "grade-a"
+  : g === "B" ? "grade-b"
+  : g === "C" ? "grade-c"
+  : g === "D" ? "grade-d"
+  : g === "E" ? "grade-e"
+  : "grade-u";
 
 export function GradeBadge({ grade }: { grade: Grade }) {
   return <span className={`aos-badge ${gradeClass(grade)}`}>{grade}</span>;
