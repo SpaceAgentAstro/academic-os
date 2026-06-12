@@ -50,18 +50,29 @@
 - Local main and origin/main have diverged (local holds ingestion-era commits;
   origin holds frontend/vercel merges) — reconcile before next push.
 
-## Bulk Ingestion (in progress 2026-06-12)
-- Source: `papers/` (chemistry, cs, further_maths, maths, physics) — ~4,000 PDFs
+## Bulk Ingestion ✅ (completed 2026-06-12, zero errors across all 3 stages)
+- Source: `papers/` (chemistry, cs, further_maths, maths, physics)
 - Pre-ingest DB backup: `data/backups/pre-ingest-20260611-211201/`
-- Stage 1 (question papers): `nohup` python PID — log
-  `/Users/mouadmaamma/.claude/jobs/774e4792/tmp/ingest_qp.out`; done when
-  `=== STAGE1 DONE ===` appears. Idempotent — safe to relaunch; skips
-  PDFs already in `papers.source_file`.
-- Stage 2 (mark schemes): `/Users/mouadmaamma/.claude/jobs/774e4792/tmp/ingest_ms.py`
-- Stage 3 (examiner reports): `/Users/mouadmaamma/.claude/jobs/774e4792/tmp/ingest_er.py`
-  (skips paper_ids already in reports — observations are blind INSERTs)
-- Run stages sequentially with `PYTHONUNBUFFERED=1 nohup .venv/bin/python <script> >> <log> 2><errlog> &`
-- Known limitation: scanned-only pages OCR via tesseract now available;
+- Stage 1 question papers: 1,130 PDFs read, 0 errors
+- Stage 2 mark schemes: 1,402/1,605 matched, 0 errors (203 unmatched = no QP in bank)
+- Stage 3 examiner reports: 371 new + 737 already ingested, 212 unmatched, 0 errors
+- All 5 DBs pass `PRAGMA integrity_check`
+
+### Final database counts
+| Subject | Papers | Questions |
+|---|---|---|
+| Mathematics | 655 | 6,427 |
+| Chemistry | 294 | 4,594 |
+| Physics | 284 | 4,212 |
+| Computer Science | 91 | 769 |
+| Further Mathematics | 91 | 792 |
+| **Total** | **1,415** | **16,794** |
+
+- markscheme.db: 18,139 mark entries across 3,323 questions
+- examiner_reports.db: 602 reports, 69,239 observations, 498 misconceptions
+- Re-running ingestion is safe (idempotent: skips `papers.source_file`,
+  MS upserts, ER skips already-ingested paper_ids)
+- Known limitation: scanned-only pages now OCR-able (tesseract installed);
   earlier-ingested scanned papers were skipped (re-ingest only if needed)
 
 ## Go-Live Checklist
