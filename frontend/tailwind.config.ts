@@ -7,12 +7,9 @@ const config: Config = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {
-      colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-      },
-    },
+    // All colours come from CSS custom properties — disable Tailwind colour defaults
+    colors: {},
+    extend: {},
   },
   plugins: [],
 };

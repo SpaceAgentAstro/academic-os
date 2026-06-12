@@ -1,0 +1,835 @@
+{
+  "subject": {
+    "name": "Mathematics",
+    "board": "Pearson Edexcel",
+    "qualification": "IAL",
+    "code": "MATH"
+  },
+  "modules": [
+    {
+      "name": "Pure Mathematics 1",
+      "code": "P1",
+      "sequence": 1,
+      "topics": [
+        {
+          "name": "Algebra and Functions",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Indices and Surds",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Use and manipulate surds, including rationalising the denominator"},
+                {"spec_ref": "1.1.2", "description": "Use the laws of indices for all rational exponents"},
+                {"spec_ref": "1.1.3", "description": "Simplify expressions involving indices and surds"}
+              ]
+            },
+            {
+              "name": "Quadratics",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "1.2.1", "description": "Solve quadratic equations by factorisation, completing the square, and the quadratic formula"},
+                {"spec_ref": "1.2.2", "description": "Complete the square for a quadratic expression"},
+                {"spec_ref": "1.2.3", "description": "Use the discriminant to determine the nature of roots"},
+                {"spec_ref": "1.2.4", "description": "Solve quadratic inequalities in one variable"}
+              ]
+            },
+            {
+              "name": "Graphs and Transformations",
+              "sequence": 3,
+              "spec_points": [
+                {"spec_ref": "1.3.1", "description": "Sketch and interpret graphs of common functions including y = |f(x)| and y = f(|x|)"},
+                {"spec_ref": "1.3.2", "description": "Apply transformations: y = f(x+a), y = f(ax), y = af(x), y = f(x)+a"},
+                {"spec_ref": "1.3.3", "description": "Understand and use the modulus function"}
+              ]
+            },
+            {
+              "name": "Simultaneous and Linear Equations",
+              "sequence": 4,
+              "spec_points": [
+                {"spec_ref": "1.4.1", "description": "Solve simultaneous equations, including one linear and one quadratic"},
+                {"spec_ref": "1.4.2", "description": "Interpret geometric significance of solutions"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Coordinate Geometry",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Straight Lines",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Know and use the equation y = mx + c and related forms"},
+                {"spec_ref": "2.1.2", "description": "Find the equation of a line through two points or through a point with a given gradient"},
+                {"spec_ref": "2.1.3", "description": "Understand the conditions for parallel and perpendicular lines"},
+                {"spec_ref": "2.1.4", "description": "Calculate distances and midpoints using coordinates"}
+              ]
+            },
+            {
+              "name": "Circles",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "2.2.1", "description": "Know the equation of a circle in standard form (x-a)² + (y-b)² = r²"},
+                {"spec_ref": "2.2.2", "description": "Complete the square to find the centre and radius of a circle"},
+                {"spec_ref": "2.2.3", "description": "Find the equation of the tangent to a circle at a given point"},
+                {"spec_ref": "2.2.4", "description": "Solve problems involving circles and lines"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Further Algebra",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Binomial Expansion",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Use the binomial expansion of (a+bx)^n for positive integer n"},
+                {"spec_ref": "3.1.2", "description": "Find a specific term in a binomial expansion"},
+                {"spec_ref": "3.1.3", "description": "Know and use Pascal's triangle and nCr notation"}
+              ]
+            },
+            {
+              "name": "Sequences and Series",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "3.2.1", "description": "Understand arithmetic sequences and series; use Sn = n/2(a+l) and Sn = n/2(2a+(n-1)d)"},
+                {"spec_ref": "3.2.2", "description": "Understand geometric sequences and series; use Sn = a(1-rⁿ)/(1-r)"},
+                {"spec_ref": "3.2.3", "description": "Know conditions for convergence of geometric series; use S∞ = a/(1-r)"},
+                {"spec_ref": "3.2.4", "description": "Use sigma notation"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Trigonometry",
+          "sequence": 4,
+          "subtopics": [
+            {
+              "name": "Trigonometric Ratios and Graphs",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "4.1.1", "description": "Know exact values of sin, cos, tan for 0°, 30°, 45°, 60°, 90°"},
+                {"spec_ref": "4.1.2", "description": "Sketch graphs of sin, cos, tan and understand their properties"},
+                {"spec_ref": "4.1.3", "description": "Apply transformations to trigonometric graphs"}
+              ]
+            },
+            {
+              "name": "Trigonometric Identities and Equations",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "4.2.1", "description": "Know and use sin²θ + cos²θ ≡ 1 and tanθ ≡ sinθ/cosθ"},
+                {"spec_ref": "4.2.2", "description": "Solve trigonometric equations in given intervals"},
+                {"spec_ref": "4.2.3", "description": "Use identities to simplify expressions and solve equations"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Exponentials and Logarithms",
+          "sequence": 5,
+          "subtopics": [
+            {
+              "name": "Exponential Functions",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "5.1.1", "description": "Know and use the function eˣ and its graph"},
+                {"spec_ref": "5.1.2", "description": "Know that d/dx(eˣ) = eˣ"},
+                {"spec_ref": "5.1.3", "description": "Sketch and interpret exponential growth and decay models"}
+              ]
+            },
+            {
+              "name": "Logarithms",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "5.2.1", "description": "Know and use the definition and properties of logarithms"},
+                {"spec_ref": "5.2.2", "description": "Use laws of logarithms: log(ab), log(a/b), log(aⁿ)"},
+                {"spec_ref": "5.2.3", "description": "Solve equations of the form aˣ = b"},
+                {"spec_ref": "5.2.4", "description": "Use logarithmic graphs to linearise exponential and power relationships"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Differentiation",
+          "sequence": 6,
+          "subtopics": [
+            {
+              "name": "Basic Differentiation",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "6.1.1", "description": "Differentiate polynomials and expressions of the form xⁿ"},
+                {"spec_ref": "6.1.2", "description": "Differentiate eˣ, ln x, sin x, cos x, tan x"},
+                {"spec_ref": "6.1.3", "description": "Apply the chain rule, product rule, and quotient rule"}
+              ]
+            },
+            {
+              "name": "Applications of Differentiation",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "6.2.1", "description": "Find stationary points and determine their nature"},
+                {"spec_ref": "6.2.2", "description": "Find equations of tangents and normals to curves"},
+                {"spec_ref": "6.2.3", "description": "Sketch curves using information from calculus"},
+                {"spec_ref": "6.2.4", "description": "Apply differentiation to optimisation problems"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Integration",
+          "sequence": 7,
+          "subtopics": [
+            {
+              "name": "Basic Integration",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "7.1.1", "description": "Integrate polynomials and functions of the form xⁿ (n ≠ -1)"},
+                {"spec_ref": "7.1.2", "description": "Integrate eˣ, 1/x, sin x, cos x"},
+                {"spec_ref": "7.1.3", "description": "Evaluate definite integrals"}
+              ]
+            },
+            {
+              "name": "Applications of Integration",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "7.2.1", "description": "Find the area under a curve and between curves"},
+                {"spec_ref": "7.2.2", "description": "Understand the relationship between differentiation and integration as reverse processes"},
+                {"spec_ref": "7.2.3", "description": "Evaluate areas involving negative regions"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pure Mathematics 2",
+      "code": "P2",
+      "sequence": 2,
+      "topics": [
+        {
+          "name": "Proof",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Methods of Proof",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Understand and construct proofs by contradiction"},
+                {"spec_ref": "1.1.2", "description": "Understand and use proof by mathematical induction"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Further Algebra",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Algebraic Division and Factor Theorem",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Perform algebraic long division"},
+                {"spec_ref": "2.1.2", "description": "Use the factor theorem and remainder theorem"},
+                {"spec_ref": "2.1.3", "description": "Factorise polynomials using the factor theorem"}
+              ]
+            },
+            {
+              "name": "Partial Fractions",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "2.2.1", "description": "Decompose rational expressions into partial fractions with distinct linear factors"},
+                {"spec_ref": "2.2.2", "description": "Decompose with repeated linear factors"},
+                {"spec_ref": "2.2.3", "description": "Use partial fractions in integration and binomial expansion"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Coordinate Geometry in the (x, y) Plane",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Parametric Equations",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Understand parametric equations and sketch parametric curves"},
+                {"spec_ref": "3.1.2", "description": "Convert between parametric and Cartesian forms"},
+                {"spec_ref": "3.1.3", "description": "Find dy/dx for parametric equations using the chain rule"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Further Trigonometry",
+          "sequence": 4,
+          "subtopics": [
+            {
+              "name": "Reciprocal Trigonometric Functions",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "4.1.1", "description": "Know and use sec x, cosec x, cot x and their graphs"},
+                {"spec_ref": "4.1.2", "description": "Prove and use identities 1 + tan²x ≡ sec²x and 1 + cot²x ≡ cosec²x"}
+              ]
+            },
+            {
+              "name": "Inverse Trigonometric Functions",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "4.2.1", "description": "Know and use arcsin, arccos, arctan and their domains and ranges"},
+                {"spec_ref": "4.2.2", "description": "Differentiate inverse trigonometric functions"}
+              ]
+            },
+            {
+              "name": "Addition Formulae",
+              "sequence": 3,
+              "spec_points": [
+                {"spec_ref": "4.3.1", "description": "Know and use sin(A±B), cos(A±B), tan(A±B) formulae"},
+                {"spec_ref": "4.3.2", "description": "Derive and use double angle formulae"},
+                {"spec_ref": "4.3.3", "description": "Express a cos θ + b sin θ in the form R cos(θ ± α) or R sin(θ ± α)"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Exponentials and Logarithms",
+          "sequence": 5,
+          "subtopics": [
+            {
+              "name": "Further Logarithms",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "5.1.1", "description": "Differentiate and integrate ln x and related functions"},
+                {"spec_ref": "5.1.2", "description": "Solve differential equations involving logarithms"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Further Differentiation",
+          "sequence": 6,
+          "subtopics": [
+            {
+              "name": "Implicit Differentiation",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "6.1.1", "description": "Differentiate implicitly, including finding dy/dx in terms of x and y"},
+                {"spec_ref": "6.1.2", "description": "Find stationary points on implicit curves"}
+              ]
+            },
+            {
+              "name": "Rates of Change",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "6.2.1", "description": "Form and solve differential equations involving rates of change"},
+                {"spec_ref": "6.2.2", "description": "Use connected rates of change with the chain rule"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Further Integration",
+          "sequence": 7,
+          "subtopics": [
+            {
+              "name": "Integration Techniques",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "7.1.1", "description": "Integrate using substitution"},
+                {"spec_ref": "7.1.2", "description": "Integrate by parts"},
+                {"spec_ref": "7.1.3", "description": "Integrate using partial fractions"},
+                {"spec_ref": "7.1.4", "description": "Integrate trigonometric functions using identities"}
+              ]
+            },
+            {
+              "name": "Differential Equations",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "7.2.1", "description": "Solve first-order differential equations with separable variables"},
+                {"spec_ref": "7.2.2", "description": "Interpret differential equations in context; formulate and solve growth/decay models"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pure Mathematics 3",
+      "code": "P3",
+      "sequence": 3,
+      "topics": [
+        {
+          "name": "Vectors",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Vector Algebra",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Use vectors in 3D, including magnitude, addition, and scalar multiplication"},
+                {"spec_ref": "1.1.2", "description": "Calculate the scalar (dot) product and use it to find angles between vectors"},
+                {"spec_ref": "1.1.3", "description": "Use unit vectors and position vectors"}
+              ]
+            },
+            {
+              "name": "Lines in 3D",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "1.2.1", "description": "Find the vector equation of a straight line in the form r = a + tb"},
+                {"spec_ref": "1.2.2", "description": "Determine whether lines are parallel, intersecting, or skew"},
+                {"spec_ref": "1.2.3", "description": "Find angles between lines and the distance between skew lines"}
+              ]
+            },
+            {
+              "name": "Planes",
+              "sequence": 3,
+              "spec_points": [
+                {"spec_ref": "1.3.1", "description": "Find the equation of a plane in Cartesian and vector form"},
+                {"spec_ref": "1.3.2", "description": "Find the angle between two planes and between a line and a plane"},
+                {"spec_ref": "1.3.3", "description": "Find the intersection of lines and planes"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Numerical Methods",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Root Finding",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Locate a root by sign change, using a table of values"},
+                {"spec_ref": "2.1.2", "description": "Apply the Newton-Raphson method to find roots"},
+                {"spec_ref": "2.1.3", "description": "Use fixed-point iteration xₙ₊₁ = g(xₙ) and understand convergence"}
+              ]
+            },
+            {
+              "name": "Numerical Integration",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "2.2.1", "description": "Use the trapezium rule to estimate definite integrals"},
+                {"spec_ref": "2.2.2", "description": "Understand sources of error in numerical methods"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Further Algebra",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Complex Numbers",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Understand imaginary and complex numbers in the form a + bi"},
+                {"spec_ref": "3.1.2", "description": "Add, subtract, multiply, and divide complex numbers"},
+                {"spec_ref": "3.1.3", "description": "Find complex roots of quadratics"},
+                {"spec_ref": "3.1.4", "description": "Understand the Argand diagram; represent complex numbers geometrically"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pure Mathematics 4",
+      "code": "P4",
+      "sequence": 4,
+      "topics": [
+        {
+          "name": "Further Proof",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Proof by Induction",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Prove statements involving series summations using induction"},
+                {"spec_ref": "1.1.2", "description": "Prove divisibility results using induction"},
+                {"spec_ref": "1.1.3", "description": "Prove results about matrix powers using induction"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Further Calculus",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Volumes of Revolution",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Calculate volumes of revolution about the x-axis and y-axis"},
+                {"spec_ref": "2.1.2", "description": "Calculate volumes for parametric curves"}
+              ]
+            },
+            {
+              "name": "Second Order Differential Equations",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "2.2.1", "description": "Solve homogeneous second-order linear ODEs with constant coefficients"},
+                {"spec_ref": "2.2.2", "description": "Find particular integrals for inhomogeneous equations (polynomial, exponential, trig forcing)"},
+                {"spec_ref": "2.2.3", "description": "Apply initial and boundary conditions; interpret solutions in context"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Polar Coordinates",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Polar Equations",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Convert between polar and Cartesian coordinates"},
+                {"spec_ref": "3.1.2", "description": "Sketch curves given in polar form"},
+                {"spec_ref": "3.1.3", "description": "Find the area enclosed by a polar curve using A = ½∫r² dθ"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Statistics 1",
+      "code": "S1",
+      "sequence": 5,
+      "topics": [
+        {
+          "name": "Data Presentation and Interpretation",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Measures of Location and Spread",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Calculate and interpret mean, median, mode, range, IQR, variance, and standard deviation"},
+                {"spec_ref": "1.1.2", "description": "Calculate measures for grouped data"},
+                {"spec_ref": "1.1.3", "description": "Understand coding and its effect on mean and standard deviation"}
+              ]
+            },
+            {
+              "name": "Diagrams and Graphs",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "1.2.1", "description": "Interpret and draw histograms, box plots, cumulative frequency diagrams"},
+                {"spec_ref": "1.2.2", "description": "Compare distributions using measures and diagrams"},
+                {"spec_ref": "1.2.3", "description": "Identify outliers and skewness"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Probability",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Basic Probability",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Use Venn diagrams and tree diagrams to solve probability problems"},
+                {"spec_ref": "2.1.2", "description": "Understand mutually exclusive and independent events"},
+                {"spec_ref": "2.1.3", "description": "Use the addition law P(A∪B) = P(A) + P(B) - P(A∩B)"},
+                {"spec_ref": "2.1.4", "description": "Use conditional probability P(A|B) = P(A∩B)/P(B)"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Correlation and Regression",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Regression and Correlation",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Calculate and interpret the product moment correlation coefficient (PMCC)"},
+                {"spec_ref": "3.1.2", "description": "Find and use the equation of a regression line y on x"},
+                {"spec_ref": "3.1.3", "description": "Understand interpolation, extrapolation, and their limitations"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Discrete Random Variables",
+          "sequence": 4,
+          "subtopics": [
+            {
+              "name": "Probability Distributions",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "4.1.1", "description": "Set up and use probability distribution tables"},
+                {"spec_ref": "4.1.2", "description": "Calculate E(X), Var(X), E(aX+b), Var(aX+b)"}
+              ]
+            },
+            {
+              "name": "Binomial Distribution",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "4.2.1", "description": "Recognise and use the binomial distribution B(n, p)"},
+                {"spec_ref": "4.2.2", "description": "Calculate binomial probabilities and use cumulative tables"},
+                {"spec_ref": "4.2.3", "description": "Apply binomial distribution to modelling real situations"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Normal Distribution",
+          "sequence": 5,
+          "subtopics": [
+            {
+              "name": "The Normal Distribution",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "5.1.1", "description": "Understand the Normal distribution N(μ, σ²) and its properties"},
+                {"spec_ref": "5.1.2", "description": "Standardise to Z ~ N(0, 1) and use Z-tables"},
+                {"spec_ref": "5.1.3", "description": "Find unknown μ or σ given probability information"},
+                {"spec_ref": "5.1.4", "description": "Apply the Normal distribution as a model"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Statistics 2",
+      "code": "S2",
+      "sequence": 6,
+      "topics": [
+        {
+          "name": "Further Probability",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Continuous Random Variables",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Understand and use probability density functions (PDFs) and cumulative distribution functions (CDFs)"},
+                {"spec_ref": "1.1.2", "description": "Calculate E(X) and Var(X) for continuous distributions"},
+                {"spec_ref": "1.1.3", "description": "Find the median and mode of a continuous distribution"}
+              ]
+            },
+            {
+              "name": "Poisson Distribution",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "1.2.1", "description": "Recognise and use the Poisson distribution Po(λ)"},
+                {"spec_ref": "1.2.2", "description": "Calculate Poisson probabilities and use tables"},
+                {"spec_ref": "1.2.3", "description": "Know that for a Poisson distribution E(X) = Var(X) = λ"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Hypothesis Testing",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Hypothesis Testing Principles",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Set up null and alternative hypotheses; one-tailed and two-tailed tests"},
+                {"spec_ref": "2.1.2", "description": "Conduct hypothesis tests for the binomial parameter p"},
+                {"spec_ref": "2.1.3", "description": "Conduct hypothesis tests for the Poisson parameter λ"},
+                {"spec_ref": "2.1.4", "description": "Understand Type I and Type II errors and their probabilities"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Combinations of Random Variables",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Linear Combinations",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Find the distribution of aX + bY for independent Normal random variables"},
+                {"spec_ref": "3.1.2", "description": "Understand the Central Limit Theorem and apply it to sample means"},
+                {"spec_ref": "3.1.3", "description": "Apply the Normal approximation to the Binomial distribution"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mechanics 1",
+      "code": "M1",
+      "sequence": 7,
+      "topics": [
+        {
+          "name": "Kinematics",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Motion in a Straight Line",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Use the SUVAT equations for uniform acceleration"},
+                {"spec_ref": "1.1.2", "description": "Interpret displacement-time and velocity-time graphs"},
+                {"spec_ref": "1.1.3", "description": "Solve problems involving vertical motion under gravity"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Statics",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Forces and Equilibrium",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Resolve forces into components and find resultants"},
+                {"spec_ref": "2.1.2", "description": "Apply conditions for equilibrium of a particle"},
+                {"spec_ref": "2.1.3", "description": "Use friction: F ≤ μN; maximum friction F = μN"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Dynamics",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Newton's Laws",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Apply Newton's second law F = ma to single particles and connected particles"},
+                {"spec_ref": "3.1.2", "description": "Solve problems involving Atwood machines and connected particles on inclines"},
+                {"spec_ref": "3.1.3", "description": "Understand apparent weight and lift problems"}
+              ]
+            },
+            {
+              "name": "Momentum and Impulse",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "3.2.1", "description": "Use momentum = mv and the impulse-momentum principle: I = Δ(mv)"},
+                {"spec_ref": "3.2.2", "description": "Apply conservation of momentum to collisions"},
+                {"spec_ref": "3.2.3", "description": "Use Newton's law of restitution: e = relative speed of separation / relative speed of approach"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mechanics 2",
+      "code": "M2",
+      "sequence": 8,
+      "topics": [
+        {
+          "name": "Kinematics",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Variable Acceleration",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Use differentiation and integration to solve variable acceleration problems"},
+                {"spec_ref": "1.1.2", "description": "Apply calculus to projectile motion"}
+              ]
+            },
+            {
+              "name": "Projectile Motion",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "1.2.1", "description": "Model projectile motion with horizontal/vertical components under constant gravity"},
+                {"spec_ref": "1.2.2", "description": "Find the range, maximum height, and time of flight"},
+                {"spec_ref": "1.2.3", "description": "Derive and use the trajectory equation y = x tanα - gx²/(2u²cos²α)"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Moments and Equilibrium",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Moments of Forces",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Calculate moments of forces about a point"},
+                {"spec_ref": "2.1.2", "description": "Apply conditions for equilibrium of a rigid body (ΣF = 0, ΣM = 0)"},
+                {"spec_ref": "2.1.3", "description": "Solve problems involving beams on supports and tipping/sliding"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Energy, Work, and Power",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Work-Energy Theorem",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Use the work-energy theorem: Work done = ΔKE"},
+                {"spec_ref": "3.1.2", "description": "Apply conservation of energy (KE + PE = constant)"},
+                {"spec_ref": "3.1.3", "description": "Calculate power P = Fv; solve problems involving engine power and resistance"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mechanics 3",
+      "code": "M3",
+      "sequence": 9,
+      "topics": [
+        {
+          "name": "Circular Motion",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Uniform Circular Motion",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Understand radian measure; use arc length s = rθ and sector area A = ½r²θ"},
+                {"spec_ref": "1.1.2", "description": "Apply centripetal acceleration a = v²/r = rω² and force F = mv²/r"},
+                {"spec_ref": "1.1.3", "description": "Solve problems involving conical pendulums, banked tracks, and vertical circles"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Simple Harmonic Motion",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "SHM Equations",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Understand and derive the SHM equation ẍ = -ω²x"},
+                {"spec_ref": "2.1.2", "description": "Use x = A cos(ωt+φ); find amplitude, period, frequency"},
+                {"spec_ref": "2.1.3", "description": "Use v² = ω²(A² - x²) to find velocity at a given displacement"},
+                {"spec_ref": "2.1.4", "description": "Model springs and elastic strings using Hooke's Law with SHM"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Elastic Strings and Springs",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Hooke's Law",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Use Hooke's Law T = kx = λx/l for elastic strings and springs"},
+                {"spec_ref": "3.1.2", "description": "Calculate elastic potential energy EPE = λx²/(2l)"},
+                {"spec_ref": "3.1.3", "description": "Apply conservation of energy to problems involving elastic strings and springs"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

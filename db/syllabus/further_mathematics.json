@@ -1,0 +1,366 @@
+{
+  "subject": {
+    "name": "Further Mathematics",
+    "board": "Pearson Edexcel",
+    "qualification": "IAL",
+    "code": "FM"
+  },
+  "modules": [
+    {
+      "name": "Further Pure Mathematics 1",
+      "code": "FP1",
+      "sequence": 1,
+      "topics": [
+        {
+          "name": "Complex Numbers",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Argand Diagram and Modulus-Argument Form",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Represent complex numbers on an Argand diagram"},
+                {"spec_ref": "1.1.2", "description": "Convert between Cartesian form a+bi and modulus-argument form r(cosθ + i sinθ)"},
+                {"spec_ref": "1.1.3", "description": "Multiply and divide complex numbers in modulus-argument form"},
+                {"spec_ref": "1.1.4", "description": "Find loci in the Argand diagram: |z - a| = r, arg(z - a) = θ"}
+              ]
+            },
+            {
+              "name": "De Moivre's Theorem",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "1.2.1", "description": "State and use De Moivre's theorem: [r(cosθ + i sinθ)]ⁿ = rⁿ(cosnθ + i sinnθ)"},
+                {"spec_ref": "1.2.2", "description": "Use De Moivre's theorem to find roots of complex numbers"},
+                {"spec_ref": "1.2.3", "description": "Express trigonometric identities for cosⁿθ and sinⁿθ using De Moivre's theorem"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Series",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Summation of Series",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Know and use Σr = n(n+1)/2, Σr² = n(n+1)(2n+1)/6, Σr³ = [n(n+1)/2]²"},
+                {"spec_ref": "2.1.2", "description": "Use the method of differences to sum series"},
+                {"spec_ref": "2.1.3", "description": "Prove summation results by induction"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Matrices",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Matrix Operations and Transformations",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Add, subtract, and multiply matrices; understand non-commutativity"},
+                {"spec_ref": "3.1.2", "description": "Find the inverse of a 2×2 matrix; know det(AB) = det(A)×det(B)"},
+                {"spec_ref": "3.1.3", "description": "Use matrices to represent 2D linear transformations: rotations, reflections, enlargements, shears"},
+                {"spec_ref": "3.1.4", "description": "Find the eigenvalues and eigenvectors of 2×2 matrices"},
+                {"spec_ref": "3.1.5", "description": "Diagonalise 2×2 matrices where possible"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Proof by Induction",
+          "sequence": 4,
+          "subtopics": [
+            {
+              "name": "Mathematical Induction",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "4.1.1", "description": "Prove results for series by mathematical induction"},
+                {"spec_ref": "4.1.2", "description": "Prove divisibility results by induction"},
+                {"spec_ref": "4.1.3", "description": "Prove matrix power results by induction"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Roots of Polynomial Equations",
+          "sequence": 5,
+          "subtopics": [
+            {
+              "name": "Symmetric Functions of Roots",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "5.1.1", "description": "Use Vieta's formulae for quadratic, cubic, and quartic equations"},
+                {"spec_ref": "5.1.2", "description": "Form new equations whose roots are related to those of a given equation"},
+                {"spec_ref": "5.1.3", "description": "Express symmetric functions (Σα, Σαβ, Σα²) in terms of coefficients"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Further Pure Mathematics 2",
+      "code": "FP2",
+      "sequence": 2,
+      "topics": [
+        {
+          "name": "Further Complex Numbers",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Euler's Form and Exponential Form",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Know and use Euler's formula e^(iθ) = cosθ + i sinθ"},
+                {"spec_ref": "1.1.2", "description": "Express complex numbers in exponential form re^(iθ)"},
+                {"spec_ref": "1.1.3", "description": "Solve problems using exponential form"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Further Matrices",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "3×3 Matrices",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Calculate the determinant and inverse of a 3×3 matrix"},
+                {"spec_ref": "2.1.2", "description": "Use matrices to represent 3D transformations"},
+                {"spec_ref": "2.1.3", "description": "Solve systems of 3 linear equations using matrix methods or row reduction"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Inequalities",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Algebraic Inequalities",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Solve inequalities involving rational functions: f(x)/g(x) > k"},
+                {"spec_ref": "3.1.2", "description": "Solve inequalities involving modulus"},
+                {"spec_ref": "3.1.3", "description": "Solve inequalities graphically and algebraically"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Further Coordinate Geometry",
+          "sequence": 4,
+          "subtopics": [
+            {
+              "name": "Conic Sections",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "4.1.1", "description": "Know and use the equations of parabola (y² = 4ax), ellipse (x²/a² + y²/b² = 1), hyperbola (x²/a² - y²/b² = 1)"},
+                {"spec_ref": "4.1.2", "description": "Find tangents and normals to conic sections"},
+                {"spec_ref": "4.1.3", "description": "Understand the focus-directrix property and eccentricity"},
+                {"spec_ref": "4.1.4", "description": "Use parametric forms for conics"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Calculus of Hyperbolic Functions",
+          "sequence": 5,
+          "subtopics": [
+            {
+              "name": "Hyperbolic Functions",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "5.1.1", "description": "Know definitions: sinh x = (eˣ - e⁻ˣ)/2, cosh x = (eˣ + e⁻ˣ)/2, tanh x"},
+                {"spec_ref": "5.1.2", "description": "Prove and use identities: cosh²x - sinh²x = 1"},
+                {"spec_ref": "5.1.3", "description": "Differentiate and integrate hyperbolic functions"},
+                {"spec_ref": "5.1.4", "description": "Know and use inverse hyperbolic functions arsinh, arcosh, artanh"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Further Integration Techniques",
+          "sequence": 6,
+          "subtopics": [
+            {
+              "name": "Reduction Formulae",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "6.1.1", "description": "Derive and use reduction formulae for Iₙ = ∫xⁿeˣ dx, ∫sinⁿx dx etc."},
+                {"spec_ref": "6.1.2", "description": "Apply reduction formulae to evaluate definite integrals"}
+              ]
+            },
+            {
+              "name": "Arc Length and Surface Area",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "6.2.1", "description": "Calculate arc length: L = ∫√(1 + (dy/dx)²) dx"},
+                {"spec_ref": "6.2.2", "description": "Calculate surface area of revolution: S = 2π∫y √(1 + (dy/dx)²) dx"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Further Pure Mathematics 3",
+      "code": "FP3",
+      "sequence": 3,
+      "topics": [
+        {
+          "name": "Further Calculus",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Series Expansions",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Find Maclaurin and Taylor series expansions for standard functions"},
+                {"spec_ref": "1.1.2", "description": "Use series to find limits and approximate integrals"},
+                {"spec_ref": "1.1.3", "description": "Determine the range of validity for a series"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Further Differential Equations",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "First-order Systems and Coupled Equations",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Solve first-order linear differential equations using an integrating factor"},
+                {"spec_ref": "2.1.2", "description": "Solve coupled first-order linear differential equations"}
+              ]
+            },
+            {
+              "name": "Further Second-order ODEs",
+              "sequence": 2,
+              "spec_points": [
+                {"spec_ref": "2.2.1", "description": "Solve second-order linear ODEs with variable coefficients using substitution"},
+                {"spec_ref": "2.2.2", "description": "Use substitution to reduce order of differential equations"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Further Vectors",
+          "sequence": 3,
+          "subtopics": [
+            {
+              "name": "Vector Product",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "3.1.1", "description": "Calculate the vector (cross) product a × b and interpret geometrically"},
+                {"spec_ref": "3.1.2", "description": "Use the vector product to find areas of parallelograms and triangles"},
+                {"spec_ref": "3.1.3", "description": "Calculate scalar triple product and use it for volume of parallelepiped"},
+                {"spec_ref": "3.1.4", "description": "Find the equation of a plane using the normal vector"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mechanics 1",
+      "code": "FM1",
+      "sequence": 4,
+      "topics": [
+        {
+          "name": "Collisions",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Direct and Oblique Collisions",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Apply Newton's law of restitution to direct collisions"},
+                {"spec_ref": "1.1.2", "description": "Solve problems involving oblique collisions with a smooth surface"},
+                {"spec_ref": "1.1.3", "description": "Use conservation of momentum and energy loss in collisions"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Further Circular Motion",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Non-uniform Circular Motion",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Apply energy conservation and Newton's second law to circular motion problems"},
+                {"spec_ref": "2.1.2", "description": "Find conditions for completing a vertical circle or leaving the surface"},
+                {"spec_ref": "2.1.3", "description": "Solve problems involving particles on the inside/outside of a sphere"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mechanics 2",
+      "code": "FM2",
+      "sequence": 5,
+      "topics": [
+        {
+          "name": "Moments of Inertia",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Moment of Inertia Calculations",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Calculate moments of inertia for standard bodies: rod, disc, sphere, ring"},
+                {"spec_ref": "1.1.2", "description": "Use the parallel axis and perpendicular axis theorems"},
+                {"spec_ref": "1.1.3", "description": "Apply the equation of motion for rotation: τ = Iα"}
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Angular Motion",
+          "sequence": 2,
+          "subtopics": [
+            {
+              "name": "Rotation and Rolling",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "2.1.1", "description": "Apply angular kinematic equations (analogous to SUVAT)"},
+                {"spec_ref": "2.1.2", "description": "Use kinetic energy of rotation KE = ½Iω²"},
+                {"spec_ref": "2.1.3", "description": "Solve problems involving rolling without slipping"}
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mechanics 3",
+      "code": "FM3",
+      "sequence": 6,
+      "topics": [
+        {
+          "name": "Statics",
+          "sequence": 1,
+          "subtopics": [
+            {
+              "name": "Centre of Mass",
+              "sequence": 1,
+              "spec_points": [
+                {"spec_ref": "1.1.1", "description": "Find the centre of mass of composite bodies and laminas"},
+                {"spec_ref": "1.1.2", "description": "Find the centre of mass of arcs and sectors using integration"},
+                {"spec_ref": "1.1.3", "description": "Solve problems involving tilting and hanging"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
