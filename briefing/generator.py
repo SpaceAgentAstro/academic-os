@@ -17,6 +17,107 @@ class DailyBriefing:
     section4_status: str = ""         # System Status
 
 
+def get_due_review_items(limit: int = 10) -> list[dict[str, Any]]:
+    """Spaced-repetition items due today, overdue first, weakest first.
+
+    Falls back to the lowest-mastery topics when nothing is due yet —
+    never returns an empty list while spaced_repetition_items has rows.
+    """
+    from config.settings import DB_PROGRESS
+    from db.models import get_db
+
+    with get_db(DB_PROGRESS) as conn:
+        rows = conn.execute(
+            """
+            SELECT topic, subtopic, unit, subject, due_date, mastery,
+                   ease_factor, interval_days,
+                   CAST(JULIANDAY('now') - JULIANDAY(due_date) AS INTEGER) AS days_overdue
+            FROM spaced_repetition_items
+            WHERE due_date <= DATE('now')
+            ORDER BY
+                CASE WHEN due_date < DATE('now') THEN 0 ELSE 1 END,
+                mastery ASC,
+                due_date ASC
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+        if not rows:
+            rows = conn.execute(
+                """
+                SELECT topic, subtopic, unit, subject, due_date, mastery,
+                       ease_factor, interval_days, 0 AS days_overdue
+                FROM spaced_repetition_items
+                ORDER BY mastery ASC
+                LIMIT 5
+                """,
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+
+def select_question_of_the_day() -> dict[str, Any] | None:
+    """Pick today's question from the #1 priority topic.
+
+    Fallback chain (never silently None while questions exist):
+    1. Unattempted difficulty-3/4 question on the priority topic
+    2. Any difficulty-3/4 question on the priority topic
+    3. Any unattempted difficulty-3/4 question
+    4. Most recently ingested question
+    """
+    from config.settings import DB_QUESTION_BANK, DB_ATTEMPTS
+    from db.models import get_db
+
+    due = get_due_review_items(limit=1)
+    priority_topic = due[0]["topic"] if due else None
+
+    base = """
+        SELECT q.id, q.question_number, q.marks, q.difficulty, q.raw_text,
+               q.command_word, p.subject, p.module_code, p.paper_code, p.session
+        FROM questions q
+        JOIN papers p ON p.id = q.paper_id
+    """
+
+    with get_db(DB_QUESTION_BANK) as conn:
+        conn.execute("ATTACH DATABASE ? AS att", (str(DB_ATTEMPTS),))
+        attempted = "q.id NOT IN (SELECT question_id FROM att.attempts)"
+        text_ok = "q.raw_text IS NOT NULL AND LENGTH(TRIM(q.raw_text)) > 40"
+
+        candidates: list[tuple[str, tuple]] = []
+        if priority_topic:
+            topic_join = (
+                "JOIN question_topics qt ON qt.question_id = q.id "
+                "AND qt.topic LIKE '%' || ? || '%'"
+            )
+            candidates.append((
+                f"{base} {topic_join} WHERE q.difficulty IN (3,4) AND {attempted} AND {text_ok} "
+                "ORDER BY RANDOM() LIMIT 1",
+                (priority_topic,),
+            ))
+            candidates.append((
+                f"{base} {topic_join} WHERE q.difficulty IN (3,4) AND {text_ok} "
+                "ORDER BY RANDOM() LIMIT 1",
+                (priority_topic,),
+            ))
+        candidates.append((
+            f"{base} WHERE q.difficulty IN (3,4) AND {attempted} AND {text_ok} "
+            "ORDER BY RANDOM() LIMIT 1",
+            (),
+        ))
+        candidates.append((
+            f"{base} WHERE {text_ok} ORDER BY q.id DESC LIMIT 1",
+            (),
+        ))
+
+        for sql, params in candidates:
+            row = conn.execute(sql, params).fetchone()
+            if row:
+                result = dict(row)
+                result["priority_topic"] = priority_topic
+                return result
+
+    return None
+
+
 def _section1_academic_intelligence() -> str:
     """Retrieval-first: pull latest misconceptions and examiner findings."""
     from agents.delivery.retrieval_agent import get_misconceptions
@@ -69,10 +170,30 @@ def _section2_curriculum_progress() -> str:
 
 
 def _section3_adaptive_revision() -> str:
-    """Retrieval-first: build revision priorities from analytics + question bank."""
+    """Retrieval-first: due reviews, question of the day, then revision packs."""
     from agents.delivery.revision_agent import build_revision_pack
 
     lines = ["*Adaptive Revision*"]
+
+    due = get_due_review_items(limit=5)
+    if due:
+        lines.append("_Due for review:_")
+        for item in due:
+            overdue = item.get("days_overdue") or 0
+            flag = f" (overdue {overdue}d)" if overdue > 0 else ""
+            lines.append(
+                f"• {item['subject']} {item['unit']} — {item['topic']} "
+                f"(mastery {item['mastery']:.0%}){flag}"
+            )
+
+    qod = select_question_of_the_day()
+    if qod:
+        lines.append(
+            f"\n_Question of the day_ — {qod['subject']} {qod['module_code']} "
+            f"Q{qod['question_number']} ({qod['marks']} marks, difficulty {qod['difficulty']}):"
+        )
+        lines.append((qod["raw_text"] or "").strip()[:280])
+
     subjects = ["Mathematics", "Physics", "Chemistry", "Computer Science"]
 
     for subject in subjects:
@@ -152,3 +273,17 @@ def format_for_telegram(briefing: DailyBriefing) -> str:
     ]
     body = separator.join(s for s in sections if s)
     return header + separator + body
+
+
+if __name__ == "__main__":
+    import sys
+
+    briefing = generate_daily_briefing()
+    text = format_for_telegram(briefing)
+    print(text)
+
+    if "--send-now" in sys.argv:
+        from agents.delivery.telegram_agent import TelegramAgent
+
+        TelegramAgent().send_message(text)
+        print("\n[sent to Telegram]")

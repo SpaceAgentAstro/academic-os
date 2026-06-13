@@ -17,6 +17,16 @@ import { University } from "@/components/screens/University";
 import { Settings } from "@/components/screens/Settings";
 import type { Route } from "@/lib/types";
 
+// Shared cross-screen state: which paper/session is live, which question to deep-dive
+export interface AppSession {
+  paperId: string | null;
+  sessionId: number | null;
+  questionId: string | null;
+  setPaperId: (id: string | null) => void;
+  setSessionId: (id: number | null) => void;
+  setQuestionId: (id: string | null) => void;
+}
+
 function Btn({ children, icon, primary, onClick }: {
   children: ReactNode;
   icon?: string;
@@ -38,14 +48,13 @@ export function ClientLayout() {
   const [route, setRoute] = useState<Route>("home");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dark, setDark] = useState(false);
-  const [greeting, setGreeting] = useState("Good morning, Mouad Maamma.");
+  const [paperId, setPaperId] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<number | null>(null);
+  const [questionId, setQuestionId] = useState<string | null>(null);
 
   useEffect(() => {
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     setDark(prefersDark);
-    const h = new Date().getHours();
-    const word = h < 12 ? "morning" : h < 18 ? "afternoon" : "evening";
-    setGreeting(`Good ${word}, Mouad Maamma.`);
   }, []);
 
   useEffect(() => {
@@ -59,34 +68,35 @@ export function ClientLayout() {
 
   const toggleDark = () => setDark((d) => !d);
 
-  const TOP_ACTIONS: Partial<Record<Route, ReactNode>> = {
-    home:       <Btn icon="player-play" primary onClick={() => go("timer")}>Start paper</Btn>,
-    timer:      <Btn icon="checkbox" onClick={() => go("marking")}>Go to marking</Btn>,
-    marking:    <Btn icon="player-play" primary onClick={() => go("timer")}>New session</Btn>,
-    subjects:   <Btn icon="player-play" primary onClick={() => go("timer")}>Start paper</Btn>,
-    weaknesses: <Btn icon="notebook" primary onClick={() => go("booklets")}>Generate booklet</Btn>,
-    briefing:   <Btn icon="send" onClick={() => go("settings")}>Briefing settings</Btn>,
-    tutor:      <Btn icon="plus" onClick={() => go("tutor")}>New chat</Btn>,
-    booklets:   <Btn icon="download" primary onClick={() => window.print()}>Download PDF</Btn>,
+  const session: AppSession = {
+    paperId, sessionId, questionId,
+    setPaperId, setSessionId, setQuestionId,
   };
 
-  // Rendered via a plain function call (not <Screen />) so the active screen
-  // keeps its state when this layout re-renders (sidebar/theme toggles).
-  function renderScreen() {
+  const TOP_ACTIONS: Partial<Record<Route, ReactNode>> = {
+    home:     <Btn icon="player-play" primary onClick={() => go("timer")}>Start paper</Btn>,
+    timer:    sessionId != null
+      ? <Btn icon="checkbox" onClick={() => go("marking")}>Go to marking</Btn>
+      : undefined,
+    marking:  <Btn icon="player-play" primary onClick={() => go("timer")}>New session</Btn>,
+    subjects: <Btn icon="player-play" primary onClick={() => go("timer")}>Start paper</Btn>,
+  };
+
+  function Screen() {
     switch (route) {
-      case "home":       return <Home go={go} greeting={greeting} />;
-      case "briefing":   return <Briefing go={go} />;
-      case "timer":      return <Timer go={go} />;
-      case "marking":    return <Marking go={go} />;
+      case "home":       return <Home go={go} />;
+      case "briefing":   return <Briefing go={go} session={session} />;
+      case "timer":      return <Timer go={go} session={session} />;
+      case "marking":    return <Marking go={go} session={session} />;
       case "subjects":   return <Subjects go={go} />;
-      case "questions":  return <QuestionReview go={go} />;
+      case "questions":  return <QuestionReview go={go} session={session} />;
       case "tutor":      return <Tutor />;
       case "booklets":   return <Booklet />;
       case "analytics":  return <Analytics go={go} />;
       case "weaknesses": return <Weaknesses go={go} />;
       case "university": return <University />;
       case "settings":   return <Settings dark={dark} toggleDark={toggleDark} />;
-      default:           return <Home go={go} greeting={greeting} />;
+      default:           return <Home go={go} />;
     }
   }
 
@@ -103,7 +113,7 @@ export function ClientLayout() {
       <div className="aos-main">
         <TopBar route={route} setOpen={setSidebarOpen} actions={TOP_ACTIONS[route]} />
         <main className="aos-content">
-          {renderScreen()}
+          <Screen />
         </main>
       </div>
     </div>

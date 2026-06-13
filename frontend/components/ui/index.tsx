@@ -195,6 +195,41 @@ export function Icon({
   );
 }
 
+// ---- Async states -------------------------------------------------------------
+export function Loading({ label = "Loading…" }: { label?: string }) {
+  return (
+    <div className="aos-card" style={{ padding: 32, display: "flex", alignItems: "center", gap: 12, justifyContent: "center" }}>
+      <div className="aos-spinner" />
+      <span style={{ color: "var(--text-2)", fontSize: 14 }}>{label}</span>
+    </div>
+  );
+}
+
+export function ErrorState({ message, retry }: { message: string; retry?: () => void }) {
+  return (
+    <div className="aos-card" style={{ padding: 32, textAlign: "center" }}>
+      <Icon name="plug-x" size={28} style={{ color: "var(--danger)" }} />
+      <div style={{ fontWeight: 600, marginTop: 10 }}>Could not load data</div>
+      <div style={{ color: "var(--text-2)", fontSize: 13, marginTop: 4 }}>{message}</div>
+      {retry && (
+        <div style={{ marginTop: 14 }}>
+          <Button variant="primary" icon="refresh" onClick={retry}>Retry</Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function EmptyState({ icon = "database-off", title, sub }: { icon?: string; title: string; sub?: string }) {
+  return (
+    <div className="aos-card" style={{ padding: 32, textAlign: "center" }}>
+      <Icon name={icon} size={28} style={{ color: "var(--text-3)" }} />
+      <div style={{ fontWeight: 600, marginTop: 10 }}>{title}</div>
+      {sub && <div style={{ color: "var(--text-2)", fontSize: 13, marginTop: 4 }}>{sub}</div>}
+    </div>
+  );
+}
+
 // ---- Toggle -----------------------------------------------------------------
 export function Toggle({
   on: init,

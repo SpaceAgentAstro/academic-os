@@ -1,7 +1,45 @@
 # RESTART.md — Session Continuity
 
 ## Current Phase
-**ALL PHASES COMPLETE — Production Ready**
+**ALL PHASES COMPLETE + LIVE DATA WIRED END TO END (2026-06-12)**
+
+## Live-Data Rebuild (2026-06-12, branch fix-vercel-frontend)
+
+Replaced the Codex frontend/backend stubs with a real end-to-end pipeline.
+Zero dummy data: every number on screen traces to a SQLite query.
+
+### Databases (live counts at rebuild)
+- question_bank.db: 1,415 papers · 16,794 questions (all with topic links)
+- markscheme.db: 18,139 mark points across 3,323 questions
+- examiner_reports.db: 69,239 observations · 498 active misconceptions
+- progress.db: 94 syllabus topics + NEW `spaced_repetition_items` (94 rows, SM-2 state)
+- attempts.db: NEW schema — `sessions`, `question_times`, `attempts`, `attempt_mistakes` (empty until first real paper)
+
+### Backend (backend/main.py, FastAPI on :8000)
+`uvicorn backend.main:app --reload --port 8000` (PYTHONPATH=. from repo root)
+- GET /api/health · /api/papers · /api/papers/{id}/questions · /api/questions/{id}
+- GET /api/dashboard (priorities, recent papers, per-unit mastery, predicted grades, traps, QOD, streak)
+- POST /api/sessions · PATCH /api/sessions/{id}/questions/{qid} · POST /api/sessions/{id}/complete
+- POST /api/attempts — validates, writes attempt + mistakes, updates SM-2 mastery in progress.db
+- GET /api/weaknesses (incl. confidence traps) · /api/status · /api/coverage · /api/briefing · /api/analytics
+
+### Frontend (frontend/, Next.js on :3000)
+- lib/api.ts: typed client, throws on non-200, no fallbacks
+- lib/hooks.ts: useFetch with loading/error/retry — dummy-fallback pattern removed
+- lib/data.ts: pure display helpers only (365 lines of fabricated data deleted)
+- All screens show honest loading/error/empty states; Timer→Marking flow drives real sessions
+- Tutor / Booklets / University targets: honest "not available" states (no endpoints yet)
+
+### briefing/generator.py
+- NEW get_due_review_items() and select_question_of_the_day() with fallback chains
+- `python -m briefing.generator` prints the briefing; `--send-now` sends via Telegram
+
+### Pending
+- Telegram send test: credentials live in main-repo .env; outbound send awaits user approval
+- Universities table (university readiness returns [] until targets are configured)
+- Tutor chat + booklet generation endpoints
+
+## Previous Phase Summary
 
 ## Phase Completion Summary (2026-06-06)
 
