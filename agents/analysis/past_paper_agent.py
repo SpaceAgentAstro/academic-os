@@ -6,7 +6,6 @@ import sqlite3
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
 
 from ingestion.ocr import extract_full_text, extract_text_pdfplumber
 from ingestion.extractor import extract_question_blocks
@@ -107,8 +106,11 @@ _MODULE_PATTERNS: list[tuple[re.Pattern, str, str, str]] = [
 ]
 
 
-def detect_paper_type(pdf_path: Path) -> str:
-    """Identify whether a PDF is a question_paper, mark_scheme, or examiner_report."""
+def detect_paper_type(pdf_path: Path, pages: list[dict] | None = None) -> str:
+    """Identify whether a PDF is a question_paper, mark_scheme, or examiner_report.
+
+    Pass an already-parsed ``pages`` list to avoid re-parsing the PDF (RT-008).
+    """
     name_lower = pdf_path.stem.lower()
     # Edexcel IAL filename conventions: _msc_ = mark scheme, _pef_ = examiner report, _que_ = question paper
     if "_msc_" in name_lower or any(k in name_lower for k in ("mark_scheme", "markscheme", "_ms", "-ms")):
@@ -119,7 +121,8 @@ def detect_paper_type(pdf_path: Path) -> str:
         return "question_paper"
 
     try:
-        pages = extract_text_pdfplumber(pdf_path)
+        if pages is None:
+            pages = extract_text_pdfplumber(pdf_path)
         sample = " ".join(p["text"] for p in pages[:2])
     except Exception:
         return "question_paper"
@@ -133,10 +136,12 @@ def detect_paper_type(pdf_path: Path) -> str:
 
 def extract_metadata(pdf_path: Path) -> PaperMetadata:
     """Extract qualification, subject, module, paper code, and session from a PDF."""
+    pages: list[dict] | None
     try:
         pages = extract_text_pdfplumber(pdf_path)
         sample = " ".join(p["text"] for p in pages[:2])
     except Exception:
+        pages = None
         sample = ""
 
     combined = f"{pdf_path.stem} {sample}"
@@ -162,7 +167,7 @@ def extract_metadata(pdf_path: Path) -> PaperMetadata:
         year = int(year_match.group(1)) if year_match else 0
         session = str(year) if year else "Unknown"
 
-    paper_type = detect_paper_type(pdf_path)
+    paper_type = detect_paper_type(pdf_path, pages=pages)
 
     return PaperMetadata(
         qualification=qualification,
@@ -249,7 +254,7 @@ def _write_paper_to_db(
             continue  # extractor occasionally emits the same number twice; skip duplicates
         seen_q_nums.add(q.question_number)
 
-        q_cur = conn.execute(
+        conn.execute(
             """
             INSERT INTO questions
                 (paper_id, question_number, marks, command_word, difficulty,

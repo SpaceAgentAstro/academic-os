@@ -44,6 +44,17 @@ function Btn({ children, icon, primary, onClick }: {
   );
 }
 
+const ROUTES: Route[] = [
+  "home", "briefing", "timer", "marking", "subjects", "questions",
+  "tutor", "booklets", "analytics", "weaknesses", "university", "settings",
+];
+
+function routeFromHash(): Route {
+  if (typeof window === "undefined") return "home";
+  const h = window.location.hash.replace(/^#\/?/, "") as Route;
+  return ROUTES.includes(h) ? h : "home";
+}
+
 export function ClientLayout() {
   const [route, setRoute] = useState<Route>("home");
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -52,18 +63,54 @@ export function ClientLayout() {
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [questionId, setQuestionId] = useState<string | null>(null);
 
+  // Theme: the inline script in app/layout.tsx already applied data-theme before
+  // paint (RT-015); read it back so React state matches and there is no flash.
   useEffect(() => {
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setDark(prefersDark);
+    const applied = document.documentElement.getAttribute("data-theme");
+    setDark(applied === "dark");
   }, []);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
   }, [dark]);
 
+  // URL-hash routing so back/forward and refresh work and screens are linkable
+  // (RT-019). Restore in-progress session IDs from sessionStorage on load.
+  useEffect(() => {
+    setRoute(routeFromHash());
+    try {
+      const saved = sessionStorage.getItem("aos-session");
+      if (saved) {
+        const s = JSON.parse(saved);
+        if (s.paperId) setPaperId(s.paperId);
+        if (s.sessionId != null) setSessionId(s.sessionId);
+        if (s.questionId) setQuestionId(s.questionId);
+      }
+    } catch {
+      /* ignore malformed storage */
+    }
+    const onHash = () => setRoute(routeFromHash());
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        "aos-session",
+        JSON.stringify({ paperId, sessionId, questionId }),
+      );
+    } catch {
+      /* storage may be unavailable */
+    }
+  }, [paperId, sessionId, questionId]);
+
   const go = (r: Route) => {
     setRoute(r);
     setSidebarOpen(false);
+    if (typeof window !== "undefined" && routeFromHash() !== r) {
+      window.location.hash = `#/${r}`;
+    }
   };
 
   const toggleDark = () => setDark((d) => !d);
@@ -84,19 +131,19 @@ export function ClientLayout() {
 
   function Screen() {
     switch (route) {
-      case "home":       return <Home go={go} />;
+      case "home":       return <Home go={go} session={session} />;
       case "briefing":   return <Briefing go={go} session={session} />;
       case "timer":      return <Timer go={go} session={session} />;
       case "marking":    return <Marking go={go} session={session} />;
-      case "subjects":   return <Subjects go={go} />;
+      case "subjects":   return <Subjects go={go} session={session} />;
       case "questions":  return <QuestionReview go={go} session={session} />;
       case "tutor":      return <Tutor />;
       case "booklets":   return <Booklet />;
-      case "analytics":  return <Analytics go={go} />;
+      case "analytics":  return <Analytics go={go} session={session} />;
       case "weaknesses": return <Weaknesses go={go} />;
       case "university": return <University />;
       case "settings":   return <Settings dark={dark} toggleDark={toggleDark} />;
-      default:           return <Home go={go} />;
+      default:           return <Home go={go} session={session} />;
     }
   }
 

@@ -55,6 +55,23 @@ def seed_all(conn=None, dry_run: bool = False) -> dict[str, int]:
         return _run(c)
 
 
+def _seed_spaced_repetition_item(conn, subject_name: str, unit_code: str,
+                                 topic_name: str, subtopic_name: str | None) -> None:
+    """Materialise one spaced-repetition item per (subject, unit, topic).
+
+    Idempotent via the UNIQUE(subject, unit, topic) constraint. Seeds initial
+    SM-2 state: mastery 0, ease 2.5, interval 1 day, due today.
+    """
+    conn.execute(
+        """
+        INSERT OR IGNORE INTO spaced_repetition_items
+            (subject, unit, topic, subtopic, mastery, ease_factor, interval_days, due_date)
+        VALUES (?, ?, ?, ?, 0.0, 2.5, 1.0, DATE('now'))
+        """,
+        (subject_name, unit_code, topic_name, subtopic_name),
+    )
+
+
 def _seed_subject(conn, data: dict, dry_run: bool = False) -> int:
     """Insert one subject tree. Returns number of spec_points inserted."""
     subj = data["subject"]
@@ -108,7 +125,16 @@ def _seed_subject(conn, data: dict, dry_run: bool = False) -> int:
             ).fetchone()
             topic_id = topic_id_row[0] if topic_id_row else -1
 
-            for subtopic in topic.get("subtopics", []):
+            # Materialise the flat spaced-repetition projection consumed by the
+            # backend API and the briefing (one row per subject/unit/topic).
+            subtopics = topic.get("subtopics", [])
+            if not dry_run:
+                first_subtopic = subtopics[0]["name"] if subtopics else None
+                _seed_spaced_repetition_item(
+                    conn, subj["name"], mod["code"], topic["name"], first_subtopic,
+                )
+
+            for subtopic in subtopics:
                 if not dry_run:
                     conn.execute(
                         """

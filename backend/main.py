@@ -12,36 +12,137 @@ from __future__ import annotations
 import logging
 import sqlite3
 import sys
+import time
+from collections import deque
+from contextlib import asynccontextmanager
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field, field_validator
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from config.settings import (
-    DB_ANALYTICS,
+    ALLOWED_ORIGINS,
+    API_KEY,
     DB_ATTEMPTS,
     DB_EXAMINER,
     DB_MARKSCHEME,
     DB_PROGRESS,
     DB_QUESTION_BANK,
+    RATE_LIMIT_PER_MINUTE,
 )
 from db.models import get_db
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="AcademicOS API", version="2.0.0")
+# Routes that never require authentication (liveness / readiness probes).
+_PUBLIC_PATHS = {"/api/health", "/", "/docs", "/openapi.json", "/redoc"}
+
+
+def require_api_key(
+    request: Request,
+    x_api_key: str | None = Header(default=None),
+    authorization: str | None = Header(default=None),
+) -> None:
+    """Authentication dependency (default-deny when an API key is configured).
+
+    When ``API_KEY`` is set in the environment, every protected route requires a
+    matching ``X-API-Key`` header or ``Authorization: Bearer <key>``. When it is
+    unset the API runs open (local dev) and a warning is emitted at startup.
+    Liveness/readiness and docs paths are always exempt.
+    """
+    if not API_KEY or request.url.path in _PUBLIC_PATHS:
+        return
+    presented = x_api_key
+    if not presented and authorization and authorization.lower().startswith("bearer "):
+        presented = authorization[7:].strip()
+    if presented != API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key")
+
+
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    if not API_KEY:
+        logger.warning(
+            "API_KEY is not set — the API is running without authentication. "
+            "Set API_KEY (and bind to localhost behind a proxy) before any public deployment."
+        )
+    yield
+
+
+app = FastAPI(
+    title="AcademicOS API",
+    version="2.0.0",
+    dependencies=[Depends(require_api_key)],
+    lifespan=_lifespan,
+)
+
+
+# --- CORS (env-driven; never combine wildcard with credentials) -------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=False,
     allow_methods=["GET", "POST", "PATCH"],
-    allow_headers=["*"],
+    allow_headers=["*", "X-API-Key", "Authorization"],
 )
+
+
+# --- Security response headers ----------------------------------------------
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault(
+            "Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'"
+        )
+        response.headers.setdefault(
+            "Strict-Transport-Security", "max-age=31536000; includeSubDomains"
+        )
+        return response
+
+
+app.add_middleware(SecurityHeadersMiddleware)
+
+
+# --- Lightweight in-process rate limiting (per client IP, sliding window) ----
+_REQUEST_LOG: dict[str, deque[float]] = {}
+
+
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        if RATE_LIMIT_PER_MINUTE <= 0:
+            return await call_next(request)
+        client = request.client.host if request.client else "unknown"
+        now = time.monotonic()
+        window = _REQUEST_LOG.setdefault(client, deque())
+        while window and now - window[0] > 60.0:
+            window.popleft()
+        if len(window) >= RATE_LIMIT_PER_MINUTE:
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Rate limit exceeded. Try again shortly."},
+            )
+        window.append(now)
+        return await call_next(request)
+
+
+app.add_middleware(RateLimitMiddleware)
+
+
+# --- Generic error handling (no internal detail leakage) --------------------
+@app.exception_handler(Exception)
+async def _unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    logger.exception("Unhandled error on %s %s", request.method, request.url.path)
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 # Map DB subject strings to frontend IDs
 SUBJECT_ID: dict[str, str] = {
@@ -53,13 +154,26 @@ SUBJECT_ID: dict[str, str] = {
 }
 
 
+def _is_setup_error(exc: sqlite3.Error) -> bool:
+    """True when the error indicates missing infrastructure (table/db) rather
+    than simply absent rows — i.e. a setup/schema problem worth surfacing."""
+    msg = str(exc).lower()
+    return "no such table" in msg or "no such column" in msg or "no such database" in msg
+
+
 def _query(db_path: Path, sql: str, params: tuple = ()) -> list[dict[str, Any]]:
-    """Read query returning list of dicts. Empty list if the DB/table is missing."""
+    """Read query returning list of dicts. Empty list if the DB has no rows.
+
+    A genuinely *missing* table/column (setup error) is logged at ERROR rather
+    than silently swallowed, so schema drift is observable instead of looking
+    like ordinary empty data (see RT-007).
+    """
     try:
         with get_db(db_path) as conn:
             return [dict(r) for r in conn.execute(sql, params).fetchall()]
     except sqlite3.Error as exc:
-        logger.warning("Query failed on %s: %s", db_path.name, exc)
+        level = logging.ERROR if _is_setup_error(exc) else logging.WARNING
+        logger.log(level, "Query failed on %s: %s", db_path.name, exc)
         return []
 
 
@@ -69,11 +183,14 @@ def _scalar(db_path: Path, sql: str, params: tuple = (), default: Any = 0) -> An
             row = conn.execute(sql, params).fetchone()
             return row[0] if row and row[0] is not None else default
     except sqlite3.Error as exc:
-        logger.warning("Scalar query failed on %s: %s", db_path.name, exc)
+        level = logging.ERROR if _is_setup_error(exc) else logging.WARNING
+        logger.log(level, "Scalar query failed on %s: %s", db_path.name, exc)
         return default
 
 
 def _grade_from_mastery(mastery: float) -> str:
+    """Map a 0–1 mastery value to a grade band (used for mastery-derived
+    current/predicted grades — distinct from exam-percentage grades)."""
     if mastery >= 0.85:
         return "A*"
     if mastery >= 0.70:
@@ -83,6 +200,31 @@ def _grade_from_mastery(mastery: float) -> str:
     if mastery >= 0.40:
         return "C"
     return "U"
+
+
+# Single source of truth for exam-percentage grades, matching the frontend
+# `gradeFromPct` and Edexcel IAL boundaries (A*=90, A=80, B=70, C=60, D=50, E=40).
+_GRADE_BOUNDARIES: list[tuple[float, str]] = [
+    (90, "A*"), (80, "A"), (70, "B"), (60, "C"), (50, "D"), (40, "E"),
+]
+
+
+def _grade_from_pct(pct: float) -> str:
+    """Map an exam percentage (0–100) to an Edexcel IAL grade."""
+    for threshold, grade in _GRADE_BOUNDARIES:
+        if pct >= threshold:
+            return grade
+    return "U"
+
+
+def _projected_mastery(mastery: float) -> float:
+    """Project mastery forward with a *diminishing* improvement buffer.
+
+    Replaces the previous flat +0.10 bump (LOGIC-013): the buffer scales with
+    remaining headroom (10% of the gap to 1.0), so a weak topic gains more than
+    a near-mastered one and no projection can exceed 1.0.
+    """
+    return min(1.0, mastery + 0.10 * (1.0 - mastery))
 
 
 # ---------------------------------------------------------------------------
@@ -122,7 +264,10 @@ def get_health() -> dict:
 # ---------------------------------------------------------------------------
 
 @app.get("/api/papers")
-def get_papers(subject: str | None = None, limit: int = 500) -> list[dict]:
+def get_papers(
+    subject: str | None = None,
+    limit: int = Query(default=500, ge=1, le=500),
+) -> list[dict]:
     where = "WHERE p.paper_type = 'question_paper'"
     params: list[Any] = []
     if subject:
@@ -163,7 +308,7 @@ def get_papers(subject: str | None = None, limit: int = 500) -> list[dict]:
     for s in session_rows:
         latest_by_paper.setdefault(s["paper_id"], s)
 
-    today = date.today()
+    today = datetime.now(timezone.utc).date()
     result = []
     for r in rows:
         raw = r["paper_code"] or ""
@@ -511,13 +656,32 @@ def _recent_papers(limit: int = 5) -> list[dict]:
             "score": s["awarded"] if s["available"] else None,
             "max": s["available"] if s["available"] else None,
             "pct": round(pct) if pct is not None else None,
-            "grade": _grade_from_mastery(pct / 100) if pct is not None else None,
+            "grade": _grade_from_pct(pct) if pct is not None else None,
             "time_seconds": s["total_time_seconds"],
             "target_seconds": s["target_time_seconds"],
             "started_at": s["started_at"],
             "completed": s["ended_at"] is not None,
         })
     return result
+
+
+def _paper_stats() -> dict:
+    """Headline paper KPIs computed over *all* marked sessions, not just the
+    5-row recent list — so Home and Analytics agree (LOGIC-008)."""
+    rows = _query(
+        DB_ATTEMPTS,
+        """
+        SELECT s.id,
+               (SELECT COALESCE(SUM(a.marks_awarded), 0) FROM attempts a WHERE a.session_id = s.id) AS awarded,
+               (SELECT COALESCE(SUM(a.marks_available), 0) FROM attempts a WHERE a.session_id = s.id) AS available
+        FROM sessions s
+        """,
+    )
+    pcts = [r["awarded"] / r["available"] * 100 for r in rows if (r["available"] or 0) > 0]
+    return {
+        "completed_count": len(pcts),
+        "average_pct": round(sum(pcts) / len(pcts)) if pcts else None,
+    }
 
 
 def _subject_mastery() -> list[dict]:
@@ -579,6 +743,7 @@ def _subject_mastery() -> list[dict]:
             "code": u["unit"],
             "mastery": round((u["mastery"] or 0.0) * 100),
             "topic_count": u["topics"],
+            "weak_topics": u["weak_topics"] or 0,
             "questions": qcounts.get((u["subject"], (u["unit"] or "").replace(" ", "")), 0),
             "topics": topics_by_unit.get((u["subject"], u["unit"]), []),
         })
@@ -593,7 +758,7 @@ def _subject_mastery() -> list[dict]:
             "topic_count": r["topic_count"],
             "reviewed_count": r["reviewed_count"],
             "current_grade": _grade_from_mastery(mastery),
-            "predicted_grade": _grade_from_mastery(min(1.0, mastery + 0.10)),
+            "predicted_grade": _grade_from_mastery(_projected_mastery(mastery)),
             "units": units_by_subject.get(r["subject"], []),
         })
     return result
@@ -631,7 +796,7 @@ def _predicted_grades() -> list[dict]:
             "subject": r["subject"],
             "subject_id": SUBJECT_ID.get(r["subject"] or "", ""),
             "current": _grade_from_mastery(mastery),
-            "predicted": _grade_from_mastery(min(1.0, mastery + 0.10)),
+            "predicted": _grade_from_mastery(_projected_mastery(mastery)),
             "confidence": confidence,
             "attempt_count": n_attempts,
         })
@@ -654,8 +819,18 @@ def _examiner_traps(limit: int = 5) -> list[dict]:
         LIMIT 50
         """,
     )
+    def _shape(t: dict) -> dict:
+        return {
+            "text": t["description"],
+            "topic": t["topic"] or t["module_code"] or "",
+            "subject": t["subject"] or "",
+            "freq": t["frequency"] or 1,
+        }
+
     if not weak:
-        return traps[:limit]
+        # No weak-topic signal yet — return the most frequent traps, still in
+        # the {text, topic, subject, freq} contract shape (LOGIC-006).
+        return [_shape(t) for t in traps[:limit]]
 
     weak_topics = {(w["topic"] or "").lower() for w in weak}
     prioritised = sorted(
@@ -668,15 +843,18 @@ def _examiner_traps(limit: int = 5) -> list[dict]:
             -(t["frequency"] or 0),
         ),
     )
-    return [
-        {
-            "text": t["description"],
-            "topic": t["topic"] or t["module_code"] or "",
-            "subject": t["subject"] or "",
-            "freq": t["frequency"] or 1,
-        }
-        for t in prioritised[:limit]
-    ]
+    return [_shape(t) for t in prioritised[:limit]]
+
+
+_DIFFICULTY_LABELS = ["", "Recall", "Standard", "Multi-step", "Advanced", "Trap"]
+
+
+def _difficulty_label(d: Any) -> str:
+    """Map a 1–5 difficulty to a label, degrading to "" for NULL/out-of-range
+    values instead of raising IndexError/TypeError (LOGIC-009)."""
+    if isinstance(d, int) and 0 <= d < len(_DIFFICULTY_LABELS):
+        return _DIFFICULTY_LABELS[d]
+    return ""
 
 
 def _question_of_day() -> dict | None:
@@ -700,7 +878,7 @@ def _question_of_day() -> dict | None:
         "unit": qod.get("module_code") or "",
         "subject": SUBJECT_ID.get(qod.get("subject") or "", ""),
         "marks": qod["marks"],
-        "difficulty": ["", "Recall", "Standard", "Multi-step", "Advanced", "Trap"][qod["difficulty"]],
+        "difficulty": _difficulty_label(qod["difficulty"]),
         "text": (qod["raw_text"] or "").strip()[:400],
         "markscheme": [
             {"code": f"{m['mark_type']}{m['marks_value']}", "text": m["description"]}
@@ -710,34 +888,48 @@ def _question_of_day() -> dict | None:
 
 
 def _streak() -> int:
+    # Count only days with genuine study activity — a *completed* session
+    # (ended_at set), not merely opening a paper in the Timer (LOGIC-015).
+    # Compare against UTC 'today' to match the UTC-stored timestamps (LOGIC-018).
     days = _query(
         DB_ATTEMPTS,
         """
-        SELECT DISTINCT DATE(started_at) AS day
+        SELECT DISTINCT DATE(ended_at) AS day
         FROM sessions
-        WHERE started_at >= DATE('now', '-60 days')
+        WHERE ended_at IS NOT NULL AND ended_at >= DATE('now', '-60 days')
         ORDER BY day DESC
         """,
     )
     day_set = {d["day"] for d in days}
     streak = 0
-    cursor = date.today()
+    cursor = datetime.now(timezone.utc).date()
     while cursor.isoformat() in day_set:
         streak += 1
         cursor -= timedelta(days=1)
     return streak
 
 
+def _safe(section: str, fn, default):
+    """Run a dashboard section, degrading to a default on failure so one broken
+    section never 500s the whole dashboard (LOGIC-009)."""
+    try:
+        return fn()
+    except Exception:
+        logger.exception("Dashboard section %r failed; returning default", section)
+        return default
+
+
 @app.get("/api/dashboard")
 def get_dashboard() -> dict:
     return {
-        "todays_priorities": _todays_priorities(),
-        "recent_papers": _recent_papers(),
-        "subject_mastery": _subject_mastery(),
-        "predicted_grades": _predicted_grades(),
-        "examiner_traps": _examiner_traps(),
-        "question_of_day": _question_of_day(),
-        "streak": _streak(),
+        "todays_priorities": _safe("todays_priorities", _todays_priorities, []),
+        "recent_papers": _safe("recent_papers", _recent_papers, []),
+        "subject_mastery": _safe("subject_mastery", _subject_mastery, []),
+        "predicted_grades": _safe("predicted_grades", _predicted_grades, []),
+        "examiner_traps": _safe("examiner_traps", _examiner_traps, []),
+        "question_of_day": _safe("question_of_day", _question_of_day, None),
+        "streak": _safe("streak", _streak, 0),
+        "paper_stats": _safe("paper_stats", _paper_stats, {"completed_count": 0, "average_pct": None}),
         # No universities table exists; an empty list is honest.
         "university_readiness": [],
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -751,8 +943,8 @@ def get_dashboard() -> dict:
 class SessionCreate(BaseModel):
     paper_id: int
     started_at: str = ""
-    official_time_seconds: int = 0
-    target_time_seconds: int = 0
+    official_time_seconds: int = Field(default=0, ge=0)
+    target_time_seconds: int = Field(default=0, ge=0)
 
 
 @app.post("/api/sessions")
@@ -796,7 +988,7 @@ def log_question_time(session_id: int, question_id: int, body: QuestionTimeLog) 
 
 class SessionComplete(BaseModel):
     ended_at: str = ""
-    total_time_seconds: int = 0
+    total_time_seconds: int = Field(default=0, ge=0)
 
 
 @app.post("/api/sessions/{session_id}/complete")
@@ -824,8 +1016,24 @@ class AttemptCreate(BaseModel):
     mistake_types: list[str] = []
     confidence: int = Field(ge=1, le=5)
     time_seconds: int = Field(default=0, ge=0)
-    notes: str = ""
+    notes: str = Field(default="", max_length=4000)
     answer_image_path: str | None = None
+
+    @field_validator("answer_image_path")
+    @classmethod
+    def _safe_image_path(cls, v: str | None) -> str | None:
+        """Reject client-supplied filesystem paths that escape the diagrams
+        store (AOS-011). Only a bare relative filename under the diagrams dir is
+        accepted; absolute paths and traversal (`..`) are refused."""
+        if v is None or v == "":
+            return None
+        candidate = Path(v)
+        if candidate.is_absolute() or ".." in candidate.parts:
+            raise ValueError("answer_image_path must be a relative filename without '..'")
+        return candidate.name
+
+
+_MAX_INTERVAL_DAYS = 365.0  # cap spaced-repetition interval growth (RT-004)
 
 
 def _update_mastery(question_id: int, score_pct: float) -> tuple[float | None, str | None]:
@@ -850,6 +1058,10 @@ def _update_mastery(question_id: int, score_pct: float) -> tuple[float | None, s
             (topic, topic),
         ).fetchall()
         if not items:
+            logger.warning(
+                "No spaced_repetition_items matched topic %r — mastery update is a "
+                "no-op. Has progress.db been seeded (db/seed_syllabus.py)?", topic,
+            )
             return None, None
 
         new_mastery = None
@@ -859,13 +1071,15 @@ def _update_mastery(question_id: int, score_pct: float) -> tuple[float | None, s
             ease = item["ease_factor"]
             interval = item["interval_days"]
             if score_pct >= 0.8:
-                interval = interval * ease
+                # Clamp the interval so it can never overflow `date` (RT-004).
+                interval = min(interval * ease, _MAX_INTERVAL_DAYS)
                 ease = min(3.0, ease + 0.1)
             elif score_pct >= 0.6:
                 pass  # interval unchanged
             else:
                 interval = max(1.0, interval * 0.5)
                 ease = max(1.3, ease - 0.2)
+            interval = min(interval, _MAX_INTERVAL_DAYS)
             due = (date.today() + timedelta(days=round(interval))).isoformat()
             conn.execute(
                 """
@@ -885,7 +1099,7 @@ def _update_mastery(question_id: int, score_pct: float) -> tuple[float | None, s
 def create_attempt(body: AttemptCreate) -> dict:
     q = _query(
         DB_QUESTION_BANK,
-        "SELECT id, marks FROM questions WHERE id = ?",
+        "SELECT id, marks, paper_id FROM questions WHERE id = ?",
         (body.question_id,),
     )
     if not q:
@@ -893,12 +1107,41 @@ def create_attempt(body: AttemptCreate) -> dict:
     if body.marks_awarded > body.marks_available:
         raise HTTPException(status_code=422, detail="marks_awarded cannot exceed marks_available")
     if body.session_id is not None:
-        sess = _scalar(DB_ATTEMPTS, "SELECT COUNT(*) FROM sessions WHERE id = ?", (body.session_id,))
-        if not sess:
+        session_rows = _query(
+            DB_ATTEMPTS, "SELECT paper_id FROM sessions WHERE id = ?", (body.session_id,)
+        )
+        if not session_rows:
             raise HTTPException(status_code=404, detail=f"Session {body.session_id} not found")
+        # The question must belong to the session's paper (LOGIC-020 / AOS-012).
+        if session_rows[0]["paper_id"] != q[0]["paper_id"]:
+            raise HTTPException(
+                status_code=422,
+                detail="question does not belong to this session's paper",
+            )
+
+    # Link the per-question timing captured by the Timer (question_times) to the
+    # attempt when the client did not supply one (LOGIC-011).
+    time_seconds = body.time_seconds
+    if time_seconds == 0 and body.session_id is not None:
+        time_seconds = _scalar(
+            DB_ATTEMPTS,
+            "SELECT time_seconds FROM question_times WHERE session_id = ? AND question_id = ?",
+            (body.session_id, body.question_id),
+            default=0,
+        )
 
     now = datetime.now(timezone.utc).isoformat()
     with get_db(DB_ATTEMPTS) as conn:
+        # Re-marking a question within the same session replaces the prior mark
+        # rather than inserting a duplicate (LOGIC-004).
+        if body.session_id is not None:
+            stale = conn.execute(
+                "SELECT id FROM attempts WHERE session_id = ? AND question_id = ?",
+                (body.session_id, body.question_id),
+            ).fetchall()
+            for row in stale:
+                conn.execute("DELETE FROM attempt_mistakes WHERE attempt_id = ?", (row["id"],))
+                conn.execute("DELETE FROM attempts WHERE id = ?", (row["id"],))
         cur = conn.execute(
             """
             INSERT INTO attempts (session_id, question_id, marks_awarded, marks_available,
@@ -907,7 +1150,7 @@ def create_attempt(body: AttemptCreate) -> dict:
             """,
             (
                 body.session_id, body.question_id, body.marks_awarded, body.marks_available,
-                body.confidence, body.time_seconds, body.notes, body.answer_image_path, now,
+                body.confidence, time_seconds, body.notes, body.answer_image_path, now,
             ),
         )
         attempt_id = cur.lastrowid
@@ -926,7 +1169,6 @@ def create_attempt(body: AttemptCreate) -> dict:
         "new_mastery": round(new_mastery, 4) if new_mastery is not None else None,
         "next_review": next_review,
         "marks_awarded": body.marks_awarded,
-        "grade_contribution": _grade_from_mastery(score_pct),
     }
 
 

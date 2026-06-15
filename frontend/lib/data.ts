@@ -33,6 +33,14 @@ export function subjectName(id: string): string {
   return SUBJECT_LABELS[id]?.name ?? id;
 }
 
+// Time-of-day greeting from the local clock (LOGIC-016).
+export function greeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
+
 export function todayStr(): string {
   return new Date().toLocaleDateString("en-GB", {
     weekday: "short", day: "numeric", month: "short", year: "numeric",

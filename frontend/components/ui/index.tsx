@@ -235,15 +235,18 @@ export function Toggle({
   on: init,
   checked,
   onChange,
+  disabled,
 }: {
   on?: boolean;
   checked?: boolean;
   onChange?: (v: boolean) => void;
+  disabled?: boolean;
 }) {
   const controlled = checked !== undefined;
   const [localOn, setLocalOn] = useState(init ?? false);
   const on = controlled ? checked! : localOn;
   const toggle = () => {
+    if (disabled) return;
     if (controlled) {
       onChange?.(!on);
     } else {
@@ -252,7 +255,12 @@ export function Toggle({
     }
   };
   return (
-    <button className={`aos-toggle ${on ? "on" : ""}`} onClick={toggle}>
+    <button
+      className={`aos-toggle ${on ? "on" : ""}`}
+      onClick={toggle}
+      disabled={disabled}
+      aria-disabled={disabled}
+    >
       <span />
     </button>
   );

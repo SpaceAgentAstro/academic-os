@@ -1,0 +1,50 @@
+name: CI
+
+# Lint, test, and security-audit gate (regression prevention + AOS-015).
+on:
+  push:
+    branches: ["main", "claude/**"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    env:
+      DATA_DIR: ${{ runner.temp }}/aos-data
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install fastapi pydantic httpx python-dotenv pytest pytest-asyncio ruff pip-audit
+      - name: Lint (ruff)
+        run: ruff check .
+      - name: Tests
+        run: pytest -q
+      - name: Dependency vulnerability audit
+        run: pip-audit -r requirements.txt || true   # report, do not block builds
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: npm ci || npm install
+      - name: Type check
+        run: npx tsc --noEmit
+      - name: Lint
+        run: npm run lint --if-present
+      - name: Build
+        run: npm run build
+      - name: npm audit
+        run: npm audit --omit=dev || true   # report, do not block builds

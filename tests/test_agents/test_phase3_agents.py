@@ -52,6 +52,7 @@ def diag_db() -> sqlite3.Connection:
 
 @pytest.mark.skipif(not MS_PDF.exists(), reason="Fixture PDF not generated")
 def test_parse_markscheme_returns_dict():
+    pytest.importorskip("pdfplumber")  # optional ingestion dep (RT-013)
     from agents.analysis.markscheme_agent import parse_markscheme
     result = parse_markscheme(MS_PDF)
     assert isinstance(result, dict)
@@ -60,6 +61,7 @@ def test_parse_markscheme_returns_dict():
 
 @pytest.mark.skipif(not MS_PDF.exists(), reason="Fixture PDF not generated")
 def test_parse_markscheme_mark_types():
+    pytest.importorskip("pdfplumber")  # optional ingestion dep (RT-013)
     from agents.analysis.markscheme_agent import parse_markscheme, MARK_TYPES
     result = parse_markscheme(MS_PDF)
     for q_num, entries in result.items():
@@ -68,7 +70,6 @@ def test_parse_markscheme_mark_types():
 
 
 def test_write_markscheme_entry_directly(ms_db, qb_db):
-    from agents.analysis.markscheme_agent import MarkEntry, _write_markscheme_entry
 
     # Insert a question into in-memory qb_db first
     now = "2023-01-01T00:00:00+00:00"
@@ -83,7 +84,6 @@ def test_write_markscheme_entry_directly(ms_db, qb_db):
     )
     qb_db.commit()
 
-    entry = MarkEntry(sequence=1, mark_type="M", marks_value=1, description="Rearrange the equation.")
     ms_db.execute(
         "INSERT INTO markscheme_entries (question_id, sequence, mark_type, marks_value, description) "
         "VALUES (?, ?, ?, ?, ?)", (1, 1, "M", 1, "Rearrange the equation.")
@@ -98,6 +98,7 @@ def test_write_markscheme_entry_directly(ms_db, qb_db):
 
 @pytest.mark.skipif(not ER_PDF.exists(), reason="Fixture PDF not generated")
 def test_extract_observations_returns_list():
+    pytest.importorskip("pdfplumber")  # optional ingestion dep (RT-013)
     from agents.analysis.examiner_report_agent import extract_observations
     obs = extract_observations(ER_PDF)
     assert isinstance(obs, list)
@@ -106,6 +107,7 @@ def test_extract_observations_returns_list():
 
 @pytest.mark.skipif(not ER_PDF.exists(), reason="Fixture PDF not generated")
 def test_extract_observations_types():
+    pytest.importorskip("pdfplumber")  # optional ingestion dep (RT-013)
     from agents.analysis.examiner_report_agent import extract_observations
     obs = extract_observations(ER_PDF)
     valid_types = {

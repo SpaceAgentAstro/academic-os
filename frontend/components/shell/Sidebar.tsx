@@ -97,7 +97,9 @@ export function Sidebar({
           <div className="aos-avatar">MM</div>
           <div className="aos-foot-id">
             <div className="aos-foot-name">Mouad Maamma</div>
-            <div className="aos-foot-grades">Physics A · Maths A* · Chem B</div>
+            {/* Grades must come from real data, never fabricated (LOGIC-007).
+                Until a per-subject grade summary is wired in, show the board. */}
+            <div className="aos-foot-grades">Pearson Edexcel IAL</div>
           </div>
           <button
             className="aos-theme-toggle"

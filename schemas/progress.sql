@@ -71,6 +71,29 @@ CREATE TABLE IF NOT EXISTS review_history (
     notes           TEXT
 );
 
+-- Spaced-repetition state, one row per (subject, unit, topic).
+-- Materialised by db/seed_syllabus.py from the normalised topic tree above.
+-- Read/updated by backend/main.py (adaptive revision engine) and
+-- briefing/generator.py. This is the flat projection the API consumes;
+-- the normalised tree remains the source of truth for syllabus structure.
+CREATE TABLE IF NOT EXISTS spaced_repetition_items (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    subject       TEXT NOT NULL,                 -- e.g., "Mathematics"
+    unit          TEXT NOT NULL,                 -- module code, e.g., "P1", "Unit 1"
+    topic         TEXT NOT NULL,                 -- e.g., "Differentiation"
+    subtopic      TEXT,
+    mastery       REAL NOT NULL DEFAULT 0.0,     -- 0.0–1.0
+    ease_factor   REAL NOT NULL DEFAULT 2.5,     -- SM-2 ease (1.3–3.0)
+    interval_days REAL NOT NULL DEFAULT 1.0,     -- days until next review
+    due_date      TEXT NOT NULL DEFAULT (DATE('now')),  -- ISO 8601 date
+    last_reviewed TEXT,                          -- ISO 8601 date, NULL until first review
+    UNIQUE(subject, unit, topic)
+);
+
+CREATE INDEX IF NOT EXISTS idx_sri_due_date ON spaced_repetition_items(due_date);
+CREATE INDEX IF NOT EXISTS idx_sri_subject ON spaced_repetition_items(subject);
+CREATE INDEX IF NOT EXISTS idx_sri_mastery ON spaced_repetition_items(mastery);
+
 CREATE INDEX IF NOT EXISTS idx_syllabus_completion_status ON syllabus_completion(status);
 CREATE INDEX IF NOT EXISTS idx_syllabus_completion_next_review ON syllabus_completion(next_review);
 CREATE INDEX IF NOT EXISTS idx_review_history_spec_point ON review_history(spec_point_id);

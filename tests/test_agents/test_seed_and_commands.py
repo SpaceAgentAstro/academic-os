@@ -23,9 +23,20 @@ def progress_db() -> sqlite3.Connection:
     return conn
 
 
+_AUTHORISED_CHAT_ID = 123456789
+
+
+@pytest.fixture(autouse=True)
+def _authorise_chat(monkeypatch):
+    """Configure the authorised Telegram chat so command handlers run (AOS-005)."""
+    monkeypatch.setattr("config.settings.TELEGRAM_CHAT_ID", str(_AUTHORISED_CHAT_ID))
+
+
 def _make_update_context(cmd_args=None):
     update = MagicMock()
     update.message.reply_text = AsyncMock()
+    # Commands are only honoured from the configured chat (AOS-005).
+    update.effective_chat.id = _AUTHORISED_CHAT_ID
     context = MagicMock()
     context.args = cmd_args or []
     return update, context
@@ -102,6 +113,22 @@ def test_seed_foreign_keys_valid(progress_db):
         """
     ).fetchall()
     assert len(bad) == 0
+
+
+# ── Authorisation (AOS-005) ───────────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_cmd_drops_unauthorised_chat():
+    """Commands from any chat other than the configured one are ignored."""
+    from agents.delivery.telegram_agent import _cmd_quiz
+    update, context = _make_update_context(["Mathematics"])
+    update.effective_chat.id = 999  # not the authorised chat
+
+    with patch("agents.delivery.retrieval_agent.get_questions", return_value=[{"x": 1}]) as mock_gq:
+        await _cmd_quiz(update, context)
+
+    mock_gq.assert_not_called()
+    update.message.reply_text.assert_not_called()
 
 
 # ── /quiz ─────────────────────────────────────────────────────────────────────
@@ -269,4 +296,6 @@ async def test_cmd_progress_handles_exception():
         await _cmd_progress(update, context)
 
     text = update.message.reply_text.call_args[0][0]
-    assert "Error" in text
+    # Generic message — raw exception text must not leak to the chat (AOS-013).
+    assert "unavailable" in text
+    assert "db locked" not in text

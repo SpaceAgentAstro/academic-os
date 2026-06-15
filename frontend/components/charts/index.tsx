@@ -237,7 +237,8 @@ export function ScatterChart({
             },
             y: {
               title: { display: true, text: "Score %" },
-              min: 40,
+              // Start at 0 so papers scoring below 40% are not clipped (LOGIC-012).
+              min: 0,
               max: 100,
               grid: { color: grid || "rgba(0,0,0,0.05)" },
               border: { display: false },

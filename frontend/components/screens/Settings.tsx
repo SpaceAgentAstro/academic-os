@@ -40,7 +40,7 @@ export function Settings({ dark, toggleDark }: { dark?: boolean; toggleDark?: ()
 
       <Group icon="user" title="Profile">
         <Row label="Name">
-          <input className="aos-input" defaultValue="Mouad Maamma" />
+          <span className="aos-muted">Mouad Maamma</span>
         </Row>
         <Row label="Subjects">
           <span className="aos-muted">
@@ -52,6 +52,8 @@ export function Settings({ dark, toggleDark }: { dark?: boolean; toggleDark?: ()
         </Row>
       </Group>
 
+      {/* These preferences are not yet persisted to the backend; they are shown
+          read-only rather than silently doing nothing when changed (LOGIC-010). */}
       <Group icon="bell" title="Notifications">
         <Row label="Telegram briefing time">
           <input
@@ -59,15 +61,23 @@ export function Settings({ dark, toggleDark }: { dark?: boolean; toggleDark?: ()
             type="time"
             value={time}
             onChange={(e) => setTime(e.target.value)}
+            readOnly
+            title="Configured via the BRIEFING_TIME environment variable"
           />
         </Row>
-        <Row label="Spaced-repetition reminders"><Toggle on /></Row>
-        <Row label="Examiner-trap alerts"><Toggle on /></Row>
+        <Row label="Spaced-repetition reminders"><Toggle on disabled /></Row>
+        <Row label="Examiner-trap alerts"><Toggle on disabled /></Row>
+        <div className="aos-set-row">
+          <span className="aos-muted" style={{ fontSize: 12 }}>
+            Notification preferences are read-only for now — briefing time is set via the
+            BRIEFING_TIME environment variable.
+          </span>
+        </div>
       </Group>
 
       <Group icon="refresh" title="Spaced repetition">
         <Row label="Algorithm"><span className="aos-muted">SM-2 (modified)</span></Row>
-        <Row label="Review difficult items first"><Toggle on /></Row>
+        <Row label="Review difficult items first"><Toggle on disabled /></Row>
       </Group>
 
       <Group icon="database" title="Data">

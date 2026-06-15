@@ -2,7 +2,6 @@ import type {
   AnalyticsData,
   AttemptResult,
   ApiPaper,
-  BriefingData,
   CoverageItem,
   DashboardData,
   DbStatus,
@@ -14,17 +13,39 @@ import type {
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+// Optional API key for a backend deployed with authentication (AOS-001).
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY ?? "";
+
+// Abort requests that hang so the UI surfaces an error instead of an infinite
+// spinner (RT-012).
+const REQUEST_TIMEOUT_MS = 15_000;
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...options,
-  });
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    console.error(`API ${res.status} on ${path}:`, text);
-    throw new Error(`API ${res.status}: ${text || res.statusText}`);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${BASE_URL}${path}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(API_KEY ? { "X-API-Key": API_KEY } : {}),
+      },
+      signal: controller.signal,
+      ...options,
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      console.error(`API ${res.status} on ${path}:`, text);
+      throw new Error(`API ${res.status}: ${text || res.statusText}`);
+    }
+    return (await res.json()) as T;
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error(`Request timed out after ${REQUEST_TIMEOUT_MS / 1000}s`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
   }
-  return res.json() as Promise<T>;
 }
 
 export function getHealth(): Promise<HealthResponse> {
@@ -112,8 +133,4 @@ export function getStatus(): Promise<DbStatus> {
 
 export function getAnalytics(): Promise<AnalyticsData> {
   return request<AnalyticsData>("/api/analytics");
-}
-
-export function getBriefing(): Promise<BriefingData> {
-  return request<BriefingData>("/api/briefing");
 }

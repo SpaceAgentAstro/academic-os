@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 import logging
+from functools import lru_cache
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import Any
 
 logger = logging.getLogger(__name__)
-
-if TYPE_CHECKING:
-    from PIL.Image import Image
 
 
 def extract_text_pdfplumber(pdf_path: Path) -> list[dict]:
@@ -64,21 +62,34 @@ def convert_pdf_to_images(
     return paths
 
 
+@lru_cache(maxsize=1)
+def _get_latex_model() -> Any:
+    """Lazily build and cache the (expensive) pix2tex model so its weights are
+    loaded once and reused across calls instead of on every call (RT-009)."""
+    from pix2tex.cli import LatexOCR
+
+    return LatexOCR()
+
+
 def extract_math_latex(image_path: Path) -> str:
     """Extract LaTeX from a mathematical expression image using pix2tex.
 
     Returns empty string if pix2tex is unavailable or extraction fails.
-    pix2tex is expensive to load — caller should cache the LatexOCR instance.
+    The LatexOCR model is cached module-wide (RT-009).
     """
     try:
-        from pix2tex.cli import LatexOCR
         from PIL import Image
+    except ImportError:
+        logger.debug("Pillow not installed; skipping LaTeX OCR for %s", image_path.name)
+        return ""
+
+    try:
+        model = _get_latex_model()
     except ImportError:
         logger.debug("pix2tex not installed; skipping LaTeX OCR for %s", image_path.name)
         return ""
 
     try:
-        model = LatexOCR()
         img = Image.open(image_path)
         return model(img)
     except Exception as exc:
@@ -86,25 +97,12 @@ def extract_math_latex(image_path: Path) -> str:
         return ""
 
 
-def ocr_page_with_fallback(
-    pdf_path: Path,
-    page_number: int,
-    tmp_dir: Path,
-    dpi: int = 300,
-) -> str:
-    """OCR a single page: pdfplumber first, tesseract if scanned.
+def _ocr_scanned_page(pdf_path: Path, page_number: int, tmp_dir: Path, dpi: int = 300) -> str:
+    """Render a single (1-indexed) PDF page to an image and OCR it with tesseract.
 
-    page_number is 1-indexed.
+    Does NOT re-parse the PDF with pdfplumber — callers that already have the
+    page text pass through here only for genuinely scanned pages (RT-008).
     """
-    pages = extract_text_pdfplumber(pdf_path)
-    if page_number < 1 or page_number > len(pages):
-        raise ValueError(f"Page {page_number} out of range for {pdf_path.name}")
-
-    page_data = pages[page_number - 1]
-    if not page_data["is_scanned"]:
-        return page_data["text"]
-
-    # Scanned page — convert just this page to image, then tesseract
     from pdf2image import convert_from_path
 
     pil_pages = convert_from_path(str(pdf_path), dpi=dpi, first_page=page_number, last_page=page_number)
@@ -117,19 +115,47 @@ def ocr_page_with_fallback(
     return extract_text_tesseract(img_path)
 
 
+def ocr_page_with_fallback(
+    pdf_path: Path,
+    page_number: int,
+    tmp_dir: Path,
+    dpi: int = 300,
+    pages: list[dict] | None = None,
+) -> str:
+    """OCR a single page: pdfplumber first, tesseract if scanned.
+
+    page_number is 1-indexed. Pass an already-parsed ``pages`` list to avoid
+    re-parsing the whole PDF on every call (RT-008).
+    """
+    if pages is None:
+        pages = extract_text_pdfplumber(pdf_path)
+    if page_number < 1 or page_number > len(pages):
+        raise ValueError(f"Page {page_number} out of range for {pdf_path.name}")
+
+    page_data = pages[page_number - 1]
+    if not page_data["is_scanned"]:
+        return page_data["text"]
+
+    return _ocr_scanned_page(pdf_path, page_number, tmp_dir, dpi)
+
+
 def extract_full_text(pdf_path: Path, tmp_dir: Path | None = None) -> str:
-    """Extract full text from a PDF, using Tesseract fallback on scanned pages."""
+    """Extract full text from a PDF, using Tesseract fallback on scanned pages.
+
+    The PDF is parsed with pdfplumber exactly once; scanned pages are OCR'd from
+    rendered images without re-parsing the document (RT-008).
+    """
     if tmp_dir is None:
         tmp_dir = pdf_path.parent / ".ocr_tmp"
 
-    pages = extract_text_pdfplumber(pdf_path)
+    pages = extract_text_pdfplumber(pdf_path)  # single parse of the whole document
     full_parts: list[str] = []
     for page_data in pages:
         if not page_data["is_scanned"]:
             full_parts.append(page_data["text"])
         else:
             try:
-                text = ocr_page_with_fallback(pdf_path, page_data["page"], tmp_dir)
+                text = _ocr_scanned_page(pdf_path, page_data["page"], tmp_dir)
             except Exception as exc:
                 logger.warning(
                     "OCR skipped page %d of %s (poppler/tesseract unavailable?): %s",

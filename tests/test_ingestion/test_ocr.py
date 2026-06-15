@@ -1,10 +1,13 @@
 """Tests for ingestion/ocr.py using fixture PDFs."""
 from __future__ import annotations
 
-import sqlite3
 from pathlib import Path
 
 import pytest
+
+# These tests exercise the pdfplumber/pdf2image pipeline; skip cleanly when the
+# optional ingestion dependency is not installed rather than erroring (RT-013).
+pytest.importorskip("pdfplumber")
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "pdfs"
 QP_PDF   = FIXTURES / "sample_question_paper.pdf"

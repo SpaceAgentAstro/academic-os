@@ -23,11 +23,22 @@ def start_scheduler() -> None:
         logger.info("Scheduler stopped")
 
 
+def _parse_briefing_time(time_str: str) -> tuple[int, int]:
+    """Parse an HH:MM time, falling back to the documented default 07:30 on any
+    malformed value rather than crashing the whole scheduler (RT-017)."""
+    from datetime import datetime
+
+    try:
+        parsed = datetime.strptime(time_str.strip(), "%H:%M")
+        return parsed.hour, parsed.minute
+    except (ValueError, AttributeError):
+        logger.warning("Invalid BRIEFING_TIME %r; falling back to 07:30", time_str)
+        return 7, 30
+
+
 def schedule_daily_briefing(scheduler: object, time_str: str) -> None:
     """Register the daily briefing job at time_str (HH:MM, 24h)."""
-    from apscheduler.schedulers.base import BaseScheduler
-
-    hour, minute = (int(x) for x in time_str.split(":"))
+    hour, minute = _parse_briefing_time(time_str)
 
     def _job() -> None:
         from briefing.generator import generate_daily_briefing, format_for_telegram

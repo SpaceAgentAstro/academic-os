@@ -28,6 +28,27 @@ DB_ATTEMPTS       = DATA_DIR / "attempts.db"
 TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID: str   = os.getenv("TELEGRAM_CHAT_ID", "")
 
+# --- API security / deployment ---------------------------------------------
+# Optional shared secret. When set, every non-health API route requires a
+# matching `X-API-Key` (or `Authorization: Bearer <key>`) header. Left empty
+# for local development, in which case a startup warning is emitted.
+API_KEY: str = os.getenv("API_KEY", "")
+
+# Comma-separated list of allowed CORS origins for the deployed frontend.
+# Defaults to local dev origins; set ALLOWED_ORIGINS in production to the
+# real frontend origin(s) (e.g. "https://academic-os.vercel.app").
+ALLOWED_ORIGINS: list[str] = [
+    o.strip()
+    for o in os.getenv(
+        "ALLOWED_ORIGINS",
+        "http://localhost:3000,http://localhost:3001",
+    ).split(",")
+    if o.strip()
+]
+
+# Per-client request budget (sliding 60s window) for basic abuse protection.
+RATE_LIMIT_PER_MINUTE: int = int(os.getenv("RATE_LIMIT_PER_MINUTE", "120"))
+
 # Briefing schedule (24h time, local timezone)
 BRIEFING_TIME: str = os.getenv("BRIEFING_TIME", "07:30")
 

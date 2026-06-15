@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any
 
@@ -163,8 +163,9 @@ def _section2_curriculum_progress() -> str:
                 lines.append(f"• *{subject}*: {', '.join(parts)}")
             else:
                 lines.append(f"• *{subject}*: No syllabus data yet — seed progress.db")
-        except Exception as exc:
-            lines.append(f"• *{subject}*: Error — {exc}")
+        except Exception:
+            logger.exception("Curriculum coverage failed for %s", subject)
+            lines.append(f"• *{subject}*: coverage temporarily unavailable")
 
     return "\n".join(lines)
 
@@ -211,8 +212,9 @@ def _section3_adaptive_revision() -> str:
                     lines.append(f"  ⚠️ Watch: {pack.misconception_reminders[0][:100]}")
             else:
                 lines.append(f"• *{subject}*: No questions available — ingest past papers first")
-        except Exception as exc:
-            lines.append(f"• *{subject}*: Error — {exc}")
+        except Exception:
+            logger.exception("Revision pack failed for %s", subject)
+            lines.append(f"• *{subject}*: revision pack temporarily unavailable")
 
     return "\n".join(lines)
 
@@ -283,7 +285,9 @@ if __name__ == "__main__":
     print(text)
 
     if "--send-now" in sys.argv:
-        from agents.delivery.telegram_agent import TelegramAgent
+        import asyncio
 
-        TelegramAgent().send_message(text)
+        from agents.delivery.telegram_agent import send_daily_briefing
+
+        asyncio.run(send_daily_briefing(text))
         print("\n[sent to Telegram]")

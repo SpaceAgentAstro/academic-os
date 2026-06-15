@@ -39,6 +39,7 @@ def test_detect_paper_type_examiner_report():
 
 @pytest.mark.skipif(not QP_PDF.exists(), reason="Fixture PDF not generated")
 def test_extract_metadata_module_code():
+    pytest.importorskip("pdfplumber")  # optional ingestion dep (RT-013)
     from agents.analysis.past_paper_agent import extract_metadata
     meta = extract_metadata(QP_PDF)
     assert meta.module_code == "M1"
@@ -48,6 +49,7 @@ def test_extract_metadata_module_code():
 
 @pytest.mark.skipif(not QP_PDF.exists(), reason="Fixture PDF not generated")
 def test_extract_metadata_session():
+    pytest.importorskip("pdfplumber")  # optional ingestion dep (RT-013)
     from agents.analysis.past_paper_agent import extract_metadata
     meta = extract_metadata(QP_PDF)
     assert "2023" in meta.session
@@ -55,6 +57,7 @@ def test_extract_metadata_session():
 
 @pytest.mark.skipif(not QP_PDF.exists(), reason="Fixture PDF not generated")
 def test_extract_questions_returns_list():
+    pytest.importorskip("pdfplumber")  # optional ingestion dep (RT-013)
     from agents.analysis.past_paper_agent import extract_metadata, extract_questions
     meta = extract_metadata(QP_PDF)
     questions = extract_questions(QP_PDF, meta)

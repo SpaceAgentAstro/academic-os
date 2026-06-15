@@ -1,2 +1,16 @@
 [tool.vercel]
-entrypoint = "backend.server:app"
+entrypoint = "backend.main:app"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = [
+    "asyncio: mark a test as an asyncio coroutine test",
+]
+
+[tool.ruff]
+target-version = "py311"
+
+[tool.ruff.lint.per-file-ignores]
+# These scripts deliberately insert the repo root on sys.path before importing
+# local packages (intentional bootstrapping, not a defect — see Errors/syntax.md SYN-003).
+"scripts/*.py" = ["E402"]

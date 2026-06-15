@@ -6,8 +6,14 @@ import { bandColor, gradeFromPct, masteryBand, subjectName } from "@/lib/data";
 import { getAnalytics, getCoverage, getPapers, getWeaknesses } from "@/lib/api";
 import { useFetch } from "@/lib/hooks";
 import type { Route } from "@/lib/types";
+import type { AppSession } from "@/components/ClientLayout";
 
-export function Analytics({ go }: { go: (r: Route) => void }) {
+export function Analytics({ go, session }: { go: (r: Route) => void; session: AppSession }) {
+  const openPaper = (paperId: string) => {
+    session.setPaperId(paperId);
+    session.setSessionId(null);
+    go("marking");
+  };
   const analytics = useFetch(getAnalytics);
   const coverage = useFetch(getCoverage);
   const papersFetch = useFetch(() => getPapers());
@@ -176,7 +182,7 @@ export function Analytics({ go }: { go: (r: Route) => void }) {
                 const pct = Math.round(((p.score as number) / (p.max as number)) * 100);
                 const delta = p.time != null && p.target != null ? p.time - p.target : null;
                 return (
-                  <tr key={p.id} onClick={() => go("marking")}>
+                  <tr key={p.id} onClick={() => openPaper(p.id)}>
                     <td className="aos-td-strong">{p.code}</td>
                     <td>{subjectName(p.subject)}</td>
                     <td>{p.unit}</td>

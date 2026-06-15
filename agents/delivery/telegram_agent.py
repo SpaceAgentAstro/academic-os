@@ -1,11 +1,67 @@
 from __future__ import annotations
 
 import logging
+from functools import wraps
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
 _MAX_MESSAGE_LENGTH = 4096
+
+# Cached Bot instance — python-telegram-bot Bot objects own an HTTPX pool, so we
+# build one lazily and reuse it instead of constructing per send (RT-016).
+_bot: Any = None
+
+
+def _get_bot() -> Any:
+    global _bot
+    if _bot is None:
+        from config.settings import TELEGRAM_BOT_TOKEN
+        from telegram import Bot
+
+        _bot = Bot(token=TELEGRAM_BOT_TOKEN)
+    return _bot
+
+
+def _is_authorised(update: Any) -> bool:
+    """True only when the message comes from the configured chat (AOS-005)."""
+    from config.settings import TELEGRAM_CHAT_ID
+
+    if not TELEGRAM_CHAT_ID:
+        return False
+    chat = getattr(update, "effective_chat", None)
+    try:
+        return chat is not None and str(chat.id) == str(int(TELEGRAM_CHAT_ID))
+    except (TypeError, ValueError):
+        return False
+
+
+def _restricted(handler):
+    """Decorator that drops commands from any chat other than the configured one."""
+    @wraps(handler)
+    async def wrapper(update: Any, context: Any) -> None:
+        if not _is_authorised(update):
+            logger.warning("Dropping unauthorised Telegram command from chat %s",
+                           getattr(getattr(update, "effective_chat", None), "id", "?"))
+            return
+        await handler(update, context)
+    return wrapper
+
+
+async def _safe_reply(update: Any, text: str) -> None:
+    """Reply with Markdown, falling back to plain text if Telegram rejects the
+    entities (maths/physics content routinely contains _ * [ ` ) — RT-005.
+
+    Catches broadly so a Markdown parse error (BadRequest) degrades to plain
+    text rather than crashing the handler.
+    """
+    try:
+        await update.message.reply_text(text, parse_mode="Markdown")
+    except Exception:
+        try:
+            await update.message.reply_text(text)
+        except Exception:
+            logger.exception("Telegram reply failed completely")
 
 
 async def send_message(text: str, parse_mode: str = "Markdown") -> None:
@@ -14,13 +70,12 @@ async def send_message(text: str, parse_mode: str = "Markdown") -> None:
     Splits messages longer than 4096 characters into chunks.
     """
     from config.settings import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
-    from telegram import Bot
     from telegram.error import TelegramError
 
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         raise RuntimeError("Telegram bot token and chat ID must be configured in the environment.")
 
-    bot = Bot(token=TELEGRAM_BOT_TOKEN)
+    bot = _get_bot()
     chunks = _split_message(text, _MAX_MESSAGE_LENGTH)
     for chunk in chunks:
         try:
@@ -65,8 +120,15 @@ async def send_daily_briefing(briefing_text: str) -> None:
 
 def start_bot() -> None:
     """Start the Telegram bot and register command handlers."""
-    from config.settings import TELEGRAM_BOT_TOKEN
+    from config.settings import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
     from telegram.ext import Application, CommandHandler
+
+    if not TELEGRAM_BOT_TOKEN:
+        raise RuntimeError("TELEGRAM_BOT_TOKEN must be configured to start the bot.")
+    if not TELEGRAM_CHAT_ID:
+        # Without an authorised chat every command would be dropped (AOS-005);
+        # refuse to start rather than run an inert, world-reachable bot.
+        raise RuntimeError("TELEGRAM_CHAT_ID must be configured (authorised chat) to start the bot.")
 
     app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
     app.add_handler(CommandHandler("briefing", _cmd_briefing))
@@ -80,23 +142,27 @@ def start_bot() -> None:
     app.run_polling()
 
 
+@_restricted
 async def _cmd_briefing(update: Any, context: Any) -> None:
     from briefing.generator import generate_daily_briefing, format_for_telegram
     briefing = generate_daily_briefing()
     text = format_for_telegram(briefing)
-    await update.message.reply_text(text, parse_mode="Markdown")
+    await _safe_reply(update, text)
 
 
+@_restricted
 async def _cmd_status(update: Any, context: Any) -> None:
     from briefing.generator import _section4_system_status
-    await update.message.reply_text(_section4_system_status(), parse_mode="Markdown")
+    await _safe_reply(update, _section4_system_status())
 
 
+@_restricted
 async def _cmd_coverage(update: Any, context: Any) -> None:
     from briefing.generator import _section2_curriculum_progress
-    await update.message.reply_text(_section2_curriculum_progress(), parse_mode="Markdown")
+    await _safe_reply(update, _section2_curriculum_progress())
 
 
+@_restricted
 async def _cmd_quiz(update: Any, context: Any) -> None:
     """Return a single practice question from the question bank.
 
@@ -110,10 +176,7 @@ async def _cmd_quiz(update: Any, context: Any) -> None:
 
     questions = get_questions(subject=subject, limit=1)
     if not questions:
-        await update.message.reply_text(
-            f"No questions found for *{subject}*. Ingest past papers first.",
-            parse_mode="Markdown",
-        )
+        await _safe_reply(update, f"No questions found for *{subject}*. Ingest past papers first.")
         return
 
     q = questions[0]
@@ -124,9 +187,10 @@ async def _cmd_quiz(update: Any, context: Any) -> None:
         f"Difficulty {q.get('difficulty', '?')}/5_\n\n"
         f"{q.get('raw_text') or q.get('latex_text') or '(No question text extracted)'}"
     )
-    await update.message.reply_text(text, parse_mode="Markdown")
+    await _safe_reply(update, text)
 
 
+@_restricted
 async def _cmd_revise(update: Any, context: Any) -> None:
     """Build and send a revision pack for a subject.
 
@@ -141,10 +205,7 @@ async def _cmd_revise(update: Any, context: Any) -> None:
     pack = build_revision_pack(subject=subject, max_questions=10)
 
     if not pack.questions:
-        await update.message.reply_text(
-            f"No questions available for *{subject}*. Ingest past papers first.",
-            parse_mode="Markdown",
-        )
+        await _safe_reply(update, f"No questions available for *{subject}*. Ingest past papers first.")
         return
 
     marks = sum(q.get("marks", 0) for q in pack.questions)
@@ -168,9 +229,10 @@ async def _cmd_revise(update: Any, context: Any) -> None:
             f"{q.get('marks', '?')} marks · diff {q.get('difficulty', '?')}/5"
         )
 
-    await update.message.reply_text("\n".join(lines), parse_mode="Markdown")
+    await _safe_reply(update, "\n".join(lines))
 
 
+@_restricted
 async def _cmd_progress(update: Any, context: Any) -> None:
     """Show specification coverage per module for all subjects."""
     from agents.infrastructure.curriculum_agent import get_specification_coverage
@@ -193,10 +255,12 @@ async def _cmd_progress(update: Any, context: Any) -> None:
                 lines.append(f"• *{subject}* (avg {avg}%): {', '.join(parts)}")
             else:
                 lines.append(f"• *{subject}*: No syllabus data — run seed_syllabus.py")
-        except Exception as exc:
-            lines.append(f"• *{subject}*: Error — {exc}")
+        except Exception:
+            # Never leak raw exception text to the chat (AOS-013).
+            logger.exception("Coverage lookup failed for %s", subject)
+            lines.append(f"• *{subject}*: coverage temporarily unavailable")
 
-    await update.message.reply_text("\n".join(lines), parse_mode="Markdown")
+    await _safe_reply(update, "\n".join(lines))
 
 
 if __name__ == "__main__":

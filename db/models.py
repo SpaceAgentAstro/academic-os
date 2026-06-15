@@ -36,15 +36,20 @@ def _apply_schema(conn: sqlite3.Connection, schema_file: str) -> None:
 def init_all_databases() -> None:
     for db_path, schema_file in _DB_SCHEMA_MAP.items():
         with sqlite3.connect(db_path) as conn:
+            # journal_mode=WAL is persistent per database file, so set it once
+            # here at init rather than on every connection (RT-010).
+            conn.execute("PRAGMA journal_mode = WAL")
             _apply_schema(conn, schema_file)
 
 
 @contextmanager
 def get_db(db_path: Path) -> Generator[sqlite3.Connection, None, None]:
-    conn = sqlite3.connect(db_path)
+    # busy_timeout lets writers wait for a held lock instead of failing
+    # immediately with "database is locked" under concurrency (RT-011).
+    conn = sqlite3.connect(db_path, timeout=5.0)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
-    conn.execute("PRAGMA journal_mode = WAL")
+    conn.execute("PRAGMA busy_timeout = 5000")
     try:
         yield conn
         conn.commit()

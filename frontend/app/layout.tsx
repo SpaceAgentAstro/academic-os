@@ -27,11 +27,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="light">
+    <html lang="en" data-theme="light" suppressHydrationWarning>
       <head>
+        {/* Apply the theme before first paint to avoid a light→dark flash for
+            dark-mode users (RT-015). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var d=window.matchMedia('(prefers-color-scheme: dark)').matches;" +
+              "document.documentElement.setAttribute('data-theme', d?'dark':'light');}catch(e){}",
+          }}
+        />
+        {/* Pinned to an exact version (no floating @latest) and loaded with an
+            explicit cross-origin to reduce supply-chain exposure (AOS-009). */}
         <link
           rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css"
+          href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.44.0/dist/tabler-icons.min.css"
+          crossOrigin="anonymous"
         />
       </head>
       <body className={`${inter.variable} ${jetbrainsMono.variable}`}>
