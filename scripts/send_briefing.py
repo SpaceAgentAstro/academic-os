@@ -41,7 +41,7 @@ def main() -> int:
 
     from agents.delivery.telegram_agent import send_daily_briefing
     asyncio.run(send_daily_briefing(text))
-    print(f"Sent daily briefing ({len(text)} chars) to chat {TELEGRAM_CHAT_ID}.")
+    print(f"Sent daily briefing ({len(text)} chars) to the configured chat.")
     return 0
 
 

@@ -1,11 +1,22 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+import re
+from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any
 
 logger = logging.getLogger(__name__)
+
+# Legacy-Markdown metacharacters that break Telegram parsing when they appear in
+# interpolated database content (topic names, question text, descriptions).
+_MD_SPECIALS = re.compile(r"([_*\[\]`])")
+
+
+def _md(value: Any) -> str:
+    """Escape Telegram Markdown metacharacters in dynamic content so the briefing
+    keeps its *bold* structure without tripping the parser (RT-018)."""
+    return _MD_SPECIALS.sub(r"\\\1", str(value))
 
 
 @dataclass
@@ -131,7 +142,7 @@ def _section1_academic_intelligence() -> str:
             top = misconceptions[0]
             lines.append(
                 f"• *{subj}* — Top misconception ({top['frequency']}x seen): "
-                f"{top['description'][:120]}"
+                f"{_md(top['description'][:120])}"
             )
             total_misconceptions += len(misconceptions)
 
@@ -159,12 +170,13 @@ def _section2_curriculum_progress() -> str:
         try:
             coverage = get_specification_coverage(subject)
             if coverage:
-                parts = [f"{mod}: {pct}%" for mod, pct in sorted(coverage.items())]
+                parts = [f"{_md(mod)}: {pct}%" for mod, pct in sorted(coverage.items())]
                 lines.append(f"• *{subject}*: {', '.join(parts)}")
             else:
                 lines.append(f"• *{subject}*: No syllabus data yet — seed progress.db")
-        except Exception as exc:
-            lines.append(f"• *{subject}*: Error — {exc}")
+        except Exception:
+            logger.exception("Coverage lookup failed for %s", subject)
+            lines.append(f"• *{subject}*: coverage unavailable")
 
     return "\n".join(lines)
 
@@ -182,17 +194,17 @@ def _section3_adaptive_revision() -> str:
             overdue = item.get("days_overdue") or 0
             flag = f" (overdue {overdue}d)" if overdue > 0 else ""
             lines.append(
-                f"• {item['subject']} {item['unit']} — {item['topic']} "
+                f"• {_md(item['subject'])} {_md(item['unit'])} — {_md(item['topic'])} "
                 f"(mastery {item['mastery']:.0%}){flag}"
             )
 
     qod = select_question_of_the_day()
     if qod:
         lines.append(
-            f"\n_Question of the day_ — {qod['subject']} {qod['module_code']} "
-            f"Q{qod['question_number']} ({qod['marks']} marks, difficulty {qod['difficulty']}):"
+            f"\n_Question of the day_ — {_md(qod['subject'])} {_md(qod['module_code'])} "
+            f"Q{_md(qod['question_number'])} ({qod['marks']} marks, difficulty {qod['difficulty']}):"
         )
-        lines.append((qod["raw_text"] or "").strip()[:280])
+        lines.append(_md((qod["raw_text"] or "").strip()[:280]))
 
     subjects = ["Mathematics", "Physics", "Chemistry", "Computer Science"]
 
@@ -202,17 +214,18 @@ def _section3_adaptive_revision() -> str:
             if pack.questions:
                 q_count = len(pack.questions)
                 marks = sum(q.get("marks", 0) for q in pack.questions)
-                topics = ", ".join(pack.focus_topics[:3]) or "General"
+                topics = _md(", ".join(pack.focus_topics[:3]) or "General")
                 lines.append(
                     f"• *{subject}* — {q_count} questions, {marks} marks, "
                     f"~{pack.estimated_duration_minutes}min | Topics: {topics}"
                 )
                 if pack.misconception_reminders:
-                    lines.append(f"  ⚠️ Watch: {pack.misconception_reminders[0][:100]}")
+                    lines.append(f"  ⚠️ Watch: {_md(pack.misconception_reminders[0][:100])}")
             else:
                 lines.append(f"• *{subject}*: No questions available — ingest past papers first")
-        except Exception as exc:
-            lines.append(f"• *{subject}*: Error — {exc}")
+        except Exception:
+            logger.exception("Revision pack build failed for %s", subject)
+            lines.append(f"• *{subject}*: revision pack unavailable")
 
     return "\n".join(lines)
 
@@ -283,7 +296,9 @@ if __name__ == "__main__":
     print(text)
 
     if "--send-now" in sys.argv:
-        from agents.delivery.telegram_agent import TelegramAgent
+        import asyncio
 
-        TelegramAgent().send_message(text)
+        from agents.delivery.telegram_agent import send_daily_briefing
+
+        asyncio.run(send_daily_briefing(text))
         print("\n[sent to Telegram]")
