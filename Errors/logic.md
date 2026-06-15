@@ -1,10 +1,12 @@
 # AcademicOS — Logic Error Audit
 
-**Audit date:** 2026-06-14
+**Audit date:** 2026-06-14 · **Re-audit:** 2026-06-15 (branch `claude/vigilant-lovelace-oa3mmq`)
 **Scope:** Full codebase — backend API (`backend/main.py`), briefing generator, agents, database schemas/seeders, and the Next.js frontend (screens, components, hooks, lib).
 **Objective:** Identify every logic error that negatively affects real-world usability from the client's perspective.
 
 **Method:** Static trace of every data flow from SQLite → FastAPI → frontend fetch hooks → rendered components, cross-checking schemas against queries and backend output shapes against TypeScript types. The critical finding was additionally **reproduced at runtime** (see LOGIC-001 evidence).
+
+**Re-audit note (2026-06-15):** All 20 findings below were re-verified line-by-line against the current code on this branch and **all still hold** (the audited files are unchanged since 2026-06-14). This pass additionally surfaced **6 new issues — LOGIC-021 through LOGIC-026** — documented after LOGIC-020.
 
 ---
 
@@ -32,6 +34,12 @@
 | LOGIC-018 | Low | Time zones | UTC-stored timestamps compared against local `date.today()` → off-by-one for `days_ago`/streak near midnight |
 | LOGIC-019 | Low | Dead code | `_subject_mastery` computes `weak_topics` but never returns it; `grade_contribution` computed but never displayed |
 | LOGIC-020 | Low | Data integrity | Backend does not verify a submitted attempt's question belongs to the session's paper |
+| LOGIC-021 | **High** | Timer / config | Official exam time hardcoded to 90 min (target 60 min) for *every* paper → "two-thirds rule" badge, pace status, and all "vs target" deltas are wrong for most papers |
+| LOGIC-022 | Medium | Aggregation | Home "Recent papers" includes **in-progress (never-completed) sessions**, unlike Papers/Analytics → inflates "Papers completed"/average and shows grades for unfinished work |
+| LOGIC-023 | Medium | Marking | "Live grade" is computed over only the questions marked *so far*, not the whole paper → marking one easy question first shows "Grade A*" for the paper |
+| LOGIC-024 | Medium | Marking | Zero-mark questions are admitted into Marking but rejected by the backend (`marks_available > 0`) → "Save failed" with a cryptic message, no path to record them |
+| LOGIC-025 | Low | Aggregation | `/api/coverage` can report **>100%** attempted because `attempted` counts all attempts while `total_questions` counts only `question_paper` rows |
+| LOGIC-026 | Low | UI consistency | Mastery/coverage bars use **two different colour-band thresholds** (80/50 vs 60/40) across screens for visually identical bars |
 
 ---
 
@@ -715,6 +723,212 @@ Medium
 
 ---
 
+## LOGIC-021
+
+### Severity
+**High**
+
+### Location
+`frontend/components/screens/Timer.tsx:14` (`OFFICIAL_DEFAULT = 90 * 60`), `:117-118` (`official`/`target`), `:124-128` (`createSession`). Consumed by `backend/main.py:191-192` (`get_papers` time/target), `_recent_papers:515-516`, and rendered in `Analytics.tsx:177,187-189`, `Subjects.tsx:148,159-160`, `Home.tsx:122-140`.
+
+### Description
+The Timer hardcodes the official exam duration to **90 minutes for every paper**, and derives the target as a flat two-thirds (`60 minutes`). These values are written into the session (`official_time_seconds`, `target_time_seconds`) and then used everywhere to compute "vs target" deltas and the pace indicator. Real Edexcel/Cambridge IAL papers have materially different durations (e.g., many Physics/Chemistry units are 75–105 min; Maths papers 90 min; FP papers 90 min), and there is no per-paper duration in the question bank or any UI to set it.
+
+### Expected Behavior
+Each paper's official time (and therefore target) should reflect that paper's real exam length, so pace tracking and "vs target" deltas are meaningful.
+
+### Actual Behavior
+- The "two-thirds rule" badge and the timer's "Target 60 min" are identical for every paper regardless of its true length.
+- The pace status ("On pace"/"At risk"/"Over time") flips at 60/90 min for all papers — wrong for any paper not 90 min long.
+- The "Δ" / "vs target" columns in Analytics and Subjects compare against a constant 60 min, so the numbers misrepresent whether the student was actually fast or slow.
+
+### Evidence
+`Timer.tsx:14`: `const OFFICIAL_DEFAULT = 90 * 60;`
+`Timer.tsx:117-118`: `const official = OFFICIAL_DEFAULT; const target = Math.round(official * (2 / 3));`
+These are passed verbatim to `createSession`, persisted, and later surfaced as `target` in `/api/papers`.
+
+### Impact
+A headline feature (exam-condition timing with pace analysis) produces misleading results for the majority of papers. A student is told they were "over time" or "on pace" against a duration their exam does not have. Violates Educational Accuracy.
+
+### Recommended Fix
+Store an official duration per paper (in the question bank / papers table) and seed it from the syllabus; have the Timer read it instead of a constant. Until then, prompt the user for the paper's official time rather than assuming 90 min.
+
+### Confidence
+High
+
+---
+
+## LOGIC-022
+
+### Severity
+Medium
+
+### Location
+`backend/main.py:472-485` (`_recent_papers` query — no `ended_at` filter), consumed by `Home.tsx:23-26` (`completedPapers`/`avgScore`). Contrast `get_papers:158` and `get_analytics:1164`, which both filter `WHERE s.ended_at IS NOT NULL`.
+
+### Description
+`_recent_papers` selects sessions with `FROM sessions s ORDER BY s.started_at DESC LIMIT ?` and **no `ended_at IS NOT NULL` filter**. Every other session aggregation in the codebase restricts to completed sessions. Home then treats any recent paper with a non-null `pct` (i.e., any session that has at least one marked attempt, even if never completed) as a "completed paper," counts it, averages it, and shows its grade.
+
+### Expected Behavior
+"Recent papers" / "Papers completed" / "Average score" on Home should be drawn from the same population as Analytics — completed, marked sessions — so the numbers agree.
+
+### Actual Behavior
+- An in-progress session (paper started, a few questions marked, never finished) appears in Home's "Recent papers" with a score and grade.
+- It is counted in "Papers completed" and folded into "Average score," while Analytics (which requires `ended_at`) excludes it — so the two screens disagree, on top of LOGIC-008.
+- The row's `completed: false` flag is computed but Home ignores it.
+
+### Evidence
+`backend/main.py:480-484`:
+```py
+FROM sessions s
+ORDER BY s.started_at DESC
+LIMIT ?
+```
+No `WHERE s.ended_at IS NOT NULL`, unlike `get_papers`/`get_analytics`.
+
+### Impact
+Headline KPIs on the landing screen count and average unfinished papers, inconsistent with the rest of the app. Erodes trust in the dashboard numbers.
+
+### Recommended Fix
+Add `WHERE s.ended_at IS NOT NULL` to `_recent_papers` (or have Home filter on the `completed` flag it already receives) so all session metrics share one definition of "completed."
+
+### Confidence
+High
+
+---
+
+## LOGIC-023
+
+### Severity
+Medium
+
+### Location
+`frontend/components/screens/Marking.tsx:74-78` (`scored`, `possibleSoFar`, `pct`, `liveGrade`); rendered at `:161-165` and the sticky bar `:319-325`.
+
+### Description
+The "Live grade" badge is `gradeFromPct(pct)` where `pct = round(scored / possibleSoFar * 100)` and `possibleSoFar` is **only the marks of questions already marked** (`awarded[x.id] == null ? 0 : x.marks`). So the grade is a percentage of the marked subset, not of the paper. Meanwhile the score readout shows `scored / maxMarks` (whole-paper denominator), so the two displayed figures use different denominators.
+
+### Expected Behavior
+A grade shown for a paper should be relative to the paper's total (or clearly labelled as provisional/partial), and should not read as a final grade after a single question.
+
+### Actual Behavior
+After marking just the first (easy) question fully correct, the page shows "Live grade A* · 100%" for the whole paper, while the score reads e.g. "4 / 72." The grade swings wildly as marking proceeds and only becomes meaningful at the last question.
+
+### Evidence
+`Marking.tsx:75-78`:
+```ts
+const possibleSoFar = qs.reduce((a, x) => a + (awarded[x.id] == null ? 0 : x.marks), 0);
+const pct = possibleSoFar > 0 ? Math.round((scored / possibleSoFar) * 100) : 0;
+const liveGrade = gradeFromPct(pct);
+```
+
+### Impact
+Misleading grade prominently displayed (header and sticky footer) during marking; a student could believe they are scoring an A* when most of the paper is unmarked.
+
+### Recommended Fix
+Either label it explicitly as "provisional (marked so far)," or compute the grade against `maxMarks` once all questions are marked and show "—"/percentage-marked progress until then.
+
+### Confidence
+High
+
+---
+
+## LOGIC-024
+
+### Severity
+Medium
+
+### Location
+`frontend/components/screens/Marking.tsx:50-53` (question filter), `:119` (`marks_available: q.marks`); `backend/main.py:823` (`marks_available: int = Field(gt=0)`), `:893-894`.
+
+### Description
+Marking includes any question where `q.marks > 0` **or** `(q.question_text ?? "").length > 20`. A question that was extracted with `marks = 0` but has body text passes the filter and is shown with a single "0" marks-awarded button. Saving it sends `marks_available: 0`, which the backend's `AttemptCreate` model rejects (`marks_available` must be `> 0`) → HTTP 422.
+
+### Expected Behavior
+Either zero-mark/unscored questions are not presented as markable, or the app records them without erroring.
+
+### Actual Behavior
+The user can select the only option (0), click "Save & next," and gets "Save failed: API 422: …" with no actionable explanation. The question cannot be marked (only skipped).
+
+### Evidence
+`Marking.tsx:51`: `.filter((q) => q.marks > 0 || (q.question_text ?? "").length > 20)`
+`Marking.tsx:119`: `marks_available: q.marks,`
+`backend/main.py:823`: `marks_available: int = Field(gt=0)`
+
+### Impact
+Silent-ish failure with a cryptic error on a core flow for any paper containing a 0-mark extracted question (common with imperfect OCR/extraction). Low-trust dead end.
+
+### Recommended Fix
+Exclude `marks <= 0` questions from the markable set (or render them read-only), and surface a human-readable message instead of the raw 422 string.
+
+### Confidence
+High
+
+---
+
+## LOGIC-025
+
+### Severity
+Low
+
+### Location
+`backend/main.py:1082-1129` (`get_coverage`): `total_questions` from a `WHERE p.paper_type = 'question_paper'` query (`:1092`) vs `attempted` counted with **no `paper_type` filter** (`:1100-1114`). Surfaced in `Briefing.tsx:115-125` and `Analytics.tsx:71-72`.
+
+### Description
+`total_questions` per subject counts only questions belonging to `paper_type = 'question_paper'`. The attempted count, however, is derived from `DISTINCT question_id` in `attempts` joined to questions with no paper-type restriction. If any attempt references a question on a non-`question_paper` paper (specimen, sample, mark-scheme-attached, etc.), `attempted` can exceed `total_questions`, yielding `pct = round(attempted / total_q * 100) > 100`.
+
+### Expected Behavior
+Coverage percentage is bounded 0–100 and compares like with like (attempted question-paper questions ÷ total question-paper questions).
+
+### Actual Behavior
+Coverage can render e.g. "112%" in the Briefing coverage bar and skew the Analytics "% of bank" metric.
+
+### Evidence
+`backend/main.py:1092` (`WHERE p.paper_type = 'question_paper'`) vs `:1100` (`SELECT DISTINCT question_id FROM attempts`) and `:1106-1112` (no `paper_type` filter on the attempted-count join).
+
+### Impact
+Implausible >100% values undermine trust in the coverage figure; minor because most papers are `question_paper`.
+
+### Recommended Fix
+Apply the same `paper_type = 'question_paper'` filter to the attempted-count join, and/or clamp `pct` to 100.
+
+### Confidence
+Medium
+
+---
+
+## LOGIC-026
+
+### Severity
+Low
+
+### Location
+`frontend/lib/data.ts:15-16` (`masteryBand`: 80/50); `frontend/components/screens/Briefing.tsx:120` (coverage band: 60/40); `Home.tsx:184-188` (legend states >80 / 50–80 / <50); `Subjects.tsx:79,96` (unit bars via `masteryBand`).
+
+### Description
+The app colours progress bars green/amber/red using two different threshold sets for visually identical bars. `masteryBand` (used by Home heatmap, Subjects units/topics) splits at **80/50**, and the Home legend documents that. The Briefing "Coverage summary" bars split at **60/40**. A 65% bar is therefore amber in one place and green in another.
+
+### Expected Behavior
+Either one consistent banding scale, or clearly distinct visual treatments with labelled thresholds when two different metrics (mastery vs coverage) are intentionally banded differently.
+
+### Actual Behavior
+Identical-looking bars imply identical meaning but use different cut-offs across screens, so the same percentage shows a different colour/severity depending on the screen.
+
+### Evidence
+`data.ts:16`: `return m >= 80 ? "green" : m >= 50 ? "amber" : "red";`
+`Briefing.tsx:120`: `band={c.pct >= 60 ? "green" : c.pct >= 40 ? "amber" : "red"}`
+
+### Impact
+Inconsistent visual signalling; low severity but contradicts the otherwise-consistent design language.
+
+### Recommended Fix
+Centralise band thresholds (per metric type) in `lib/data.ts` and reuse them; if coverage is intentionally banded differently from mastery, label the thresholds so the difference is explicit.
+
+### Confidence
+Medium
+
+---
+
 ## Cross-Cutting Observations
 
 - **Silent failure pattern.** `_query`/`_scalar` (`backend/main.py:56-73`) swallow all `sqlite3.Error`s and return empty/zero. This converts schema/infrastructure bugs (LOGIC-001) into invisible "empty data," defeating the app's own honesty goal. Recommend distinguishing "missing table/setup error" from "no rows."
@@ -725,3 +939,8 @@ Medium
 - Reproduced LOGIC-001 at runtime (init + seed → table absent → API query raises `no such table`).
 - Statically traced every endpoint's output shape against `frontend/lib/types.ts` and each screen's consumption.
 - Cross-checked all backend SQL table/column names against `schemas/*.sql` (markscheme, examiner, attempts, question_bank all match; **progress** does not — see LOGIC-001).
+
+### Re-audit pass — 2026-06-15 (branch `claude/vigilant-lovelace-oa3mmq`)
+- Re-confirmed LOGIC-001's root cause directly in `db/seed_syllabus.py` + `schemas/progress.sql` + `db/models.py`: the seeder only populates the normalized tree (`subjects → modules → topics → subtopics → specification_points`) and `progress.sql` defines no `spaced_repetition_items` table, while `backend/main.py` (11 sites) and `briefing/generator.py` (`get_due_review_items`, `select_question_of_the_day`) query `spaced_repetition_items` (and a flat `unit` column that the normalized schema also lacks). Every such query fails silently via `_query`/`_scalar`.
+- Re-verified all hardcoded/fake-data findings exist verbatim: `Sidebar.tsx:99-100` (`Mouad Maamma`, `Physics A · Maths A* · Chem B`), `Home.tsx:35` greeting, `Settings.tsx:43,51` (`Mouad Maamma`, `June 2026`), `Subjects.tsx:11` (`useState("physics")`), `charts/index.tsx:240` (`min: 40`), `QuestionReview.tsx:55` (`DIFFICULTY[q.difficulty]`).
+- New issues this pass: **LOGIC-021** (hardcoded 90-min official time for all papers), **LOGIC-022** (`_recent_papers` omits the `ended_at IS NOT NULL` filter that every other session query uses), **LOGIC-023** (Marking live grade uses a partial denominator), **LOGIC-024** (zero-mark questions are markable but 422 on save), **LOGIC-025** (coverage can exceed 100%), **LOGIC-026** (inconsistent colour-band thresholds).
