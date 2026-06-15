@@ -279,5 +279,4 @@ export interface AttemptResult {
   new_mastery: number | null;
   next_review: string | null;
   marks_awarded: number;
-  grade_contribution: Grade;
 }

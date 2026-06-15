@@ -10,20 +10,25 @@ Run from project root:
 from __future__ import annotations
 
 import logging
+import os
+import secrets
 import sqlite3
 import sys
+import time
+from collections import deque
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field, field_validator
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from config.settings import (
-    DB_ANALYTICS,
     DB_ATTEMPTS,
     DB_EXAMINER,
     DB_MARKSCHEME,
@@ -34,10 +39,85 @@ from db.models import get_db
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="AcademicOS API", version="2.0.0")
+# --- Access control -------------------------------------------------------
+# A single shared API key gates every endpoint except /api/health. Enforcement
+# is active whenever API_KEY is set in the environment; when it is unset the API
+# runs open (local development) and logs a loud warning so the gap is visible.
+API_KEY = os.getenv("API_KEY", "")
+_PUBLIC_PATHS = {"/api/health", "/docs", "/openapi.json", "/redoc"}
+
+if not API_KEY:
+    logger.warning(
+        "API_KEY is not set — the API is running WITHOUT authentication. "
+        "Set API_KEY in the environment before exposing this service."
+    )
+
+
+def verify_api_key(request: Request) -> None:
+    """Global dependency: require a valid API key on non-public routes."""
+    if not API_KEY or request.url.path in _PUBLIC_PATHS:
+        return
+    provided = request.headers.get("x-api-key", "")
+    if not provided:
+        auth = request.headers.get("authorization", "")
+        if auth.lower().startswith("bearer "):
+            provided = auth[7:]
+    if not (provided and secrets.compare_digest(provided, API_KEY)):
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+# --- Rate limiting --------------------------------------------------------
+# Lightweight in-process per-client sliding-window limiter. Not a substitute for
+# an edge/WAF rate limiter, but blocks trivial floods (AOS-006) with no new deps.
+_RATE_LIMIT = int(os.getenv("RATE_LIMIT_PER_MINUTE", "120"))
+_rate_window: dict[str, deque[float]] = {}
+
+
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        client = request.client.host if request.client else "unknown"
+        now = time.monotonic()
+        bucket = _rate_window.setdefault(client, deque())
+        while bucket and now - bucket[0] > 60.0:
+            bucket.popleft()
+        if len(bucket) >= _RATE_LIMIT:
+            return JSONResponse(
+                status_code=429,
+                content={"detail": "Rate limit exceeded. Try again shortly."},
+            )
+        bucket.append(now)
+        return await call_next(request)
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("X-Frame-Options", "DENY")
+        response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault(
+            "Strict-Transport-Security", "max-age=63072000; includeSubDomains"
+        )
+        response.headers.setdefault("Content-Security-Policy", "frame-ancestors 'none'")
+        return response
+
+
+app = FastAPI(
+    title="AcademicOS API",
+    version="2.0.0",
+    dependencies=[Depends(verify_api_key)],
+)
+
+# Allowed origins are environment-driven so the deployed frontend origin can be
+# permitted without hardcoding, and a wildcard is never combined with credentials.
+_origins_env = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001")
+ALLOWED_ORIGINS = [o.strip() for o in _origins_env.split(",") if o.strip()]
+
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RateLimitMiddleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=False,
     allow_methods=["GET", "POST", "PATCH"],
     allow_headers=["*"],
@@ -53,13 +133,21 @@ SUBJECT_ID: dict[str, str] = {
 }
 
 
+def _log_db_error(db_path: Path, exc: sqlite3.Error) -> None:
+    """Log a DB read failure. Operational errors (missing table, corruption,
+    locked database) are real infrastructure faults and logged at ERROR so they
+    are not silently mistaken for "no data yet"; everything else stays WARNING."""
+    level = logging.ERROR if isinstance(exc, sqlite3.OperationalError) else logging.WARNING
+    logger.log(level, "DB read failed on %s: %s", db_path.name, exc)
+
+
 def _query(db_path: Path, sql: str, params: tuple = ()) -> list[dict[str, Any]]:
     """Read query returning list of dicts. Empty list if the DB/table is missing."""
     try:
         with get_db(db_path) as conn:
             return [dict(r) for r in conn.execute(sql, params).fetchall()]
     except sqlite3.Error as exc:
-        logger.warning("Query failed on %s: %s", db_path.name, exc)
+        _log_db_error(db_path, exc)
         return []
 
 
@@ -69,11 +157,12 @@ def _scalar(db_path: Path, sql: str, params: tuple = (), default: Any = 0) -> An
             row = conn.execute(sql, params).fetchone()
             return row[0] if row and row[0] is not None else default
     except sqlite3.Error as exc:
-        logger.warning("Scalar query failed on %s: %s", db_path.name, exc)
+        _log_db_error(db_path, exc)
         return default
 
 
 def _grade_from_mastery(mastery: float) -> str:
+    """Grade band for a 0–1 mastery estimate (used for current/predicted grades)."""
     if mastery >= 0.85:
         return "A*"
     if mastery >= 0.70:
@@ -83,6 +172,34 @@ def _grade_from_mastery(mastery: float) -> str:
     if mastery >= 0.40:
         return "C"
     return "U"
+
+
+def _grade_from_pct(pct: float) -> str:
+    """Grade for an exam-paper percentage, using Edexcel IAL boundaries.
+
+    Single source of truth shared with the frontend's gradeFromPct (lib/data.ts):
+    A*=90, A=80, B=70, C=60, D=50, E=40, else U. Exam percentages must never be
+    graded with the mastery bands above (which would inflate the grade)."""
+    if pct >= 90:
+        return "A*"
+    if pct >= 80:
+        return "A"
+    if pct >= 70:
+        return "B"
+    if pct >= 60:
+        return "C"
+    if pct >= 50:
+        return "D"
+    if pct >= 40:
+        return "E"
+    return "U"
+
+
+def _project_mastery(mastery: float) -> float:
+    """Defensible predicted-mastery projection: close ~15% of the remaining gap
+    to ceiling. Unlike a flat +0.10 bump it never overshoots 1.0 and tapers as
+    mastery rises, so it cannot claim large gains for already-strong topics."""
+    return mastery + (1.0 - mastery) * 0.15
 
 
 # ---------------------------------------------------------------------------
@@ -122,7 +239,10 @@ def get_health() -> dict:
 # ---------------------------------------------------------------------------
 
 @app.get("/api/papers")
-def get_papers(subject: str | None = None, limit: int = 500) -> list[dict]:
+def get_papers(
+    subject: str | None = None,
+    limit: int = Query(500, ge=1, le=500),
+) -> list[dict]:
     where = "WHERE p.paper_type = 'question_paper'"
     params: list[Any] = []
     if subject:
@@ -511,7 +631,7 @@ def _recent_papers(limit: int = 5) -> list[dict]:
             "score": s["awarded"] if s["available"] else None,
             "max": s["available"] if s["available"] else None,
             "pct": round(pct) if pct is not None else None,
-            "grade": _grade_from_mastery(pct / 100) if pct is not None else None,
+            "grade": _grade_from_pct(pct) if pct is not None else None,
             "time_seconds": s["total_time_seconds"],
             "target_seconds": s["target_time_seconds"],
             "started_at": s["started_at"],
@@ -579,6 +699,7 @@ def _subject_mastery() -> list[dict]:
             "code": u["unit"],
             "mastery": round((u["mastery"] or 0.0) * 100),
             "topic_count": u["topics"],
+            "weak_topics": u["weak_topics"] or 0,
             "questions": qcounts.get((u["subject"], (u["unit"] or "").replace(" ", "")), 0),
             "topics": topics_by_unit.get((u["subject"], u["unit"]), []),
         })
@@ -593,7 +714,7 @@ def _subject_mastery() -> list[dict]:
             "topic_count": r["topic_count"],
             "reviewed_count": r["reviewed_count"],
             "current_grade": _grade_from_mastery(mastery),
-            "predicted_grade": _grade_from_mastery(min(1.0, mastery + 0.10)),
+            "predicted_grade": _grade_from_mastery(_project_mastery(mastery)),
             "units": units_by_subject.get(r["subject"], []),
         })
     return result
@@ -631,7 +752,7 @@ def _predicted_grades() -> list[dict]:
             "subject": r["subject"],
             "subject_id": SUBJECT_ID.get(r["subject"] or "", ""),
             "current": _grade_from_mastery(mastery),
-            "predicted": _grade_from_mastery(min(1.0, mastery + 0.10)),
+            "predicted": _grade_from_mastery(_project_mastery(mastery)),
             "confidence": confidence,
             "attempt_count": n_attempts,
         })
@@ -654,8 +775,21 @@ def _examiner_traps(limit: int = 5) -> list[dict]:
         LIMIT 50
         """,
     )
+    def _to_contract(rows: list[dict]) -> list[dict]:
+        return [
+            {
+                "text": t["description"],
+                "topic": t["topic"] or t["module_code"] or "",
+                "subject": t["subject"] or "",
+                "freq": t["frequency"] or 1,
+            }
+            for t in rows
+        ]
+
     if not weak:
-        return traps[:limit]
+        # No weak-topic prioritisation available — still emit the contract shape
+        # ({text, topic, subject, freq}) the frontend (ExaminerTrap) requires.
+        return _to_contract(traps[:limit])
 
     weak_topics = {(w["topic"] or "").lower() for w in weak}
     prioritised = sorted(
@@ -668,15 +802,7 @@ def _examiner_traps(limit: int = 5) -> list[dict]:
             -(t["frequency"] or 0),
         ),
     )
-    return [
-        {
-            "text": t["description"],
-            "topic": t["topic"] or t["module_code"] or "",
-            "subject": t["subject"] or "",
-            "freq": t["frequency"] or 1,
-        }
-        for t in prioritised[:limit]
-    ]
+    return _to_contract(prioritised[:limit])
 
 
 def _question_of_day() -> dict | None:
@@ -694,13 +820,16 @@ def _question_of_day() -> dict | None:
         """,
         (qod["id"],),
     )
+    difficulty_labels = ["", "Recall", "Standard", "Multi-step", "Advanced", "Trap"]
+    d = qod["difficulty"]
+    difficulty = difficulty_labels[d] if isinstance(d, int) and 0 <= d < len(difficulty_labels) else ""
     return {
         "id": str(qod["id"]),
         "topic": qod.get("priority_topic") or qod.get("module_code") or "",
         "unit": qod.get("module_code") or "",
         "subject": SUBJECT_ID.get(qod.get("subject") or "", ""),
         "marks": qod["marks"],
-        "difficulty": ["", "Recall", "Standard", "Multi-step", "Advanced", "Trap"][qod["difficulty"]],
+        "difficulty": difficulty,
         "text": (qod["raw_text"] or "").strip()[:400],
         "markscheme": [
             {"code": f"{m['mark_type']}{m['marks_value']}", "text": m["description"]}
@@ -715,7 +844,8 @@ def _streak() -> int:
         """
         SELECT DISTINCT DATE(started_at) AS day
         FROM sessions
-        WHERE started_at >= DATE('now', '-60 days')
+        WHERE ended_at IS NOT NULL
+          AND started_at >= DATE('now', '-60 days')
         ORDER BY day DESC
         """,
     )
@@ -728,16 +858,50 @@ def _streak() -> int:
     return streak
 
 
+def _completion_stats() -> dict:
+    """Headline totals over ALL completed, marked sessions — the single source
+    of truth for "papers completed" and "average score" so Home and Analytics
+    can never disagree (they previously aggregated different populations)."""
+    rows = _query(
+        DB_ATTEMPTS,
+        """
+        SELECT (SELECT COALESCE(SUM(a.marks_awarded), 0) FROM attempts a WHERE a.session_id = s.id) AS awarded,
+               (SELECT COALESCE(SUM(a.marks_available), 0) FROM attempts a WHERE a.session_id = s.id) AS available
+        FROM sessions s
+        WHERE s.ended_at IS NOT NULL
+        """,
+    )
+    scored = [r for r in rows if (r["available"] or 0) > 0]
+    avg = (
+        round(sum(r["awarded"] / r["available"] * 100 for r in scored) / len(scored))
+        if scored else None
+    )
+    return {"papers_completed": len(scored), "average_score": avg}
+
+
+def _safe_section(fn, default):
+    """Run a dashboard section, degrading to a default instead of 500-ing the
+    whole endpoint if one section raises (e.g. a single malformed row)."""
+    try:
+        return fn()
+    except Exception:  # noqa: BLE001 — dashboard must stay up if a section fails
+        logger.exception("Dashboard section %s failed", getattr(fn, "__name__", fn))
+        return default
+
+
 @app.get("/api/dashboard")
 def get_dashboard() -> dict:
+    stats = _safe_section(_completion_stats, {"papers_completed": 0, "average_score": None})
     return {
-        "todays_priorities": _todays_priorities(),
-        "recent_papers": _recent_papers(),
-        "subject_mastery": _subject_mastery(),
-        "predicted_grades": _predicted_grades(),
-        "examiner_traps": _examiner_traps(),
-        "question_of_day": _question_of_day(),
-        "streak": _streak(),
+        "todays_priorities": _safe_section(_todays_priorities, []),
+        "recent_papers": _safe_section(_recent_papers, []),
+        "subject_mastery": _safe_section(_subject_mastery, []),
+        "predicted_grades": _safe_section(_predicted_grades, []),
+        "examiner_traps": _safe_section(_examiner_traps, []),
+        "question_of_day": _safe_section(_question_of_day, None),
+        "streak": _safe_section(_streak, 0),
+        "papers_completed": stats["papers_completed"],
+        "average_score": stats["average_score"],
         # No universities table exists; an empty list is honest.
         "university_readiness": [],
         "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -751,8 +915,8 @@ def get_dashboard() -> dict:
 class SessionCreate(BaseModel):
     paper_id: int
     started_at: str = ""
-    official_time_seconds: int = 0
-    target_time_seconds: int = 0
+    official_time_seconds: int = Field(default=0, ge=0)
+    target_time_seconds: int = Field(default=0, ge=0)
 
 
 @app.post("/api/sessions")
@@ -796,7 +960,7 @@ def log_question_time(session_id: int, question_id: int, body: QuestionTimeLog) 
 
 class SessionComplete(BaseModel):
     ended_at: str = ""
-    total_time_seconds: int = 0
+    total_time_seconds: int = Field(default=0, ge=0)
 
 
 @app.post("/api/sessions/{session_id}/complete")
@@ -827,6 +991,18 @@ class AttemptCreate(BaseModel):
     notes: str = ""
     answer_image_path: str | None = None
 
+    @field_validator("answer_image_path")
+    @classmethod
+    def _safe_image_path(cls, v: str | None) -> str | None:
+        """Reject client-supplied absolute paths and traversal segments. The
+        client must never dictate an arbitrary filesystem path (AOS-011); storage
+        paths are generated server-side under a fixed directory when needed."""
+        if v is None or v == "":
+            return v
+        if v.startswith(("/", "\\")) or ".." in Path(v).parts or ":" in v:
+            raise ValueError("answer_image_path must be a relative path without traversal")
+        return v
+
 
 def _update_mastery(question_id: int, score_pct: float) -> tuple[float | None, str | None]:
     """Apply the spaced-repetition update to every SR item matching the
@@ -850,7 +1026,16 @@ def _update_mastery(question_id: int, score_pct: float) -> tuple[float | None, s
             (topic, topic),
         ).fetchall()
         if not items:
+            logger.warning(
+                "No spaced_repetition_items match topic %r — mastery update is a "
+                "no-op. Seed progress.db (db/seed_syllabus.py) so SR state exists.",
+                topic,
+            )
             return None, None
+
+        # Cap intervals so the SM-2 multiplicative growth cannot overflow `date`
+        # (date.today() + timedelta(days=...) raises OverflowError past year 9999).
+        _MAX_INTERVAL_DAYS = 365.0
 
         new_mastery = None
         next_review = None
@@ -859,13 +1044,14 @@ def _update_mastery(question_id: int, score_pct: float) -> tuple[float | None, s
             ease = item["ease_factor"]
             interval = item["interval_days"]
             if score_pct >= 0.8:
-                interval = interval * ease
+                interval = min(interval * ease, _MAX_INTERVAL_DAYS)
                 ease = min(3.0, ease + 0.1)
             elif score_pct >= 0.6:
                 pass  # interval unchanged
             else:
                 interval = max(1.0, interval * 0.5)
                 ease = max(1.3, ease - 0.2)
+            interval = min(interval, _MAX_INTERVAL_DAYS)
             due = (date.today() + timedelta(days=round(interval))).isoformat()
             conn.execute(
                 """
@@ -885,20 +1071,52 @@ def _update_mastery(question_id: int, score_pct: float) -> tuple[float | None, s
 def create_attempt(body: AttemptCreate) -> dict:
     q = _query(
         DB_QUESTION_BANK,
-        "SELECT id, marks FROM questions WHERE id = ?",
+        "SELECT id, marks, paper_id FROM questions WHERE id = ?",
         (body.question_id,),
     )
     if not q:
         raise HTTPException(status_code=404, detail=f"Question {body.question_id} not found")
     if body.marks_awarded > body.marks_available:
         raise HTTPException(status_code=422, detail="marks_awarded cannot exceed marks_available")
+
+    time_seconds = body.time_seconds
     if body.session_id is not None:
-        sess = _scalar(DB_ATTEMPTS, "SELECT COUNT(*) FROM sessions WHERE id = ?", (body.session_id,))
+        sess = _query(DB_ATTEMPTS, "SELECT id, paper_id FROM sessions WHERE id = ?", (body.session_id,))
         if not sess:
             raise HTTPException(status_code=404, detail=f"Session {body.session_id} not found")
+        # The question must belong to the session's paper, otherwise an attempt
+        # for one paper could be recorded against an unrelated session, corrupting
+        # per-session score aggregation (LOGIC-020 / AOS-012).
+        if sess[0]["paper_id"] != q[0]["paper_id"]:
+            raise HTTPException(
+                status_code=422,
+                detail="question does not belong to the session's paper",
+            )
+        # Backfill attempt time from the Timer's per-question log when the client
+        # did not supply one (LOGIC-011), so attempts carry real time-on-question.
+        if not time_seconds:
+            time_seconds = _scalar(
+                DB_ATTEMPTS,
+                "SELECT time_seconds FROM question_times WHERE session_id = ? AND question_id = ?",
+                (body.session_id, body.question_id),
+                default=0,
+            )
 
     now = datetime.now(timezone.utc).isoformat()
     with get_db(DB_ATTEMPTS) as conn:
+        # Re-marking a question within a session replaces the prior mark rather
+        # than appending a duplicate (LOGIC-004): one attempt per (session, question).
+        if body.session_id is not None:
+            prior = conn.execute(
+                "SELECT id FROM attempts WHERE session_id = ? AND question_id = ?",
+                (body.session_id, body.question_id),
+            ).fetchall()
+            for p in prior:
+                conn.execute("DELETE FROM attempt_mistakes WHERE attempt_id = ?", (p["id"],))
+            conn.execute(
+                "DELETE FROM attempts WHERE session_id = ? AND question_id = ?",
+                (body.session_id, body.question_id),
+            )
         cur = conn.execute(
             """
             INSERT INTO attempts (session_id, question_id, marks_awarded, marks_available,
@@ -907,7 +1125,7 @@ def create_attempt(body: AttemptCreate) -> dict:
             """,
             (
                 body.session_id, body.question_id, body.marks_awarded, body.marks_available,
-                body.confidence, body.time_seconds, body.notes, body.answer_image_path, now,
+                body.confidence, time_seconds, body.notes, body.answer_image_path, now,
             ),
         )
         attempt_id = cur.lastrowid
@@ -926,7 +1144,6 @@ def create_attempt(body: AttemptCreate) -> dict:
         "new_mastery": round(new_mastery, 4) if new_mastery is not None else None,
         "next_review": next_review,
         "marks_awarded": body.marks_awarded,
-        "grade_contribution": _grade_from_mastery(score_pct),
     }
 
 
