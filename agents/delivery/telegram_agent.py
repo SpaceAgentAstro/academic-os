@@ -17,6 +17,9 @@ async def send_message(text: str, parse_mode: str = "Markdown") -> None:
     from telegram import Bot
     from telegram.error import TelegramError
 
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        raise RuntimeError("Telegram bot token and chat ID must be configured in the environment.")
+
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
     chunks = _split_message(text, _MAX_MESSAGE_LENGTH)
     for chunk in chunks:

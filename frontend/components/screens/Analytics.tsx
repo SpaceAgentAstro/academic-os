@@ -1,141 +1,144 @@
 "use client";
 
-import { useState } from "react";
-import { Card, GradeBadge, Icon, Metric, SectionTitle } from "@/components/ui";
+import { Card, EmptyState, ErrorState, Loading, Metric, SectionTitle } from "@/components/ui";
 import { BarChart, LineChart, ScatterChart } from "@/components/charts";
-import { bandColor, calibration, gradeFromPct, masteryBand, papers, scoreTrend, subjects, subjectName } from "@/lib/data";
-import { useCoverage, useRawPapers } from "@/lib/hooks";
+import { bandColor, gradeFromPct, masteryBand, subjectName } from "@/lib/data";
+import { getAnalytics, getCoverage, getPapers, getWeaknesses } from "@/lib/api";
+import { useFetch } from "@/lib/hooks";
 import type { Route } from "@/lib/types";
 
-const topicsLost = [
-  { t: "Capacitance", m: 47 }, { t: "Organic synthesis", m: 39 }, { t: "Series (FP2)", m: 31 },
-  { t: "Electric fields", m: 28 }, { t: "Logarithms", m: 26 }, { t: "Acid–base", m: 22 },
-  { t: "Recursion", m: 18 }, { t: "Resistivity", m: 16 }, { t: "Equilibria", m: 14 }, { t: "Vectors", m: 9 },
-];
-
 export function Analytics({ go }: { go: (r: Route) => void }) {
-  const [range, setRange] = useState("30 days");
-  const coverage = useCoverage();
-  const rawPapers = useRawPapers();
+  const analytics = useFetch(getAnalytics);
+  const coverage = useFetch(getCoverage);
+  const papersFetch = useFetch(() => getPapers());
+  const weak = useFetch(getWeaknesses);
 
-  // Total questions available across all subjects from the live DB
-  const totalQAvailable = coverage.reduce((s, c) => s + c.total_questions, 0);
-  const totalPapersAvailable = coverage.reduce((s, c) => s + c.papers, 0);
+  if (analytics.loading || coverage.loading) {
+    return <div className="aos-page"><Loading label="Loading analytics…" /></div>;
+  }
+  if (analytics.error || coverage.error) {
+    return (
+      <div className="aos-page">
+        <ErrorState
+          message={analytics.error ?? coverage.error ?? "No data"}
+          retry={analytics.error ? analytics.retry : coverage.retry}
+        />
+      </div>
+    );
+  }
 
-  const avgPct =
-    papers.reduce((a, p) => a + (p.score / p.max) * 100, 0) / papers.length;
-  const conf4 = calibration.find((c) => c.conf === 4)?.score ?? 0;
-  const conf2 = calibration.find((c) => c.conf === 2)?.score ?? 0;
+  const cov = coverage.data ?? [];
+  const a = analytics.data;
+  const papers = papersFetch.data ?? [];
+  const attempted = papers.filter((p) => p.score != null && p.max);
+  const weaknesses = weak.data?.weaknesses ?? [];
+  const calibration = a?.calibration ?? [];
 
-  const scatter = papers.map((p) => ({
-    x: p.time,
-    y: Math.round((p.score / p.max) * 100),
-    label: p.code,
-  }));
+  const totalQAvailable = cov.reduce((s, c) => s + c.total_questions, 0);
+  const totalPapersAvailable = cov.reduce((s, c) => s + c.papers, 0);
+  const totalAttempted = cov.reduce((s, c) => s + c.attempted, 0);
+
+  const avgScore = a && a.score_trend.length
+    ? Math.round(a.score_trend.reduce((x, y) => x + y, 0) / a.score_trend.length)
+    : null;
+
+  const scatter = attempted
+    .filter((p) => p.time != null)
+    .map((p) => ({
+      x: p.time as number,
+      y: Math.round(((p.score as number) / (p.max as number)) * 100),
+      label: p.code,
+    }));
+
+  const topicsLost = weaknesses.slice(0, 10);
 
   return (
     <div className="aos-page">
-      <div className="aos-page-head aos-head-flex">
-        <div>
-          <h1>Analytics</h1>
-          <p className="aos-page-sub">Performance intelligence across all subjects</p>
-        </div>
-        <div className="aos-seg">
-          {["7 days", "30 days", "All time"].map((r) => (
-            <button key={r} className={range === r ? "active" : ""} onClick={() => setRange(r)}>
-              {r}
-            </button>
-          ))}
-        </div>
+      <div className="aos-page-head">
+        <h1>Analytics</h1>
+        <p className="aos-page-sub">Performance intelligence · every number from a real query</p>
       </div>
 
       <div className="aos-metric-row">
         <Metric
           label="Question bank"
-          value={totalQAvailable > 0 ? totalQAvailable.toLocaleString() : "2,260"}
-          sub={totalPapersAvailable > 0 ? `${totalPapersAvailable} papers ingested` : "847 attempted"}
+          value={totalQAvailable.toLocaleString()}
+          sub={`${totalPapersAvailable.toLocaleString()} papers ingested`}
           icon="database"
         />
         <Metric
+          label="Questions attempted"
+          value={totalAttempted.toLocaleString()}
+          sub={totalQAvailable ? `${Math.round((totalAttempted / totalQAvailable) * 1000) / 10}% of bank` : ""}
+          icon="pencil"
+        />
+        <Metric
           label="Average score"
-          value={`${avgPct.toFixed(1)}%`}
-          sub={`Across ${papers.length} papers`}
-          accent="var(--accent)"
+          value={avgScore != null ? `${avgScore}%` : "—"}
+          sub={a ? `${a.sessions} completed sessions` : "No sessions yet"}
+          accent={avgScore != null ? "var(--accent)" : undefined}
           icon="percentage"
         />
-        <Metric label="Avg time / question" value="4m 12s" sub="Target 3m 30s" icon="clock" />
-        <Metric label="Efficiency" value="17.2" sub="marks per hour" icon="bolt" />
+        <Metric
+          label="Marked papers"
+          value={attempted.length}
+          sub={attempted.length === 0 ? "Start your first paper" : "with real scores"}
+          icon="files"
+        />
       </div>
 
       <div className="aos-chart-grid">
         <Card>
-          <SectionTitle>Score trend · last 20 papers</SectionTitle>
-          <LineChart
-            labels={scoreTrend.map((_, i) => i + 1)}
-            datasets={[{ data: scoreTrend }]}
-            yMin={50}
-            yMax={100}
-            fmt={(v) => `${v}%`}
-            height={210}
-          />
+          <SectionTitle>Score trend · completed sessions</SectionTitle>
+          {a && a.score_trend.length >= 2 ? (
+            <LineChart
+              labels={a.score_trend.map((_, i) => i + 1)}
+              datasets={[{ data: a.score_trend }]}
+              yMin={0}
+              yMax={100}
+              fmt={(v) => `${v}%`}
+              height={210}
+            />
+          ) : (
+            <EmptyState
+              icon="chart-line"
+              title="Not enough sessions"
+              sub="Complete at least two marked papers to see your trend."
+            />
+          )}
         </Card>
         <Card>
           <SectionTitle>Marks lost by topic · top 10</SectionTitle>
-          <BarChart
-            labels={topicsLost.map((x) => x.t)}
-            data={topicsLost.map((x) => x.m)}
-            colors={topicsLost.map((x) =>
-              x.m > 35
-                ? "var(--danger)"
-                : x.m > 22
-                ? "var(--warn)"
-                : "var(--primary)"
-            )}
-            horizontal
-            max={50}
-            height={260}
-          />
+          {topicsLost.length > 0 ? (
+            <BarChart
+              labels={topicsLost.map((x) => x.topic)}
+              data={topicsLost.map((x) => x.lost)}
+              colors={topicsLost.map((x) =>
+                x.lost > 35 ? "var(--danger)" : x.lost > 22 ? "var(--warn)" : "var(--primary)"
+              )}
+              horizontal
+              max={Math.max(10, ...topicsLost.map((x) => x.lost))}
+              height={260}
+            />
+          ) : (
+            <EmptyState
+              icon="chart-bar"
+              title="No marked attempts yet"
+              sub="Mark some papers to see where marks are lost."
+            />
+          )}
         </Card>
         <Card>
           <SectionTitle>Time vs score · each dot is a paper</SectionTitle>
-          <ScatterChart points={scatter} height={240} />
+          {scatter.length > 0 ? (
+            <ScatterChart points={scatter} height={240} />
+          ) : (
+            <EmptyState icon="chart-dots" title="No timed papers yet" />
+          )}
         </Card>
         <Card>
-          <SectionTitle>Mastery distribution by subject</SectionTitle>
-          <BarChart
-            labels={subjects.map((s) => s.short)}
-            stacked
-            height={240}
-            datasets={[
-              {
-                label: ">80%",
-                data: subjects.map((s) => s.units.filter((u) => u.mastery >= 80).length),
-                backgroundColor: "var(--accent)",
-                borderRadius: 3,
-              },
-              {
-                label: "50–80%",
-                data: subjects.map(
-                  (s) => s.units.filter((u) => u.mastery >= 50 && u.mastery < 80).length
-                ),
-                backgroundColor: "var(--warn)",
-                borderRadius: 3,
-              },
-              {
-                label: "<50%",
-                data: subjects.map((s) => s.units.filter((u) => u.mastery < 50).length),
-                backgroundColor: "var(--danger)",
-                borderRadius: 3,
-              },
-            ]}
-          />
-        </Card>
-      </div>
-
-      <Card>
-        <SectionTitle>Confidence calibration</SectionTitle>
-        <div className="aos-calib">
-          <div>
+          <SectionTitle>Confidence calibration</SectionTitle>
+          {calibration.length > 0 ? (
             <BarChart
               labels={calibration.map((c) => `Conf ${c.conf}`)}
               data={calibration.map((c) => c.score)}
@@ -144,114 +147,98 @@ export function Analytics({ go }: { go: (r: Route) => void }) {
               fmt={(v) => `${v}%`}
               height={180}
             />
-          </div>
-          <div className="aos-calib-notes">
-            <div className="aos-calib-note danger">
-              <Icon name="trending-down" size={16} />
-              <span>
-                You are <strong>overconfident</strong> — confidence 4 answers average only{" "}
-                {conf4}%.
-              </span>
-            </div>
-            <div className="aos-calib-note accent">
-              <Icon name="trending-up" size={16} />
-              <span>
-                You are <strong>underconfident</strong> — confidence 2 answers average{" "}
-                {conf2}%.
-              </span>
-            </div>
-          </div>
-        </div>
-      </Card>
+          ) : (
+            <EmptyState
+              icon="adjustments"
+              title="No confidence data"
+              sub="Rate confidence while marking to see calibration."
+            />
+          )}
+        </Card>
+      </div>
 
       <SectionTitle>Session log</SectionTitle>
-      <Card pad={false}>
-        <table className="aos-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Paper</th>
-              <th>Subject</th>
-              <th>Unit</th>
-              <th>Score</th>
-              <th>Grade</th>
-              <th>Time</th>
-              <th>Target</th>
-              <th>Δ</th>
-            </tr>
-          </thead>
-          <tbody>
-            {papers.map((p) => {
-              const pct = Math.round((p.score / p.max) * 100);
-              const delta = p.time - p.target;
-              return (
-                <tr key={p.id} onClick={() => go("marking")}>
-                  <td>{p.session}</td>
-                  <td className="aos-td-strong">{p.code}</td>
-                  <td>{subjectName(p.subject)}</td>
-                  <td>{p.unit}</td>
-                  <td>
-                    {p.score}/{p.max}{" "}
-                    <span className="aos-muted">({pct}%)</span>
-                  </td>
-                  <td>
-                    <GradeBadge grade={gradeFromPct(pct)} />
-                  </td>
-                  <td>{p.time}m</td>
-                  <td>{p.target}m</td>
-                  <td style={{ color: delta > 0 ? "var(--danger)" : "var(--accent)" }}>
-                    {delta > 0 ? "+" : ""}
-                    {delta}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </Card>
-
-      {rawPapers.length > 0 && (
-        <>
-          <SectionTitle
-            action={
-              <span className="aos-muted" style={{ fontSize: 12 }}>
-                {rawPapers.length} papers · question_bank.db
-              </span>
-            }
-          >
-            Paper library
-          </SectionTitle>
-          <Card pad={false}>
-            <table className="aos-table">
-              <thead>
-                <tr>
-                  <th>Code</th>
-                  <th>Subject</th>
-                  <th>Unit</th>
-                  <th>Session</th>
-                  <th>Questions</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rawPapers.slice(0, 50).map((p) => (
-                  <tr key={p.id}>
+      {attempted.length === 0 ? (
+        <Card>
+          <span className="aos-muted">No attempts yet. Start your first paper from the Timer.</span>
+        </Card>
+      ) : (
+        <Card pad={false}>
+          <table className="aos-table">
+            <thead>
+              <tr>
+                <th>Paper</th><th>Subject</th><th>Unit</th><th>Session</th>
+                <th>Score</th><th>Grade</th><th>Time</th><th>Target</th><th>Δ</th>
+              </tr>
+            </thead>
+            <tbody>
+              {attempted.map((p) => {
+                const pct = Math.round(((p.score as number) / (p.max as number)) * 100);
+                const delta = p.time != null && p.target != null ? p.time - p.target : null;
+                return (
+                  <tr key={p.id} onClick={() => go("marking")}>
                     <td className="aos-td-strong">{p.code}</td>
                     <td>{subjectName(p.subject)}</td>
                     <td>{p.unit}</td>
                     <td>{p.session}</td>
-                    <td>{p.question_count}</td>
-                    <td>
-                      <span className="aos-muted" style={{ fontSize: 12 }}>
-                        Not attempted
-                      </span>
+                    <td>{p.score}/{p.max}</td>
+                    <td>{gradeFromPct(pct)}</td>
+                    <td>{p.time != null ? `${p.time}m` : "—"}</td>
+                    <td>{p.target != null ? `${p.target}m` : "—"}</td>
+                    <td style={{ color: delta != null && delta > 0 ? "var(--danger)" : "var(--accent)" }}>
+                      {delta != null ? `${delta > 0 ? "+" : ""}${delta}` : "—"}
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </Card>
-        </>
+                );
+              })}
+            </tbody>
+          </table>
+        </Card>
+      )}
+
+      <SectionTitle
+        action={
+          <span className="aos-muted" style={{ fontSize: 12 }}>
+            {papers.length.toLocaleString()} papers · question_bank.db
+          </span>
+        }
+      >
+        Paper library
+      </SectionTitle>
+      {papersFetch.loading ? (
+        <Loading label="Loading paper library…" />
+      ) : papers.length === 0 ? (
+        <EmptyState title="No papers ingested" sub="Drop PDFs into papers/ and run the ingestion pipeline." />
+      ) : (
+        <Card pad={false}>
+          <table className="aos-table">
+            <thead>
+              <tr>
+                <th>Code</th><th>Subject</th><th>Unit</th><th>Session</th><th>Questions</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {papers.slice(0, 50).map((p) => (
+                <tr key={p.id}>
+                  <td className="aos-td-strong">{p.full_code}</td>
+                  <td>{subjectName(p.subject)}</td>
+                  <td>{p.unit}</td>
+                  <td>{p.session}</td>
+                  <td>{p.question_count}</td>
+                  <td>
+                    {p.score != null ? (
+                      <span style={{ color: "var(--accent)", fontSize: 12 }}>
+                        {p.score}/{p.max}
+                      </span>
+                    ) : (
+                      <span className="aos-muted" style={{ fontSize: 12 }}>Not attempted</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
       )}
     </div>
   );

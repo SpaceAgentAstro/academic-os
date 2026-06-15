@@ -1,14 +1,11 @@
 -- attempts.sql
--- Owned by: Analytics Agent
--- Purpose: Timed exam sessions, per-question timings, marked attempts and
---          mistake tags written by the frontend marking/timer flows.
--- NOTE: mirrors the live data/attempts.db schema; statements are additive
---       (CREATE IF NOT EXISTS) so applying it never overwrites data.
+-- Owned by: Frontend API (backend/main.py)
+-- Purpose: Timed paper sessions, per-question marking attempts, mistake taxonomy
 
 PRAGMA foreign_keys = ON;
 PRAGMA journal_mode = WAL;
 
--- One row per timed paper session started from the exam timer
+-- One row per timed paper sitting
 CREATE TABLE IF NOT EXISTS sessions (
     id                    INTEGER PRIMARY KEY AUTOINCREMENT,
     paper_id              INTEGER NOT NULL,      -- FK to question_bank.db papers.id
@@ -19,7 +16,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     total_time_seconds    INTEGER                -- set on completion
 );
 
--- Time spent per question inside a session
+-- Per-question timing within a session
 CREATE TABLE IF NOT EXISTS question_times (
     session_id    INTEGER NOT NULL REFERENCES sessions(id),
     question_id   INTEGER NOT NULL,              -- FK to question_bank.db questions.id
@@ -29,7 +26,7 @@ CREATE TABLE IF NOT EXISTS question_times (
     PRIMARY KEY(session_id, question_id)
 );
 
--- Marked attempts (session-linked or standalone when session_id IS NULL)
+-- One row per marked question attempt
 CREATE TABLE IF NOT EXISTS attempts (
     id                INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id        INTEGER REFERENCES sessions(id),
@@ -44,7 +41,7 @@ CREATE TABLE IF NOT EXISTS attempts (
     CHECK(marks_awarded >= 0 AND marks_awarded <= marks_available)
 );
 
--- Mistake classification tags per attempt
+-- Categorised mistakes per attempt
 CREATE TABLE IF NOT EXISTS attempt_mistakes (
     attempt_id    INTEGER NOT NULL REFERENCES attempts(id),
     mistake_type  TEXT NOT NULL,
@@ -54,3 +51,5 @@ CREATE TABLE IF NOT EXISTS attempt_mistakes (
 CREATE INDEX IF NOT EXISTS idx_sessions_paper ON sessions(paper_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_started ON sessions(started_at);
 CREATE INDEX IF NOT EXISTS idx_attempts_question ON attempts(question_id);
+CREATE INDEX IF NOT EXISTS idx_attempts_session ON attempts(session_id);
+CREATE INDEX IF NOT EXISTS idx_attempts_created ON attempts(created_at);
