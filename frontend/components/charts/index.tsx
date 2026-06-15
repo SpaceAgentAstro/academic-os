@@ -237,7 +237,7 @@ export function ScatterChart({
             },
             y: {
               title: { display: true, text: "Score %" },
-              min: 40,
+              min: 0,
               max: 100,
               grid: { color: grid || "rgba(0,0,0,0.05)" },
               border: { display: false },

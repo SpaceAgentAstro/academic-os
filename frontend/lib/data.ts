@@ -3,13 +3,17 @@ import type { Grade, MasteryBand } from "./types";
 // Pure display helpers only. All data comes from the API (lib/api.ts) —
 // nothing in this file may contain student data, scores, or content.
 
+// Edexcel IAL exam-percentage boundaries. Single source of truth shared with
+// the backend's _grade_from_pct so a given paper percentage shows one grade
+// everywhere (LOGIC-003).
 export function gradeFromPct(p: number): Grade {
   if (p >= 90) return "A*";
   if (p >= 80) return "A";
   if (p >= 70) return "B";
   if (p >= 60) return "C";
   if (p >= 50) return "D";
-  return "E";
+  if (p >= 40) return "E";
+  return "U";
 }
 
 export function masteryBand(m: number): MasteryBand {
@@ -31,6 +35,13 @@ export const SUBJECT_LABELS: Record<string, { name: string; short: string; board
 
 export function subjectName(id: string): string {
   return SUBJECT_LABELS[id]?.name ?? id;
+}
+
+export function greeting(): string {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
 }
 
 export function todayStr(): string {
