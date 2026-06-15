@@ -1,11 +1,20 @@
 # AcademicOS — Runtime, Stability & Reliability Audit
 
-**Audit date:** 2026-06-14
-**Branch:** `claude/sharp-tesla-et52fe`
+**Original audit date:** 2026-06-14 (`claude/sharp-tesla-et52fe`)
+**Re-audit date:** 2026-06-15
+**Branch:** `claude/sharp-tesla-2x8dd5`
 **Scope:** Full repository — FastAPI backend (`backend/`), agents (`agents/`),
 ingestion pipeline (`ingestion/`), briefing (`briefing/`), database layer
 (`db/`, `schemas/`), scheduler, Telegram delivery, and the Next.js frontend
 (`frontend/`).
+
+> **Re-audit status (2026-06-15):** All 19 issues below were re-verified
+> against the current tree and **remain open** — none have been remediated.
+> Live re-execution again reproduced the dashboard 500, the briefing 500, the
+> missing `spaced_repetition_items` table, the `backend.server:app`
+> mis-entrypoint, and the localhost-only CORS list. The test suite is unchanged
+> (**101 passed, 20 failed**). Four newly-identified issues (**RT-020 … RT-023**)
+> are appended after RT-019.
 
 ## Method
 
@@ -17,6 +26,8 @@ ingestion pipeline (`ingestion/`), briefing (`briefing/`), database layer
 - Ran the existing test suite (`pytest`): **101 passed, 20 failed**.
 - Reproduced the headline defects (dashboard 500, briefing 500, silent mastery
   no-op, spaced-repetition date overflow) directly.
+- Re-audit (2026-06-15) repeated the live reproduction; see refreshed evidence
+  in the appendix.
 
 ## Severity summary
 
@@ -24,8 +35,8 @@ ingestion pipeline (`ingestion/`), briefing (`briefing/`), database layer
 |----------|-------|-----|
 | Critical | 2 | RT-001, RT-002 |
 | High | 4 | RT-003, RT-004, RT-005, RT-006 |
-| Medium | 7 | RT-007 … RT-013 |
-| Low | 6 | RT-014 … RT-019 |
+| Medium | 8 | RT-007 … RT-013, RT-020 |
+| Low | 9 | RT-014 … RT-019, RT-021, RT-022, RT-023 |
 
 > **Headline:** The application ships with a fatal data-model schism. The
 > backend API and the daily briefing are built on a `spaced_repetition_items`
@@ -819,6 +830,206 @@ Medium
 
 ---
 
+## RT-020 — Import-time `mkdir` crashes startup on a nested or read-only `DATA_DIR`
+
+### Severity
+Medium
+
+### Category
+Startup / Deployment
+
+### Location
+`config/settings.py` lines 14–16
+
+### Description
+`config/settings.py` runs filesystem side effects **at import time**:
+```python
+DATA_DIR = Path(os.getenv("DATA_DIR", str(BASE_DIR / "data")))
+DIAGRAMS_DIR = DATA_DIR / "diagrams"
+DATA_DIR.mkdir(exist_ok=True)                 # no parents=True
+DIAGRAMS_DIR.mkdir(parents=True, exist_ok=True)
+```
+`DATA_DIR.mkdir(exist_ok=True)` omits `parents=True`, so if `DATA_DIR` points at
+a path whose parent does not yet exist (a normal production layout such as
+`/var/lib/academic-os/data`), the very first import of `config.settings` raises
+`FileNotFoundError`. Because *every* backend module, agent, scheduler job and
+CLI entry imports `config.settings` transitively, the failure takes down the
+whole process at boot — before any handler or logger runs. The same line also
+fails on read-only filesystems (e.g. a serverless image whose only writable area
+is `/tmp`), since the mkdir is unconditional and happens on import rather than
+lazily on first DB use.
+
+### Trigger Conditions
+Set `DATA_DIR` to any path with a missing parent directory, or deploy to an
+environment with a read-only application filesystem.
+
+### Expected Behavior
+The app starts; data directories are created on demand (recursively) or a clear
+configuration error is raised after logging is configured.
+
+### Actual Behavior
+```
+$ DATA_DIR=/tmp/nope_nested/deep/data python -c "import config.settings"
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/nope_nested/deep/data'
+```
+Process aborts at import; no API, scheduler, or briefing comes up.
+
+### Impact
+Hard startup failure that is invisible to the application's own error handling
+and easy to hit with a standard non-local data path. Couples configuration
+loading to writable-filesystem assumptions.
+
+### Recommended Fix
+Use `DATA_DIR.mkdir(parents=True, exist_ok=True)` for consistency with
+`DIAGRAMS_DIR`, and prefer creating directories lazily (in `init_all_databases`
+or a startup hook) rather than as an import side effect, so a bad path surfaces
+as a handled startup error rather than an import crash.
+
+### Confidence
+High
+
+---
+
+## RT-021 — `init_all_databases()` leaks SQLite connections
+
+### Severity
+Low
+
+### Category
+Resource Leak
+
+### Location
+`db/models.py` — `init_all_databases` (36–39)
+
+### Description
+```python
+for db_path, schema_file in _DB_SCHEMA_MAP.items():
+    with sqlite3.connect(db_path) as conn:
+        _apply_schema(conn, schema_file)
+```
+A `sqlite3.Connection` used as a context manager **commits/rolls back the
+transaction but does not close the connection** (unlike the project's own
+`get_db`, which closes in `finally`). All seven connections opened here are left
+open and only reclaimed when the objects are garbage-collected, leaking file
+handles for the lifetime of the call's scope. Harmless in a one-shot CLI, but in
+any process that calls `init_all_databases()` repeatedly (tests, a re-init
+endpoint, a long-lived worker) the open WAL/SHM handles accumulate.
+
+### Trigger Conditions
+Repeated invocation of `init_all_databases()` within one process.
+
+### Expected / Actual Behavior
+Expected: each connection is closed deterministically. Actual: connections rely
+on GC; file handles linger.
+
+### Impact
+Minor file-handle/WAL-handle leakage; can interfere with cleanup/deletion of the
+DB files on Windows and accumulate under repeated init.
+
+### Recommended Fix
+Reuse `get_db(db_path)` (which closes the connection) or wrap in
+`try/finally: conn.close()`.
+
+### Confidence
+High
+
+---
+
+## RT-022 — Dashboard "today's priorities" issues cross-database N+1 queries
+
+### Severity
+Low
+
+### Category
+Performance
+
+### Location
+`backend/main.py` — `_todays_priorities` (426–469); `get_weaknesses` confidence
+-trap loop (969–976)
+
+### Description
+For each of the (up to 5) due topics, `_todays_priorities` runs a fresh
+`question_bank.db` query to find matching question IDs and then a separate
+`attempts.db` query to find the most common mistake — each via its own
+`get_db()` connection (RT-010). `get_weaknesses` similarly runs one
+`question_bank.db` topic lookup per confidence-trap row. The per-row count is
+bounded by `LIMIT 5`/`LIMIT 6`, so this is not unbounded, but it multiplies the
+already-heavy per-request connection churn: a single `/api/dashboard` opens and
+tears down well over a dozen connections across three database files, several of
+them inside row loops with `LIKE '%' || ? || '%'` predicates that cannot use an
+index.
+
+### Trigger Conditions
+Every `/api/dashboard` and `/api/weaknesses` request once real attempt/topic
+data exists.
+
+### Expected / Actual Behavior
+Expected: batch the per-topic lookups into single set-based queries. Actual:
+one-query-per-row fan-out across databases, with full-scan `LIKE` joins.
+
+### Impact
+Avoidable latency and CPU on the two most-hit analytics endpoints; compounds
+RT-010 under concurrent load.
+
+### Recommended Fix
+Collect the topics first and resolve mistakes/topics with a single `IN (...)`
+query per database (as `_recent_papers` already does for papers). Replace the
+substring `LIKE` topic match with a normalised join key where possible.
+
+### Confidence
+High
+
+---
+
+## RT-023 — Hourly paper-scan job runs unbounded blocking ingest with no misfire/coalesce guard
+
+### Severity
+Low
+
+### Category
+Concurrency / Reliability
+
+### Location
+`agents/infrastructure/scheduler_agent.py` — `schedule_paper_scan` (49–70),
+`start_scheduler` (9–23)
+
+### Description
+The paper-scan job is registered on a `BlockingScheduler` with
+`trigger="interval", minutes=60` and **no** `max_instances`, `coalesce`, or
+`misfire_grace_time` settings. Its `_job` synchronously iterates **all**
+unprocessed PDFs and calls `ingest_paper` on each in series. Given the OCR cost
+documented in RT-008/RT-009 (the PDF is re-parsed many times per paper and the
+LaTeX model is reloaded per call), a batch of scanned papers can easily make one
+run exceed the 60-minute interval. With APScheduler defaults
+(`max_instances=1`), the next run is then **missed** and dropped once it slips
+past the default misfire grace, so ingestion silently stalls; and because the
+scheduler is *blocking*, a long ingest also delays the cron-scheduled daily
+briefing job that shares the same scheduler.
+
+### Trigger Conditions
+A drop of several multi-page scanned PDFs into `papers/` such that one scan cycle
+exceeds the interval.
+
+### Expected / Actual Behavior
+Expected: overruns coalesce or queue without being dropped, and ingestion does
+not block time-sensitive jobs. Actual: missed runs are discarded; a long ingest
+blocks the briefing.
+
+### Impact
+Ingestion can quietly fall behind under load, and the daily briefing can be
+delayed or skipped while a large ingest runs.
+
+### Recommended Fix
+Set `coalesce=True`, an explicit `misfire_grace_time`, and `max_instances=1` on
+the scan job; move ingestion to its own executor/process pool (or a
+`BackgroundScheduler` thread pool) so it cannot block the briefing cron; and
+process papers incrementally with a bounded batch size per cycle.
+
+### Confidence
+Medium
+
+---
+
 ## Appendix — Test run snapshot
 
 ```
@@ -833,6 +1044,30 @@ $ pytest -q
 # which is why RT-001/RT-002 escaped the suite.
 ```
 
+## Appendix — 2026-06-15 re-audit evidence
+
+```
+$ DATA_DIR=/tmp/aosdata python -c "from db.models import init_all_databases; init_all_databases()"
+$ # via TestClient(raise_server_exceptions=False):
+Scalar query failed on progress.db: no such table: spaced_repetition_items
+Query failed on progress.db: no such table: spaced_repetition_items   (x6)
+/api/health    -> 200
+/api/dashboard -> 500      # RT-001 still reproduces
+/api/briefing  -> 500      # RT-001 still reproduces
+/api/papers    -> 200
+/api/status    -> 200
+
+$ grep -rn "spaced_repetition_items" schemas/ db/      # RT-001: still no CREATE TABLE
+(no matches)
+$ grep entrypoint pyproject.toml                       # RT-006: unchanged
+entrypoint = "backend.server:app"   (backend/server.py does not exist)
+$ grep -n "allow_origins" backend/main.py              # RT-003: unchanged
+40:    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+
+$ pytest -q
+20 failed, 101 passed, 9 warnings    # unchanged from original audit
+```
+
 ## Closing assessment
 
 The biggest risks are **structural, not exotic**: a missing core table that
@@ -840,5 +1075,13 @@ breaks the two most important read paths and silently neutralises the adaptive
 engine (RT-001/RT-002), a CORS/deploy configuration that prevents the app from
 running anywhere but localhost (RT-003/RT-006), and a swallow-everything error
 strategy that hid all of the above (RT-007). These four should be fixed before
-any scale or polish work. The performance items (RT-008/009/010) matter once
+any scale or polish work. The performance items (RT-008/009/010/022) matter once
 ingestion runs on real paper volumes; the remainder harden reliability and UX.
+
+**Re-audit note (2026-06-15):** none of the original 19 issues have been
+remediated — every headline defect still reproduces live on the current branch.
+The newly-added RT-020 (import-time `mkdir` startup crash) compounds the existing
+deployment story (RT-003/RT-006): the backend currently has no environment in
+which it both starts *and* serves a working dashboard. Recommended order of
+attack is unchanged: **RT-001 → RT-006/RT-020 → RT-003 → RT-007**, then the
+performance and UX items.
