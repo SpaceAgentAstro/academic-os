@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Any
 
@@ -23,36 +23,45 @@ def get_due_review_items(limit: int = 10) -> list[dict[str, Any]]:
     Falls back to the lowest-mastery topics when nothing is due yet —
     never returns an empty list while spaced_repetition_items has rows.
     """
+    import sqlite3
+
     from config.settings import DB_PROGRESS
     from db.models import get_db
 
-    with get_db(DB_PROGRESS) as conn:
-        rows = conn.execute(
-            """
-            SELECT topic, subtopic, unit, subject, due_date, mastery,
-                   ease_factor, interval_days,
-                   CAST(JULIANDAY('now') - JULIANDAY(due_date) AS INTEGER) AS days_overdue
-            FROM spaced_repetition_items
-            WHERE due_date <= DATE('now')
-            ORDER BY
-                CASE WHEN due_date < DATE('now') THEN 0 ELSE 1 END,
-                mastery ASC,
-                due_date ASC
-            LIMIT ?
-            """,
-            (limit,),
-        ).fetchall()
-        if not rows:
+    try:
+        with get_db(DB_PROGRESS) as conn:
             rows = conn.execute(
                 """
                 SELECT topic, subtopic, unit, subject, due_date, mastery,
-                       ease_factor, interval_days, 0 AS days_overdue
+                       ease_factor, interval_days,
+                       CAST(JULIANDAY('now') - JULIANDAY(due_date) AS INTEGER) AS days_overdue
                 FROM spaced_repetition_items
-                ORDER BY mastery ASC
-                LIMIT 5
+                WHERE due_date <= DATE('now')
+                ORDER BY
+                    CASE WHEN due_date < DATE('now') THEN 0 ELSE 1 END,
+                    mastery ASC,
+                    due_date ASC
+                LIMIT ?
                 """,
+                (limit,),
             ).fetchall()
-        return [dict(r) for r in rows]
+            if not rows:
+                rows = conn.execute(
+                    """
+                    SELECT topic, subtopic, unit, subject, due_date, mastery,
+                           ease_factor, interval_days, 0 AS days_overdue
+                    FROM spaced_repetition_items
+                    ORDER BY mastery ASC
+                    LIMIT 5
+                    """,
+                ).fetchall()
+            return [dict(r) for r in rows]
+    except sqlite3.Error as exc:
+        # Missing/unseeded progress.db must not crash the dashboard or briefing.
+        logger.warning(
+            "get_due_review_items failed (is progress.db seeded?): %s", exc
+        )
+        return []
 
 
 def select_question_of_the_day() -> dict[str, Any] | None:
@@ -163,8 +172,9 @@ def _section2_curriculum_progress() -> str:
                 lines.append(f"• *{subject}*: {', '.join(parts)}")
             else:
                 lines.append(f"• *{subject}*: No syllabus data yet — seed progress.db")
-        except Exception as exc:
-            lines.append(f"• *{subject}*: Error — {exc}")
+        except Exception:
+            logger.exception("Coverage lookup failed for %s", subject)
+            lines.append(f"• *{subject}*: coverage unavailable")
 
     return "\n".join(lines)
 
@@ -211,8 +221,9 @@ def _section3_adaptive_revision() -> str:
                     lines.append(f"  ⚠️ Watch: {pack.misconception_reminders[0][:100]}")
             else:
                 lines.append(f"• *{subject}*: No questions available — ingest past papers first")
-        except Exception as exc:
-            lines.append(f"• *{subject}*: Error — {exc}")
+        except Exception:
+            logger.exception("Revision pack build failed for %s", subject)
+            lines.append(f"• *{subject}*: revision pack unavailable")
 
     return "\n".join(lines)
 
@@ -283,7 +294,9 @@ if __name__ == "__main__":
     print(text)
 
     if "--send-now" in sys.argv:
-        from agents.delivery.telegram_agent import TelegramAgent
+        import asyncio
 
-        TelegramAgent().send_message(text)
+        from agents.delivery.telegram_agent import send_daily_briefing
+
+        asyncio.run(send_daily_briefing(text))
         print("\n[sent to Telegram]")

@@ -33,6 +33,13 @@ export function subjectName(id: string): string {
   return SUBJECT_LABELS[id]?.name ?? id;
 }
 
+export function greeting(d: Date = new Date()): string {
+  const h = d.getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
+
 export function todayStr(): string {
   return new Date().toLocaleDateString("en-GB", {
     weekday: "short", day: "numeric", month: "short", year: "numeric",

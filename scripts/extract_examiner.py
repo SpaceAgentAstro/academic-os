@@ -8,9 +8,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from db.models import get_db
-from config.settings import DB_QUESTION_BANK, DB_EXAMINER
-from agents.analysis.examiner_report_agent import ingest_report
+from db.models import get_db  # noqa: E402  (after sys.path bootstrap)
+from config.settings import DB_QUESTION_BANK, DB_EXAMINER  # noqa: E402
+from agents.analysis.examiner_report_agent import ingest_report  # noqa: E402
 
 PAPERS_DIR = ROOT / "papers"
 

@@ -1,28 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, EmptyState, ErrorState, GradeBadge, Icon, Loading, MasteryBar, Metric, SectionTitle } from "@/components/ui";
 import { bandColor, gradeFromPct, masteryBand, SUBJECT_LABELS } from "@/lib/data";
 import { getDashboard, getPapers } from "@/lib/api";
 import { useFetch } from "@/lib/hooks";
 import type { Route } from "@/lib/types";
+import type { AppSession } from "@/components/ClientLayout";
 
-export function Subjects({ go }: { go: (r: Route) => void }) {
-  const [active, setActive] = useState("physics");
+export function Subjects({ go, session }: { go: (r: Route) => void; session: AppSession }) {
+  const [active, setActive] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>(null);
   const dash = useFetch(getDashboard);
-  const papersFetch = useFetch(() => getPapers(active), [active]);
+
+  const subjectList = useMemo(() => dash.data?.subject_mastery ?? [], [dash.data]);
+  // Default to the first subject that actually has data (not a hardcoded one).
+  useEffect(() => {
+    if (active === null && subjectList.length > 0) {
+      setActive(subjectList[0].subject_id);
+    }
+  }, [active, subjectList]);
+
+  const papersFetch = useFetch(() => getPapers(active ?? undefined), [active]);
 
   if (dash.loading) return <div className="aos-page"><Loading label="Loading subjects…" /></div>;
   if (dash.error || !dash.data) {
     return <div className="aos-page"><ErrorState message={dash.error ?? "No data"} retry={dash.retry} /></div>;
   }
 
-  const subjectList = dash.data.subject_mastery;
   const s = subjectList.find((x) => x.subject_id === active);
   const grades = dash.data.predicted_grades.find((g) => g.subject_id === active);
   const attemptedPapers = (papersFetch.data ?? []).filter((p) => p.score != null);
-  const labels = SUBJECT_LABELS[active];
+  const labels = active ? SUBJECT_LABELS[active] : undefined;
 
   return (
     <div className="aos-page">
@@ -147,7 +156,14 @@ export function Subjects({ go }: { go: (r: Route) => void }) {
                     const pct = p.score != null && p.max ? Math.round((p.score / p.max) * 100) : null;
                     const delta = p.time != null && p.target != null ? p.time - p.target : null;
                     return (
-                      <tr key={p.id} onClick={() => go("marking")}>
+                      <tr
+                        key={p.id}
+                        onClick={() => {
+                          session.setPaperId(p.id);
+                          session.setSessionId(null);
+                          go("marking");
+                        }}
+                      >
                         <td className="aos-td-strong">{p.code} · {p.unit}</td>
                         <td>{p.session}</td>
                         <td>

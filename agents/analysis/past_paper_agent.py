@@ -6,7 +6,6 @@ import sqlite3
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
 
 from ingestion.ocr import extract_full_text, extract_text_pdfplumber
 from ingestion.extractor import extract_question_blocks
@@ -249,7 +248,7 @@ def _write_paper_to_db(
             continue  # extractor occasionally emits the same number twice; skip duplicates
         seen_q_nums.add(q.question_number)
 
-        q_cur = conn.execute(
+        conn.execute(
             """
             INSERT INTO questions
                 (paper_id, question_number, marks, command_word, difficulty,

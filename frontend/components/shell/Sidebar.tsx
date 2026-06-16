@@ -97,7 +97,7 @@ export function Sidebar({
           <div className="aos-avatar">MM</div>
           <div className="aos-foot-id">
             <div className="aos-foot-name">Mouad Maamma</div>
-            <div className="aos-foot-grades">Physics A · Maths A* · Chem B</div>
+            <div className="aos-foot-grades">Edexcel IAL · June 2026</div>
           </div>
           <button
             className="aos-theme-toggle"

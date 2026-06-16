@@ -75,3 +75,27 @@ CREATE INDEX IF NOT EXISTS idx_syllabus_completion_status ON syllabus_completion
 CREATE INDEX IF NOT EXISTS idx_syllabus_completion_next_review ON syllabus_completion(next_review);
 CREATE INDEX IF NOT EXISTS idx_review_history_spec_point ON review_history(spec_point_id);
 CREATE INDEX IF NOT EXISTS idx_specification_points_subtopic ON specification_points(subtopic_id);
+
+-- ---------------------------------------------------------------------------
+-- Spaced-repetition state (SM-2). One row per syllabus topic.
+-- Owned by: Curriculum Agent / backend mastery updates.
+-- Materialised from the normalised topic tree by db/seed_syllabus.py so the
+-- denormalised read model used by the dashboard/briefing always exists.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS spaced_repetition_items (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    subject       TEXT NOT NULL,                  -- display name, e.g. "Physics"
+    unit          TEXT NOT NULL,                  -- module code, e.g. "Unit1", "P1"
+    topic         TEXT NOT NULL,                  -- e.g. "Mechanics"
+    subtopic      TEXT,                           -- optional finer grain
+    mastery       REAL NOT NULL DEFAULT 0.0,      -- 0.0–1.0
+    ease_factor   REAL NOT NULL DEFAULT 2.5,      -- SM-2 ease
+    interval_days REAL NOT NULL DEFAULT 1.0,      -- days until next review
+    due_date      TEXT NOT NULL DEFAULT (DATE('now')),  -- ISO 8601 date
+    last_reviewed TEXT,                           -- ISO 8601 date, NULL until first review
+    UNIQUE(subject, unit, topic)
+);
+
+CREATE INDEX IF NOT EXISTS idx_sr_items_due ON spaced_repetition_items(due_date);
+CREATE INDEX IF NOT EXISTS idx_sr_items_subject ON spaced_repetition_items(subject);
+CREATE INDEX IF NOT EXISTS idx_sr_items_topic ON spaced_repetition_items(topic);

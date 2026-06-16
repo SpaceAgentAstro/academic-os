@@ -52,7 +52,7 @@ function QuestionDetailView({
         <p className="aos-page-sub">
           {subjectName(q.paper.subject)} {q.paper.unit}
           {q.topic && q.topic !== "Unknown" && <> · {q.topic}</>} · {q.marks} marks ·{" "}
-          <Badge tone={q.difficulty >= 4 ? "red" : "amber"}>{DIFFICULTY[q.difficulty]}</Badge>
+          <Badge tone={q.difficulty >= 4 ? "red" : "amber"}>{DIFFICULTY[q.difficulty] ?? "—"}</Badge>
         </p>
       </div>
 

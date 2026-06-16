@@ -41,10 +41,13 @@ def init_all_databases() -> None:
 
 @contextmanager
 def get_db(db_path: Path) -> Generator[sqlite3.Connection, None, None]:
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(db_path, timeout=5.0)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
-    conn.execute("PRAGMA journal_mode = WAL")
+    # journal_mode=WAL is persistent per database file (set at schema init), so
+    # it is not re-issued here. busy_timeout must be set per connection and lets
+    # concurrent writers wait for the lock instead of failing immediately.
+    conn.execute("PRAGMA busy_timeout = 5000")
     try:
         yield conn
         conn.commit()

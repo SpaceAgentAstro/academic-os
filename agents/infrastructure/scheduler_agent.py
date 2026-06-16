@@ -25,9 +25,16 @@ def start_scheduler() -> None:
 
 def schedule_daily_briefing(scheduler: object, time_str: str) -> None:
     """Register the daily briefing job at time_str (HH:MM, 24h)."""
-    from apscheduler.schedulers.base import BaseScheduler
+    from datetime import datetime as _dt
 
-    hour, minute = (int(x) for x in time_str.split(":"))
+    try:
+        parsed = _dt.strptime(time_str.strip(), "%H:%M")
+        hour, minute = parsed.hour, parsed.minute
+    except (ValueError, AttributeError):
+        logger.warning(
+            "Invalid BRIEFING_TIME %r; falling back to default 07:30", time_str
+        )
+        hour, minute = 7, 30
 
     def _job() -> None:
         from briefing.generator import generate_daily_briefing, format_for_telegram

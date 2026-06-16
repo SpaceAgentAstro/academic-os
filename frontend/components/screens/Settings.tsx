@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import { Card, ErrorState, Icon, Loading, Toggle } from "@/components/ui";
+import { type ReactNode } from "react";
+import { Card, ErrorState, Icon, Loading } from "@/components/ui";
 import { SUBJECT_LABELS } from "@/lib/data";
 import { getStatus } from "@/lib/api";
 import { useFetch } from "@/lib/hooks";
@@ -28,7 +28,6 @@ function Row({ label, children }: { label: string; children?: ReactNode }) {
 }
 
 export function Settings({ dark, toggleDark }: { dark?: boolean; toggleDark?: () => void }) {
-  const [time, setTime] = useState("07:30");
   const status = useFetch(getStatus);
 
   return (
@@ -40,7 +39,7 @@ export function Settings({ dark, toggleDark }: { dark?: boolean; toggleDark?: ()
 
       <Group icon="user" title="Profile">
         <Row label="Name">
-          <input className="aos-input" defaultValue="Mouad Maamma" />
+          <span className="aos-muted">Mouad Maamma</span>
         </Row>
         <Row label="Subjects">
           <span className="aos-muted">
@@ -54,20 +53,21 @@ export function Settings({ dark, toggleDark }: { dark?: boolean; toggleDark?: ()
 
       <Group icon="bell" title="Notifications">
         <Row label="Telegram briefing time">
-          <input
-            className="aos-input narrow"
-            type="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-          />
+          <span className="aos-muted">Set via BRIEFING_TIME in .env</span>
         </Row>
-        <Row label="Spaced-repetition reminders"><Toggle on /></Row>
-        <Row label="Examiner-trap alerts"><Toggle on /></Row>
+        <Row label="Spaced-repetition reminders">
+          <span className="aos-muted">Sent with the daily briefing</span>
+        </Row>
+        <Row label="Examiner-trap alerts">
+          <span className="aos-muted">Included in the daily briefing</span>
+        </Row>
       </Group>
 
       <Group icon="refresh" title="Spaced repetition">
         <Row label="Algorithm"><span className="aos-muted">SM-2 (modified)</span></Row>
-        <Row label="Review difficult items first"><Toggle on /></Row>
+        <Row label="Review difficult items first">
+          <span className="aos-muted">Default ordering (lowest mastery first)</span>
+        </Row>
       </Group>
 
       <Group icon="database" title="Data">

@@ -1,7 +1,6 @@
 """Tests for ingestion/extractor.py question block parsing."""
 from __future__ import annotations
 
-import pytest
 from ingestion.extractor import (
     extract_question_blocks,
     extract_markscheme_blocks,

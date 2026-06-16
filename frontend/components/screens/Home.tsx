@@ -1,29 +1,29 @@
 "use client";
 
 import { Badge, Button, Card, Dot, EmptyState, ErrorState, GradeBadge, Icon, Loading, Metric, SectionTitle } from "@/components/ui";
-import { bandColor, masteryBand, todayStr } from "@/lib/data";
+import { bandColor, greeting, masteryBand, todayStr } from "@/lib/data";
 import { getDashboard } from "@/lib/api";
 import { useFetch } from "@/lib/hooks";
 import type { Route } from "@/lib/types";
+import type { AppSession } from "@/components/ClientLayout";
 
-export function Home({ go }: { go: (r: Route) => void }) {
+export function Home({ go, session }: { go: (r: Route) => void; session: AppSession }) {
   const { data, loading, error, retry } = useFetch(getDashboard);
 
   if (loading) return <div className="aos-page"><Loading label="Loading dashboard…" /></div>;
   if (error || !data) {
     return (
       <div className="aos-page">
-        <ErrorState message="Could not load dashboard data. Is the backend running on port 8000?" retry={retry} />
+        <ErrorState message="Could not load dashboard data. Is the backend running and reachable?" retry={retry} />
       </div>
     );
   }
 
   const d = data;
   const dueCount = d.todays_priorities.length;
-  const completedPapers = d.recent_papers.filter((p) => p.pct != null);
-  const avgScore = completedPapers.length
-    ? Math.round(completedPapers.reduce((a, p) => a + (p.pct ?? 0), 0) / completedPapers.length)
-    : null;
+  // True totals across all marked papers (not the 5-row recent slice).
+  const completedCount = d.paper_totals.completed_papers;
+  const avgScore = d.paper_totals.average_score;
   const bestPrediction = d.predicted_grades.length
     ? d.predicted_grades.reduce((a, b) => (b.attempt_count > a.attempt_count ? b : a))
     : null;
@@ -32,7 +32,7 @@ export function Home({ go }: { go: (r: Route) => void }) {
   return (
     <div className="aos-page">
       <div className="aos-page-head">
-        <h1>Good morning, Mouad.</h1>
+        <h1>{greeting()}, Mouad.</h1>
         <p className="aos-page-sub">
           {todayStr()} · {dueCount} topic{dueCount === 1 ? "" : "s"} due for review
         </p>
@@ -48,14 +48,14 @@ export function Home({ go }: { go: (r: Route) => void }) {
         />
         <Metric
           label="Papers completed"
-          value={completedPapers.length || "0"}
-          sub={completedPapers.length ? "with marked scores" : "Start your first paper"}
+          value={completedCount || "0"}
+          sub={completedCount ? "with marked scores" : "Start your first paper"}
           icon="pencil"
         />
         <Metric
           label="Average score"
           value={avgScore != null ? `${avgScore}%` : "—"}
-          sub={avgScore != null ? `Across ${completedPapers.length} marked papers` : "No marked papers yet"}
+          sub={avgScore != null ? `Across ${completedCount} marked papers` : "No marked papers yet"}
           icon="percentage"
         />
         <Metric
@@ -123,7 +123,15 @@ export function Home({ go }: { go: (r: Route) => void }) {
                     p.time_seconds != null && p.target_seconds != null && p.target_seconds > 0 &&
                     p.time_seconds > p.target_seconds;
                   return (
-                    <div key={p.session_id} className="aos-paper-row" onClick={() => go("marking")}>
+                    <div
+                      key={p.session_id}
+                      className="aos-paper-row"
+                      onClick={() => {
+                        session.setPaperId(p.paper_id);
+                        session.setSessionId(p.session_id);
+                        go("marking");
+                      }}
+                    >
                       <div>
                         <div className="aos-paper-code">{p.code} {p.session}</div>
                         <div className="aos-paper-meta">

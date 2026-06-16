@@ -1,10 +1,12 @@
 """Tests for ingestion/ocr.py using fixture PDFs."""
 from __future__ import annotations
 
-import sqlite3
 from pathlib import Path
 
 import pytest
+
+# Skip (don't fail) when the optional PDF stack is unavailable.
+pytest.importorskip("pdfplumber")
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "pdfs"
 QP_PDF   = FIXTURES / "sample_question_paper.pdf"

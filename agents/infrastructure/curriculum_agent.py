@@ -24,8 +24,6 @@ _SR_INTERVALS: dict[str, list[int]] = {
 def _get_conn(progress_conn: sqlite3.Connection | None) -> sqlite3.Connection:
     if progress_conn is not None:
         return progress_conn
-    from config.settings import DB_PROGRESS
-    from db.models import get_db
     # Caller must use as context manager when progress_conn is None
     raise ValueError("progress_conn required for direct use; use with get_db(DB_PROGRESS)")
 

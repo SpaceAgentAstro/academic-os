@@ -23,9 +23,21 @@ def progress_db() -> sqlite3.Connection:
     return conn
 
 
+_TEST_CHAT_ID = "12345"
+
+
+@pytest.fixture(autouse=True)
+def _authorized_chat():
+    """Telegram command handlers now gate on the configured chat id (AOS-005);
+    point the allowed chat at the test's mock update so handlers run."""
+    with patch("config.settings.TELEGRAM_CHAT_ID", _TEST_CHAT_ID):
+        yield
+
+
 def _make_update_context(cmd_args=None):
     update = MagicMock()
     update.message.reply_text = AsyncMock()
+    update.effective_chat.id = _TEST_CHAT_ID
     context = MagicMock()
     context.args = cmd_args or []
     return update, context

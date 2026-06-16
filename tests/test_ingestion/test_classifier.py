@@ -1,7 +1,6 @@
 """Tests for ingestion/classifier.py."""
 from __future__ import annotations
 
-import pytest
 from ingestion.classifier import (
     extract_command_word,
     classify_difficulty,

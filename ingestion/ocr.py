@@ -1,13 +1,10 @@
 from __future__ import annotations
 
 import logging
+from functools import lru_cache
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 logger = logging.getLogger(__name__)
-
-if TYPE_CHECKING:
-    from PIL.Image import Image
 
 
 def extract_text_pdfplumber(pdf_path: Path) -> list[dict]:
@@ -64,21 +61,29 @@ def convert_pdf_to_images(
     return paths
 
 
+@lru_cache(maxsize=1)
+def _get_latex_model():
+    """Load and cache the (expensive) pix2tex LatexOCR model once per process."""
+    from pix2tex.cli import LatexOCR
+
+    return LatexOCR()
+
+
 def extract_math_latex(image_path: Path) -> str:
     """Extract LaTeX from a mathematical expression image using pix2tex.
 
     Returns empty string if pix2tex is unavailable or extraction fails.
-    pix2tex is expensive to load — caller should cache the LatexOCR instance.
+    The expensive LatexOCR model is loaded once and cached across calls.
     """
     try:
-        from pix2tex.cli import LatexOCR
         from PIL import Image
+
+        model = _get_latex_model()
     except ImportError:
         logger.debug("pix2tex not installed; skipping LaTeX OCR for %s", image_path.name)
         return ""
 
     try:
-        model = LatexOCR()
         img = Image.open(image_path)
         return model(img)
     except Exception as exc:
@@ -118,24 +123,55 @@ def ocr_page_with_fallback(
 
 
 def extract_full_text(pdf_path: Path, tmp_dir: Path | None = None) -> str:
-    """Extract full text from a PDF, using Tesseract fallback on scanned pages."""
+    """Extract full text from a PDF, using Tesseract fallback on scanned pages.
+
+    The PDF is parsed exactly once with pdfplumber; scanned pages are converted
+    to images in a single pass rather than re-opening the document per page.
+    """
     if tmp_dir is None:
         tmp_dir = pdf_path.parent / ".ocr_tmp"
 
     pages = extract_text_pdfplumber(pdf_path)
+    scanned_numbers = [p["page"] for p in pages if p["is_scanned"]]
+
+    # Convert every scanned page to an image in one pass (avoids O(n²) re-parsing).
+    images_by_page: dict[int, Path] = {}
+    if scanned_numbers:
+        try:
+            from pdf2image import convert_from_path
+
+            tmp_dir.mkdir(parents=True, exist_ok=True)
+            first, last = min(scanned_numbers), max(scanned_numbers)
+            pil_pages = convert_from_path(str(pdf_path), dpi=300, first_page=first, last_page=last)
+            wanted = set(scanned_numbers)
+            for offset, img in enumerate(pil_pages):
+                page_no = first + offset
+                if page_no in wanted:
+                    img_path = tmp_dir / f"{pdf_path.stem}_p{page_no:04d}.png"
+                    img.save(str(img_path), "PNG")
+                    images_by_page[page_no] = img_path
+        except Exception as exc:
+            logger.warning(
+                "OCR image conversion failed for %s (poppler unavailable?): %s",
+                pdf_path.name, exc,
+            )
+
     full_parts: list[str] = []
     for page_data in pages:
         if not page_data["is_scanned"]:
             full_parts.append(page_data["text"])
-        else:
-            try:
-                text = ocr_page_with_fallback(pdf_path, page_data["page"], tmp_dir)
-            except Exception as exc:
-                logger.warning(
-                    "OCR skipped page %d of %s (poppler/tesseract unavailable?): %s",
-                    page_data["page"], pdf_path.name, exc,
-                )
-                text = ""
-            full_parts.append(text)
+            continue
+        img_path = images_by_page.get(page_data["page"])
+        if img_path is None:
+            full_parts.append("")
+            continue
+        try:
+            full_parts.append(extract_text_tesseract(img_path))
+        except Exception as exc:
+            logger.warning(
+                "OCR skipped page %d of %s (tesseract unavailable?): %s",
+                page_data["page"], pdf_path.name, exc,
+            )
+            full_parts.append("")
 
     return "\n\n".join(full_parts)

@@ -6,6 +6,46 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 _MAX_MESSAGE_LENGTH = 4096
+_bot_singleton: Any = None
+
+
+def _get_bot() -> Any:
+    """Return a cached Bot instance (avoids churning the HTTPX pool per send)."""
+    global _bot_singleton
+    from config.settings import TELEGRAM_BOT_TOKEN
+
+    if _bot_singleton is None:
+        from telegram import Bot
+
+        _bot_singleton = Bot(token=TELEGRAM_BOT_TOKEN)
+    return _bot_singleton
+
+
+def _is_authorized(update: Any) -> bool:
+    """True only when the message comes from the configured chat."""
+    from config.settings import TELEGRAM_CHAT_ID
+
+    if not TELEGRAM_CHAT_ID:
+        return False
+    chat = getattr(update, "effective_chat", None)
+    return chat is not None and str(chat.id) == str(TELEGRAM_CHAT_ID)
+
+
+async def _reply(update: Any, text: str, parse_mode: str | None = "Markdown") -> None:
+    """Reply to a command, falling back to plain text if Markdown won't parse.
+
+    Any send error (commonly a Telegram Markdown parse failure on content with
+    `_`, `*`, `[`, `` ` ``) triggers a plain-text retry so the user always gets
+    a readable reply. Catches broadly so this never depends on the optional
+    `telegram` package being importable in the failure path.
+    """
+    try:
+        await update.message.reply_text(text, parse_mode=parse_mode)
+    except Exception:
+        try:
+            await update.message.reply_text(text)
+        except Exception:
+            logger.exception("Failed to reply to Telegram command")
 
 
 async def send_message(text: str, parse_mode: str = "Markdown") -> None:
@@ -14,13 +54,12 @@ async def send_message(text: str, parse_mode: str = "Markdown") -> None:
     Splits messages longer than 4096 characters into chunks.
     """
     from config.settings import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
-    from telegram import Bot
     from telegram.error import TelegramError
 
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
         raise RuntimeError("Telegram bot token and chat ID must be configured in the environment.")
 
-    bot = Bot(token=TELEGRAM_BOT_TOKEN)
+    bot = _get_bot()
     chunks = _split_message(text, _MAX_MESSAGE_LENGTH)
     for chunk in chunks:
         try:
@@ -81,20 +120,26 @@ def start_bot() -> None:
 
 
 async def _cmd_briefing(update: Any, context: Any) -> None:
+    if not _is_authorized(update):
+        return
     from briefing.generator import generate_daily_briefing, format_for_telegram
     briefing = generate_daily_briefing()
     text = format_for_telegram(briefing)
-    await update.message.reply_text(text, parse_mode="Markdown")
+    await _reply(update, text)
 
 
 async def _cmd_status(update: Any, context: Any) -> None:
+    if not _is_authorized(update):
+        return
     from briefing.generator import _section4_system_status
-    await update.message.reply_text(_section4_system_status(), parse_mode="Markdown")
+    await _reply(update, _section4_system_status())
 
 
 async def _cmd_coverage(update: Any, context: Any) -> None:
+    if not _is_authorized(update):
+        return
     from briefing.generator import _section2_curriculum_progress
-    await update.message.reply_text(_section2_curriculum_progress(), parse_mode="Markdown")
+    await _reply(update, _section2_curriculum_progress())
 
 
 async def _cmd_quiz(update: Any, context: Any) -> None:
@@ -103,6 +148,8 @@ async def _cmd_quiz(update: Any, context: Any) -> None:
     Usage: /quiz [subject]
     Subject defaults to Mathematics when not specified.
     """
+    if not _is_authorized(update):
+        return
     from agents.delivery.retrieval_agent import get_questions
 
     args = context.args if context.args else []
@@ -110,10 +157,7 @@ async def _cmd_quiz(update: Any, context: Any) -> None:
 
     questions = get_questions(subject=subject, limit=1)
     if not questions:
-        await update.message.reply_text(
-            f"No questions found for *{subject}*. Ingest past papers first.",
-            parse_mode="Markdown",
-        )
+        await _reply(update, f"No questions found for *{subject}*. Ingest past papers first.")
         return
 
     q = questions[0]
@@ -124,7 +168,7 @@ async def _cmd_quiz(update: Any, context: Any) -> None:
         f"Difficulty {q.get('difficulty', '?')}/5_\n\n"
         f"{q.get('raw_text') or q.get('latex_text') or '(No question text extracted)'}"
     )
-    await update.message.reply_text(text, parse_mode="Markdown")
+    await _reply(update, text)
 
 
 async def _cmd_revise(update: Any, context: Any) -> None:
@@ -133,6 +177,8 @@ async def _cmd_revise(update: Any, context: Any) -> None:
     Usage: /revise [subject]
     Subject defaults to Mathematics when not specified.
     """
+    if not _is_authorized(update):
+        return
     from agents.delivery.revision_agent import build_revision_pack
 
     args = context.args if context.args else []
@@ -141,10 +187,7 @@ async def _cmd_revise(update: Any, context: Any) -> None:
     pack = build_revision_pack(subject=subject, max_questions=10)
 
     if not pack.questions:
-        await update.message.reply_text(
-            f"No questions available for *{subject}*. Ingest past papers first.",
-            parse_mode="Markdown",
-        )
+        await _reply(update, f"No questions available for *{subject}*. Ingest past papers first.")
         return
 
     marks = sum(q.get("marks", 0) for q in pack.questions)
@@ -168,11 +211,13 @@ async def _cmd_revise(update: Any, context: Any) -> None:
             f"{q.get('marks', '?')} marks · diff {q.get('difficulty', '?')}/5"
         )
 
-    await update.message.reply_text("\n".join(lines), parse_mode="Markdown")
+    await _reply(update, "\n".join(lines))
 
 
 async def _cmd_progress(update: Any, context: Any) -> None:
     """Show specification coverage per module for all subjects."""
+    if not _is_authorized(update):
+        return
     from agents.infrastructure.curriculum_agent import get_specification_coverage
 
     subjects = [
@@ -193,10 +238,11 @@ async def _cmd_progress(update: Any, context: Any) -> None:
                 lines.append(f"• *{subject}* (avg {avg}%): {', '.join(parts)}")
             else:
                 lines.append(f"• *{subject}*: No syllabus data — run seed_syllabus.py")
-        except Exception as exc:
-            lines.append(f"• *{subject}*: Error — {exc}")
+        except Exception:
+            logger.exception("Coverage lookup failed for %s", subject)
+            lines.append(f"• *{subject}*: Error retrieving coverage")
 
-    await update.message.reply_text("\n".join(lines), parse_mode="Markdown")
+    await _reply(update, "\n".join(lines))
 
 
 if __name__ == "__main__":

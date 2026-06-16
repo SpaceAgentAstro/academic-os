@@ -161,8 +161,14 @@ export interface UnitMastery {
   code: string;
   mastery: number;
   topic_count: number;
+  weak_topics: number;
   questions: number;
   topics: { name: string; mastery: number; reviewed: boolean }[];
+}
+
+export interface PaperTotals {
+  completed_papers: number;
+  average_score: number | null;
 }
 
 export interface SubjectMastery {
@@ -206,6 +212,7 @@ export interface QuestionOfDay {
 export interface DashboardData {
   todays_priorities: TodaysPriority[];
   recent_papers: RecentPaper[];
+  paper_totals: PaperTotals;
   subject_mastery: SubjectMastery[];
   predicted_grades: PredictedGrade[];
   examiner_traps: ExaminerTrap[];
@@ -266,18 +273,9 @@ export interface AnalyticsData {
   calibration: { conf: number; score: number }[];
 }
 
-export interface BriefingData {
-  date: string;
-  academic: string;
-  curriculum: string;
-  revision: string;
-  status: string;
-}
-
 export interface AttemptResult {
   attempt_id: number;
   new_mastery: number | null;
   next_review: string | null;
   marks_awarded: number;
-  grade_contribution: Grade;
 }

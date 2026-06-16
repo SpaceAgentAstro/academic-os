@@ -102,6 +102,17 @@ def _seed_subject(conn, data: dict, dry_run: bool = False) -> int:
                     """,
                     (module_id, topic["name"], topic.get("sequence", 0)),
                 )
+                # Materialise the denormalised spaced-repetition read model used
+                # by the dashboard/briefing. One row per topic, fresh SM-2 state.
+                conn.execute(
+                    """
+                    INSERT OR IGNORE INTO spaced_repetition_items
+                        (subject, unit, topic, subtopic, mastery, ease_factor,
+                         interval_days, due_date, last_reviewed)
+                    VALUES (?, ?, ?, NULL, 0.0, 2.5, 1.0, DATE('now'), NULL)
+                    """,
+                    (subj["name"], mod["code"], topic["name"]),
+                )
             topic_id_row = conn.execute(
                 "SELECT id FROM topics WHERE module_id = ? AND name = ?",
                 (module_id, topic["name"]),
