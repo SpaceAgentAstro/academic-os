@@ -1,13 +1,10 @@
 from __future__ import annotations
 
 import logging
+from functools import lru_cache
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 logger = logging.getLogger(__name__)
-
-if TYPE_CHECKING:
-    from PIL.Image import Image
 
 
 def extract_text_pdfplumber(pdf_path: Path) -> list[dict]:
@@ -64,21 +61,30 @@ def convert_pdf_to_images(
     return paths
 
 
+@lru_cache(maxsize=1)
+def _get_latex_model():
+    """Load and cache the pix2tex model once. The model loads hundreds of MB of
+    weights, so reconstructing it per call is slow and memory-churning (RT-009)."""
+    from pix2tex.cli import LatexOCR
+
+    return LatexOCR()
+
+
 def extract_math_latex(image_path: Path) -> str:
     """Extract LaTeX from a mathematical expression image using pix2tex.
 
     Returns empty string if pix2tex is unavailable or extraction fails.
-    pix2tex is expensive to load — caller should cache the LatexOCR instance.
+    The expensive LatexOCR model is loaded once and reused across calls.
     """
     try:
-        from pix2tex.cli import LatexOCR
         from PIL import Image
+
+        model = _get_latex_model()
     except ImportError:
         logger.debug("pix2tex not installed; skipping LaTeX OCR for %s", image_path.name)
         return ""
 
     try:
-        model = LatexOCR()
         img = Image.open(image_path)
         return model(img)
     except Exception as exc:
@@ -118,24 +124,52 @@ def ocr_page_with_fallback(
 
 
 def extract_full_text(pdf_path: Path, tmp_dir: Path | None = None) -> str:
-    """Extract full text from a PDF, using Tesseract fallback on scanned pages."""
+    """Extract full text from a PDF, using Tesseract fallback on scanned pages.
+
+    The PDF is parsed exactly once and, when scanned pages exist, rasterised in a
+    single pass — avoiding the previous O(pages) re-parse/re-render per scanned
+    page (RT-008).
+    """
     if tmp_dir is None:
         tmp_dir = pdf_path.parent / ".ocr_tmp"
 
     pages = extract_text_pdfplumber(pdf_path)
+    scanned = {p["page"] for p in pages if p["is_scanned"]}
+
+    # Rasterise the whole document once and keep only the scanned-page images.
+    images: dict[int, "object"] = {}
+    if scanned:
+        try:
+            from pdf2image import convert_from_path
+
+            tmp_dir.mkdir(parents=True, exist_ok=True)
+            for idx, img in enumerate(convert_from_path(str(pdf_path), dpi=300), start=1):
+                if idx in scanned:
+                    images[idx] = img
+        except Exception as exc:
+            logger.warning(
+                "Page rasterisation failed for %s (poppler unavailable?): %s",
+                pdf_path.name, exc,
+            )
+
     full_parts: list[str] = []
     for page_data in pages:
         if not page_data["is_scanned"]:
             full_parts.append(page_data["text"])
-        else:
-            try:
-                text = ocr_page_with_fallback(pdf_path, page_data["page"], tmp_dir)
-            except Exception as exc:
-                logger.warning(
-                    "OCR skipped page %d of %s (poppler/tesseract unavailable?): %s",
-                    page_data["page"], pdf_path.name, exc,
-                )
-                text = ""
-            full_parts.append(text)
+            continue
+        img = images.get(page_data["page"])
+        if img is None:
+            full_parts.append("")
+            continue
+        try:
+            img_path = tmp_dir / f"{pdf_path.stem}_p{page_data['page']:04d}.png"
+            img.save(str(img_path), "PNG")
+            full_parts.append(extract_text_tesseract(img_path))
+        except Exception as exc:
+            logger.warning(
+                "OCR skipped page %d of %s (tesseract unavailable?): %s",
+                page_data["page"], pdf_path.name, exc,
+            )
+            full_parts.append("")
 
     return "\n\n".join(full_parts)

@@ -68,7 +68,7 @@ def test_parse_markscheme_mark_types():
 
 
 def test_write_markscheme_entry_directly(ms_db, qb_db):
-    from agents.analysis.markscheme_agent import MarkEntry, _write_markscheme_entry
+    from agents.analysis.markscheme_agent import MarkEntry
 
     # Insert a question into in-memory qb_db first
     now = "2023-01-01T00:00:00+00:00"
@@ -86,7 +86,8 @@ def test_write_markscheme_entry_directly(ms_db, qb_db):
     entry = MarkEntry(sequence=1, mark_type="M", marks_value=1, description="Rearrange the equation.")
     ms_db.execute(
         "INSERT INTO markscheme_entries (question_id, sequence, mark_type, marks_value, description) "
-        "VALUES (?, ?, ?, ?, ?)", (1, 1, "M", 1, "Rearrange the equation.")
+        "VALUES (?, ?, ?, ?, ?)",
+        (1, entry.sequence, entry.mark_type, entry.marks_value, entry.description)
     )
     ms_db.commit()
     rows = ms_db.execute("SELECT * FROM markscheme_entries").fetchall()

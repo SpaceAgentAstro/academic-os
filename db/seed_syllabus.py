@@ -46,6 +46,11 @@ def seed_all(conn=None, dry_run: bool = False) -> dict[str, int]:
             totals[fname] = count
             logger.info("%s: %d spec points seeded", fname, count)
         if not dry_run:
+            # Materialise spaced-repetition state from the seeded topic tree as a
+            # side effect. Deliberately not added to `totals` (which is the per-file
+            # spec-point count contract) so the return value stays idempotent.
+            sr_count = _seed_spaced_repetition(c)
+            logger.info("spaced_repetition_items: %d topics materialised", sr_count)
             c.commit()
         return totals
 
@@ -136,6 +141,38 @@ def _seed_subject(conn, data: dict, dry_run: bool = False) -> int:
                     total_spec_points += 1
 
     return total_spec_points
+
+
+def _seed_spaced_repetition(conn) -> int:
+    """Materialise one spaced-repetition item per syllabus topic.
+
+    Reads the normalised topic tree that the subject seeders just populated and
+    creates an initial SM-2 state row per (subject, module, topic). Idempotent:
+    ``INSERT OR IGNORE`` against the ``UNIQUE(subject, unit, topic)`` constraint
+    means re-runs never duplicate rows or reset progress on existing topics.
+    """
+    rows = conn.execute(
+        """
+        SELECT s.name AS subject, m.code AS unit, t.name AS topic
+        FROM topics t
+        JOIN modules m ON m.id = t.module_id
+        JOIN subjects s ON s.id = m.subject_id
+        ORDER BY s.name, m.sequence, t.sequence
+        """
+    ).fetchall()
+
+    inserted = 0
+    for subject, unit, topic in rows:
+        cur = conn.execute(
+            """
+            INSERT OR IGNORE INTO spaced_repetition_items
+                (subject, unit, topic, mastery, ease_factor, interval_days, due_date)
+            VALUES (?, ?, ?, 0.0, 2.5, 1.0, DATE('now'))
+            """,
+            (subject, unit or "", topic),
+        )
+        inserted += cur.rowcount
+    return inserted
 
 
 if __name__ == "__main__":

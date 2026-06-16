@@ -23,9 +23,21 @@ def progress_db() -> sqlite3.Connection:
     return conn
 
 
-def _make_update_context(cmd_args=None):
+_OWNER_CHAT_ID = "424242"
+
+
+@pytest.fixture(autouse=True)
+def _authorize_owner():
+    """Command handlers are gated to TELEGRAM_CHAT_ID (AOS-005); configure a
+    known owner chat for these tests so the authorized path is exercised."""
+    with patch("config.settings.TELEGRAM_CHAT_ID", _OWNER_CHAT_ID):
+        yield
+
+
+def _make_update_context(cmd_args=None, chat_id=_OWNER_CHAT_ID):
     update = MagicMock()
     update.message.reply_text = AsyncMock()
+    update.effective_chat.id = chat_id
     context = MagicMock()
     context.args = cmd_args or []
     return update, context
@@ -102,6 +114,20 @@ def test_seed_foreign_keys_valid(progress_db):
         """
     ).fetchall()
     assert len(bad) == 0
+
+
+# ── Authorization (AOS-005) ──────────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_cmd_ignores_unauthorized_chat():
+    """A command from a chat other than TELEGRAM_CHAT_ID is silently dropped."""
+    from agents.delivery.telegram_agent import _cmd_progress
+    update, context = _make_update_context(chat_id="999999")  # not the owner
+
+    with patch("agents.infrastructure.curriculum_agent.get_specification_coverage", return_value={}):
+        await _cmd_progress(update, context)
+
+    update.message.reply_text.assert_not_called()
 
 
 # ── /quiz ─────────────────────────────────────────────────────────────────────
@@ -268,5 +294,8 @@ async def test_cmd_progress_handles_exception():
     ):
         await _cmd_progress(update, context)
 
+    # The handler degrades gracefully without leaking the raw exception text to
+    # the user (AOS-013) — the internal message ("db locked") must not appear.
     text = update.message.reply_text.call_args[0][0]
-    assert "Error" in text
+    assert "unavailable" in text
+    assert "db locked" not in text

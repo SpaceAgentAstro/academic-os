@@ -44,24 +44,63 @@ function Btn({ children, icon, primary, onClick }: {
   );
 }
 
+const ROUTES: Route[] = [
+  "home", "briefing", "timer", "marking", "subjects", "questions",
+  "tutor", "booklets", "analytics", "weaknesses", "university", "settings",
+];
+
+function routeFromHash(): Route {
+  if (typeof window === "undefined") return "home";
+  const h = window.location.hash.replace(/^#\/?/, "") as Route;
+  return ROUTES.includes(h) ? h : "home";
+}
+
 export function ClientLayout() {
+  // Initialise route from the URL hash so refresh/back/forward and deep links
+  // work instead of always resetting to home (RT-019).
   const [route, setRoute] = useState<Route>("home");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [dark, setDark] = useState(false);
+  // Theme is applied before paint by the blocking script in app/layout.tsx;
+  // read the resulting attribute here so React state matches (no FOUC, RT-015).
+  const [dark, setDark] = useState<boolean>(() =>
+    typeof document !== "undefined" && document.documentElement.dataset.theme === "dark"
+  );
   const [paperId, setPaperId] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [questionId, setQuestionId] = useState<string | null>(null);
 
+  // Sync route to the URL hash and recover active session/paper across reloads.
   useEffect(() => {
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    setDark(prefersDark);
+    setRoute(routeFromHash());
+    try {
+      const saved = sessionStorage.getItem("aos-session");
+      if (saved) {
+        const s = JSON.parse(saved);
+        if (s.paperId) setPaperId(s.paperId);
+        if (s.sessionId != null) setSessionId(s.sessionId);
+        if (s.questionId) setQuestionId(s.questionId);
+      }
+    } catch { /* ignore corrupt storage */ }
+    const onHash = () => setRoute(routeFromHash());
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
   useEffect(() => {
+    try {
+      sessionStorage.setItem("aos-session", JSON.stringify({ paperId, sessionId, questionId }));
+    } catch { /* storage may be unavailable */ }
+  }, [paperId, sessionId, questionId]);
+
+  useEffect(() => {
     document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+    try {
+      localStorage.setItem("aos-theme", dark ? "dark" : "light");
+    } catch { /* ignore */ }
   }, [dark]);
 
   const go = (r: Route) => {
+    if (typeof window !== "undefined") window.location.hash = `#/${r}`;
     setRoute(r);
     setSidebarOpen(false);
   };
@@ -84,19 +123,19 @@ export function ClientLayout() {
 
   function Screen() {
     switch (route) {
-      case "home":       return <Home go={go} />;
+      case "home":       return <Home go={go} session={session} />;
       case "briefing":   return <Briefing go={go} session={session} />;
       case "timer":      return <Timer go={go} session={session} />;
       case "marking":    return <Marking go={go} session={session} />;
-      case "subjects":   return <Subjects go={go} />;
+      case "subjects":   return <Subjects go={go} session={session} />;
       case "questions":  return <QuestionReview go={go} session={session} />;
       case "tutor":      return <Tutor />;
       case "booklets":   return <Booklet />;
-      case "analytics":  return <Analytics go={go} />;
+      case "analytics":  return <Analytics go={go} session={session} />;
       case "weaknesses": return <Weaknesses go={go} />;
       case "university": return <University />;
       case "settings":   return <Settings dark={dark} toggleDark={toggleDark} />;
-      default:           return <Home go={go} />;
+      default:           return <Home go={go} session={session} />;
     }
   }
 

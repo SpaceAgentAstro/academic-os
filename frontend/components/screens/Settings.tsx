@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { Card, ErrorState, Icon, Loading, Toggle } from "@/components/ui";
 import { SUBJECT_LABELS } from "@/lib/data";
 import { getStatus } from "@/lib/api";
@@ -28,7 +28,6 @@ function Row({ label, children }: { label: string; children?: ReactNode }) {
 }
 
 export function Settings({ dark, toggleDark }: { dark?: boolean; toggleDark?: () => void }) {
-  const [time, setTime] = useState("07:30");
   const status = useFetch(getStatus);
 
   return (
@@ -38,9 +37,15 @@ export function Settings({ dark, toggleDark }: { dark?: boolean; toggleDark?: ()
         <p className="aos-page-sub">Configure your academic operating system</p>
       </div>
 
+      <div className="aos-muted" style={{ marginBottom: 14, fontSize: 13 }}>
+        Profile and notification preferences below are configured via the backend
+        environment (<code>.env</code>) and shown here read-only — there is no
+        settings-write API yet, so these controls do not persist changes.
+      </div>
+
       <Group icon="user" title="Profile">
         <Row label="Name">
-          <input className="aos-input" defaultValue="Mouad Maamma" />
+          <input className="aos-input" value="Mouad Maamma" readOnly />
         </Row>
         <Row label="Subjects">
           <span className="aos-muted">
@@ -54,20 +59,15 @@ export function Settings({ dark, toggleDark }: { dark?: boolean; toggleDark?: ()
 
       <Group icon="bell" title="Notifications">
         <Row label="Telegram briefing time">
-          <input
-            className="aos-input narrow"
-            type="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-          />
+          <span className="aos-muted">Set via BRIEFING_TIME (.env)</span>
         </Row>
-        <Row label="Spaced-repetition reminders"><Toggle on /></Row>
-        <Row label="Examiner-trap alerts"><Toggle on /></Row>
+        <Row label="Spaced-repetition reminders"><Toggle on disabled /></Row>
+        <Row label="Examiner-trap alerts"><Toggle on disabled /></Row>
       </Group>
 
       <Group icon="refresh" title="Spaced repetition">
         <Row label="Algorithm"><span className="aos-muted">SM-2 (modified)</span></Row>
-        <Row label="Review difficult items first"><Toggle on /></Row>
+        <Row label="Review difficult items first"><Toggle on disabled /></Row>
       </Group>
 
       <Group icon="database" title="Data">

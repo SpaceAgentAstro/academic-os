@@ -45,6 +45,10 @@ def get_db(db_path: Path) -> Generator[sqlite3.Connection, None, None]:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     conn.execute("PRAGMA journal_mode = WAL")
+    # Wait up to 5s for a competing writer instead of failing immediately with
+    # "database is locked" — SQLite allows a single writer at a time and the
+    # backend's synchronous handlers run in a thread pool (concurrent writers).
+    conn.execute("PRAGMA busy_timeout = 5000")
     try:
         yield conn
         conn.commit()
