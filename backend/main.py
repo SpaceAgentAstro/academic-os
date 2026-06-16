@@ -10,7 +10,6 @@ Run from project root:
 from __future__ import annotations
 
 import logging
-import os
 import secrets
 import sqlite3
 import sys
@@ -29,11 +28,14 @@ from pydantic import BaseModel, Field, field_validator
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from config.settings import (
+    ALLOWED_ORIGINS,
+    API_KEY,
     DB_ATTEMPTS,
     DB_EXAMINER,
     DB_MARKSCHEME,
     DB_PROGRESS,
     DB_QUESTION_BANK,
+    RATE_LIMIT_PER_MINUTE,
 )
 from db.models import get_db
 
@@ -43,7 +45,6 @@ logger = logging.getLogger(__name__)
 # A single shared API key gates every endpoint except /api/health. Enforcement
 # is active whenever API_KEY is set in the environment; when it is unset the API
 # runs open (local development) and logs a loud warning so the gap is visible.
-API_KEY = os.getenv("API_KEY", "")
 _PUBLIC_PATHS = {"/api/health", "/docs", "/openapi.json", "/redoc"}
 
 if not API_KEY:
@@ -69,7 +70,6 @@ def verify_api_key(request: Request) -> None:
 # --- Rate limiting --------------------------------------------------------
 # Lightweight in-process per-client sliding-window limiter. Not a substitute for
 # an edge/WAF rate limiter, but blocks trivial floods (AOS-006) with no new deps.
-_RATE_LIMIT = int(os.getenv("RATE_LIMIT_PER_MINUTE", "120"))
 _rate_window: dict[str, deque[float]] = {}
 
 
@@ -80,7 +80,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         bucket = _rate_window.setdefault(client, deque())
         while bucket and now - bucket[0] > 60.0:
             bucket.popleft()
-        if len(bucket) >= _RATE_LIMIT:
+        if len(bucket) >= RATE_LIMIT_PER_MINUTE:
             return JSONResponse(
                 status_code=429,
                 content={"detail": "Rate limit exceeded. Try again shortly."},
@@ -107,11 +107,6 @@ app = FastAPI(
     version="2.0.0",
     dependencies=[Depends(verify_api_key)],
 )
-
-# Allowed origins are environment-driven so the deployed frontend origin can be
-# permitted without hardcoding, and a wildcard is never combined with credentials.
-_origins_env = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:3001")
-ALLOWED_ORIGINS = [o.strip() for o in _origins_env.split(",") if o.strip()]
 
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(RateLimitMiddleware)
